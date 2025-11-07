@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Daftar Aktivitas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-img-top {
+            height: 160px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h2 class="mb-4">Aktivitas</h2>
+        <div id="activitiesRow" class="row"></div>
+    </div>
+
+    <script>
+        // sample data; ganti/ambil dari server sesuai kebutuhan
+        const activities = [
+            {
+                id: 1,
+                image: 'https://via.placeholder.com/600x300?text=Aktivitas+1',
+                name: 'Latihan Soal Diskrit',
+                type: 'Tugas',
+                subject: 'Matematika Diskrit',
+                deadline: '2025-12-01 23:59',
+                score: null
+            },
+            {
+                id: 2,
+                image: 'https://picsum.photos/600/300?random=2',
+                name: 'Kuis Bab 3',
+                type: 'Kuis',
+                subject: 'Fisika',
+                deadline: '2025-10-15 12:00',
+                score: 85
+            },
+            {
+                id: 3,
+                image: 'https://picsum.photos/600/300?random=3',
+                name: 'Tugas Proyek',
+                type: 'Tugas',
+                subject: 'Pemrograman',
+                deadline: '2025-11-20 17:00',
+                score: 60
+            },
+            {
+                id: 4,
+                image: 'https://via.placeholder.com/600x300?text=Aktivitas+4',
+                name: 'Kuis Pengantar',
+                type: 'Kuis',
+                subject: 'Bahasa Inggris',
+                deadline: '2025-09-30 09:00',
+                score: null
+            }
+        ];
+
+        const container = document.getElementById('activitiesRow');
+
+        function scoreStatus(score) {
+            if (score === null || score === undefined) return { label: 'Belum Dinilai', cls: 'secondary' };
+            const pass = score >= 70;
+            return { label: pass ? 'Lulus' : 'Perlu Perbaikan', cls: pass ? 'success' : 'warning' };
+        }
+
+        function render() {
+            container.innerHTML = '';
+            activities.forEach(act => {
+                const status = scoreStatus(act.score);
+                const disabled = act.score !== null && act.score !== undefined;
+                const col = document.createElement('div');
+                col.className = 'col-12 col-md-4 mb-4';
+
+                col.innerHTML = `
+                    <div class="card h-100">
+                        <img src="${act.image}" class="card-img-top" alt="${act.name}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">${act.name}</h5>
+                            <div class="mb-2">
+                                <span class="badge bg-info text-dark me-2">${act.type}</span>
+                                <small class="text-muted">${act.subject}</small>
+                            </div>
+                            <p class="mb-1"><small class="text-muted">Batas akses: ${act.deadline}</small></p>
+                            <p class="mb-3">
+                                <strong>Nilai:</strong>
+                                ${act.score !== null && act.score !== undefined ? act.score : '<span class="text-muted">-</span>'}
+                                <span class="badge ms-2 bg-${status.cls}">${status.label}</span>
+                            </p>
+                            <div class="mt-auto">
+                                <button class="btn btn-primary w-100" ${disabled ? 'disabled' : ''} data-id="${act.id}">
+                                    ${disabled ? 'Sudah Dinilai' : 'Kerjakan'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // contoh: attach click handler untuk tombol yang aktif
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-id]');
+            if (!btn) return;
+            if (btn.disabled) return;
+            const id = Number(btn.getAttribute('data-id'));
+            // aksi kerjakan: redirect/modal/logic lain
+            alert('Mulai kerjakan aktivitas id=' + id);
+        });
+
+        render();
+    </script>
+</body>
+</html>

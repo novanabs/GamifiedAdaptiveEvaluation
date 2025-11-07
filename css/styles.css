@@ -1,0 +1,151 @@
+/* styles.css */
+
+/* Styling container utama */
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f8f9fa; /* Warna background terang */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Judul halaman */
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #0b0b0c;
+  }
+  
+  /* Daftar pilihan soal */
+  #choices-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 15px;
+  }
+  
+  /* Setiap pilihan jawaban */
+  .choice {
+    padding: 12px 20px;
+    margin-bottom: 12px;
+    background-color: #ffffff;
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    user-select: none;
+    outline: none;
+  }
+  
+  .choice:hover,
+  .choice:focus {
+    background-color: #e9ecef;
+    border-color: #495057;
+  }
+  
+  /* Warna pilihan benar */
+  .choice.correct {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    font-weight: 700;
+  }
+  
+  /* Warna pilihan salah */
+  .choice.wrong {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+    font-weight: 700;
+  }
+  
+  /* Tombol Next */
+  #next-btn {
+    display: block;
+    margin: 25px auto 0 auto;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 140px;
+    text-align: center;
+  }
+  
+  #next-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+  
+  #next-btn:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  
+  /* Feedback jawaban */
+  #feedback {
+    text-align: center;
+    font-size: 1.3rem;
+    margin-top: 15px;
+    font-weight: 600;
+    min-height: 36px;
+  }
+  
+  /* Progress */
+  #progress {
+    font-weight: 600;
+    margin-top: 12px;
+    color: #495057;
+  }
+  
+  /* Skor */
+  #score {
+    font-weight: 600;
+    margin-top: 12px;
+    color: #17a2b8;
+  }
+  
+  /* Badge */
+  #badge {
+    margin-top: 12px;
+    font-weight: 600;
+    font-style: italic;
+    color: #ffc107;
+    text-align: center;
+  }
+  
+  /* Animasi ringkas untuk pilihan */
+  .choice.correct,
+  .choice.wrong {
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+  }
+  
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Responsif untuk mobile */
+  @media (max-width: 576px) {
+    .container {
+      padding: 15px;
+      margin: 10px;
+    }
+    #next-btn {
+      width: 100%;
+    }
+    .choice {
+      font-size: 1rem;
+    }
+  }
+  
