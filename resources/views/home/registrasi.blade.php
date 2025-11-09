@@ -111,7 +111,7 @@
                 <button type="button" class="btn btn-ghost" id="toLogin">Masuk</button>
             </div>
 
-            <div class="footer">Sudah punya akun? <a href="login.html">Masuk di sini</a></div>
+            <div class="footer">Sudah punya akun? <a href="{{ url('/login') }}">Masuk di sini</a></div>
         </form>
     </main>
 
