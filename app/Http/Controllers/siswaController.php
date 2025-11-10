@@ -26,29 +26,35 @@ class siswaController extends Controller
             ->select('classes.id', 'classes.name', 'classes.level', 'classes.token')
             ->get();
 
-
+        // 🔹 Ambil aktivitas + join tabel nilai
         $rawActivities = DB::table('activities')
             ->join('topics', 'activities.id_topic', '=', 'topics.id')
             ->join('subject', 'topics.id_subject', '=', 'subject.id')
             ->join('classes', 'subject.id_class', '=', 'classes.id')
             ->join('student_classes', 'classes.id', '=', 'student_classes.id_class')
             ->join('users', 'student_classes.id_student', '=', 'users.id')
+            ->leftJoin('nilai', function ($join) use ($user) {
+                $join->on('activities.id', '=', 'nilai.id_activity')
+                    ->where('nilai.id_user', '=', $user->id);
+            })
             ->where('users.id', $user->id)
             ->whereIn('classes.token', $kelasList->pluck('token'))
             ->select(
+                'activities.id as id_activity',
                 'activities.id_topic',
                 'activities.title as aktivitas',
                 'activities.status',
-                'activities.result',
-                'activities.result_status',
                 'topics.title as topik',
                 'subject.name as mapel',
-                'activities.created_at'
+                'activities.created_at',
+                DB::raw('COALESCE(nilai.result, "-") as result'),
+                DB::raw('COALESCE(nilai.result_status, "Belum Dikerjakan") as result_status')
             )
             ->orderBy('topics.id')
             ->orderBy('activities.created_at', 'asc')
             ->get();
 
+        // 🔹 Kelompokkan aktivitas berdasarkan topik
         $activities = $rawActivities->groupBy('id_topic')->map(function ($group) {
             $data = [
                 'id_topic' => $group->first()->id_topic,
@@ -61,20 +67,21 @@ class siswaController extends Controller
             ];
 
             foreach ($group as $act) {
-                if (strtolower($act->status) == 'basic')
+                $status = strtolower($act->status);
+                if ($status === 'basic')
                     $data['basic'] = $act;
-                if (strtolower($act->status) == 'additional')
+                if ($status === 'additional')
                     $data['additional'] = $act;
-                if (strtolower($act->status) == 'remedial')
+                if ($status === 'remedial')
                     $data['remedial'] = $act;
             }
 
             return (object) $data;
         });
 
-        // 🔹 Hitung statistik sederhana
+        // 🔹 Hitung statistik
         $jumlahAktivitas = $rawActivities->count();
-        $jumlahRemedial = $activities->where('result_status', 'Remedial')->count();
+        $jumlahRemedial = $rawActivities->where('result_status', 'Remedial')->count();
 
         return view('siswa.dashboardsiswa', [
             'user' => $user,
@@ -84,8 +91,5 @@ class siswaController extends Controller
             'jumlahAktivitas' => $jumlahAktivitas,
             'jumlahRemedial' => $jumlahRemedial
         ]);
-
-
-
     }
 }

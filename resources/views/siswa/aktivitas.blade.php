@@ -2,7 +2,6 @@
 
 @section('content')
     <style>
-        /* ✅ Kustomisasi Card dan Spacing */
         .activity-card {
             border-radius: 1rem;
             transition: all 0.3s ease;
@@ -21,20 +20,16 @@
             border-top-right-radius: 1rem;
         }
 
-        /* ✅ Atur jarak antar card (gap) seperti contoh HTML aslimu */
         .row.gx-4.gy-4>.col {
             margin-bottom: 1rem;
         }
 
-        /* ✅ Tambah padding di bawah halaman agar tidak terlalu rapat */
         .container-fluid {
             padding-bottom: 2rem;
         }
     </style>
 
     <div class="container-fluid px-4 py-3">
-
-        <!-- 🔹 Judul Halaman -->
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
                 <h1 class="h3 fw-bold text-primary mb-1">
@@ -44,64 +39,71 @@
             </div>
         </div>
 
-        <!-- 🔹 Daftar Aktivitas -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 gx-4 gy-4">
             @forelse ($activities as $act)
-                <div class="col">
-                    <div class="card shadow-sm border-0 activity-card">
+                @foreach (['basic', 'additional', 'remedial'] as $type)
+                    @php
+                        $sub = $act->$type;
+                        if (!$sub)
+                            continue;
 
-                        {{-- Gambar Dummy --}}
-                        <img src="https://picsum.photos/600/300?random={{ $loop->iteration }}" class="card-img-top"
-                            alt="Gambar Aktivitas">
+                        $nilai = $sub->result;
+                        $status = $sub->result_status;
 
-                        <div class="card-body d-flex flex-column p-3">
-                            {{-- Judul Aktivitas --}}
-                            <h5 class="card-title mb-2 text-primary fw-semibold">{{ $act->aktivitas }}</h5>
+                        // Tentukan warna badge berdasarkan status
+                        if (strtolower($status) === 'remedial') {
+                            $cls = 'danger';
+                        } elseif (strtolower($status) === 'pass') {
+                            $cls = 'success';
+                        } else {
+                            $cls = 'secondary';
+                        }
 
-                            {{-- Mapel dan Topik --}}
-                            <p class="mb-2">
-                                <span class="badge bg-primary me-2 text-white">{{ $act->mapel }}</span>
-                                <span class="badge bg-info text-white">{{ $act->topik }}</span>
-                            </p>
+                        // Tombol disable jika sudah ada nilai
+                        $isDisabled = !is_null($nilai) && $nilai !== '-';
 
-                            {{-- Jenis Aktivitas --}}
-                            <p class="text-muted mb-1">
-                                <i class="bi bi-collection me-1"></i>
-                                Jenis: <strong>{{ ucfirst($act->status) }}</strong>
-                            </p>
+                    @endphp
 
-                            {{-- Tanggal --}}
-                            <p class="text-muted mb-2">
-                                <i class="bi bi-calendar-event me-1"></i>
-                                {{ \Carbon\Carbon::parse($act->created_at)->format('d M Y') }}
-                            </p>
+                    <div class="col">
+                        <div class="card shadow-sm border-0 activity-card">
+                            <img src="https://picsum.photos/600/300?random={{ $loop->parent->iteration }}{{ $loop->iteration }}"
+                                class="card-img-top" alt="Gambar Aktivitas">
 
-                            {{-- Nilai & Status --}}
-                            @php
-                                $nilai = $act->result;
-                                $status = $nilai ? ($act->result_status ?? 'Sudah Dinilai') : 'Belum Dinilai';
-                                $cls = $nilai ? 'success' : 'secondary';
-                                $isDisabled = !is_null($nilai);
-                            @endphp
+                            <div class="card-body d-flex flex-column p-3">
+                                <h5 class="card-title mb-2 text-primary fw-semibold">{{ $sub->aktivitas }}</h5>
+                                <p class="mb-2">
+                                    <span class="badge bg-primary me-2 text-white">{{ $sub->mapel }}</span>
+                                    <span class="badge bg-info text-white">{{ $sub->topik }}</span>
+                                    <span class="badge bg-secondary text-white ms-2">{{ ucfirst($type) }}</span>
+                                </p>
 
-                            <p class="mb-3">
-                                <span class="fw-semibold">Nilai:</span>
-                                {!! $nilai ? "<strong>$nilai</strong>" : '<span class="text-muted">Belum Ada</span>' !!}
-                                <span class="badge bg-{{ $cls }} ms-2 text-white">{{ ucfirst($status) }}</span>
-                            </p>
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-collection me-1"></i>
+                                    Status: <strong>{{ ucfirst($sub->status) }}</strong>
+                                </p>
+                                <p class="text-muted mb-2">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ \Carbon\Carbon::parse($sub->created_at)->format('d M Y') }}
+                                </p>
 
-                            {{-- Tombol Aksi --}}
-                            <div class="mt-auto">
-                                <button class="btn btn-{{ $isDisabled ? 'secondary' : 'success' }} w-100 fw-semibold shadow-sm"
-                                    {{ $isDisabled ? 'disabled' : '' }} onclick="mulaiAktivitas('{{ $act->id_aktivitas }}')">
-                                    {!! $isDisabled
-                ? '<i class="bi bi-check2-circle me-1"></i> Sudah Dinilai'
-                : '<i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang' !!}
-                                </button>
+                                <p class="mb-3">
+                                    <span class="fw-semibold">Nilai:</span>
+                                    {!! $nilai ? "<strong>$nilai</strong>" : '<span class="text-muted">Belum Ada</span>' !!}
+                                    <span class="badge bg-{{ $cls }} ms-2 text-white">{{ ucfirst($status) }}</span>
+                                </p>
+
+                                <div class="mt-auto">
+                                    <button class="btn btn-{{ $isDisabled ? 'secondary' : 'success' }} w-100 fw-semibold shadow-sm"
+                                        {{ $isDisabled ? 'disabled' : '' }} onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
+                                        {!! $isDisabled
+                        ? '<i class="bi bi-check2-circle me-1"></i> Sudah Dinilai'
+                        : '<i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang' !!}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
             @empty
                 <div class="col-12 text-center py-5">
                     <i class="bi bi-emoji-frown display-6 text-muted"></i>
@@ -109,7 +111,6 @@
                 </div>
             @endforelse
         </div>
-
     </div>
 @endsection
 
@@ -123,7 +124,12 @@
                 text: 'Kamu akan memulai aktivitas dengan ID: ' + id,
                 confirmButtonText: 'Oke',
                 confirmButtonColor: '#0d6efd'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/activity/${id}`;
+                }
             });
         }
     </script>
+
 @endpush

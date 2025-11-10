@@ -17,6 +17,10 @@ Route::get('/aktivitassiswa', [aktivitasController::class, 'aktivitasSiswa'])
     ->middleware('auth')
     ->name('siswa.aktivitas');
 
+Route::get('/activity/{id}', [aktivitasController::class, 'show'])->name('activity.show');
+Route::post('/activity/saveResult', [aktivitasController::class, 'saveResult'])->name('activity.saveResult');
+
+
 //route login dan logut
 Route::get('/login', [loginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [loginController::class, 'login'])->name('login.process');

@@ -104,6 +104,18 @@ return new class extends Migration {
 
         // (10) question ↔ activity_question (1 to 1)
         // Sudah diwakili oleh foreign key `id_question` di atas
+
+        //user dengan nilai
+        Schema::table('nilai', function (Blueprint $table) {
+            $table->foreign('id_user')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+            $table->foreign('id_activity')
+                ->references('id')
+                ->on('activities')
+                ->onDelete('cascade');
+        });
     }
 
     /**
@@ -147,6 +159,10 @@ return new class extends Migration {
         Schema::table('activity_question', function (Blueprint $table) {
             $table->dropForeign(['id_activity']);
             $table->dropForeign(['id_question']);
+        });
+        Schema::table('nilai', function (Blueprint $table) {
+            $table->dropForeign(['id_user']);
+            $table->dropForeign(['id_badge']);
         });
     }
 };

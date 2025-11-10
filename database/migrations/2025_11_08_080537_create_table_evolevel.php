@@ -50,9 +50,6 @@ return new class extends Migration {
             $table->enum('status', ['basic', 'additional', 'remedial']);
             $table->enum('type', ['task', 'quiz']);
             $table->dateTime('deadline')->nullable();
-            $table->decimal('result', 5, 2)->nullable();
-            $table->enum('result_status', ['Pass', 'Remedial'])->nullable();
-            $table->integer('poin')->default(0);
             $table->unsignedBigInteger('id_topic');
             $table->timestamps();
         });
@@ -82,6 +79,15 @@ return new class extends Migration {
             $table->string(column: 'description');
             $table->timestamps();
         });
+        Schema::create('nilai', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('id_user');
+            $table->unsignedBigInteger('id_activity');
+            $table->enum('result_status', ['Pass', 'Remedial'])->nullable();
+            $table->integer('poin')->default(0)->nullable();
+            $table->decimal('result', 5, 2)->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -100,5 +106,6 @@ return new class extends Migration {
         Schema::dropIfExists('question');
         Schema::dropIfExists('user_badge');
         Schema::dropIfExists('badge');
+        Schema::dropIfExists('nilai');
     }
 };

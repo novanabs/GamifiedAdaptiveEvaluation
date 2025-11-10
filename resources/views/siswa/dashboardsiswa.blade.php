@@ -188,8 +188,9 @@
                                                         {{ $act->basic->result ?? '-' }}
                                                     </div>
                                                     <span
-                                                        class="badge bg-soft-{{ $act->basic->result_status == 'pass' ? 'danger' : 'success' }} border border-{{ $act->basic->result_status == 'pass' ? 'danger' : 'success' }}">
-                                                        {{ $act->basic->result_status == 'pass' ? 'Remedial' : 'Lulus' }}
+                                                        class="badge bg-soft-{{ $act->basic->result_status == 'Remedial' ? 'danger' : 'success' }} 
+                                                                                                        border border-{{ $act->basic->result_status == 'Remedial' ? 'danger' : 'success' }}">
+                                                        {{ $act->basic->result_status }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -210,8 +211,9 @@
                                                     <div class="nilai-score text-success">{{ $act->additional->result ?? '-' }}
                                                     </div>
                                                     <span
-                                                        class="badge bg-soft-{{ $act->additional->result_status == 'pass' ? 'danger' : 'success' }} border border-{{ $act->additional->result_status == 'pass' ? 'danger' : 'success' }}">
-                                                        {{ $act->additional->result_status == 'pass' ? 'Remedial' : 'Lulus' }}
+                                                        class="badge bg-soft-{{ $act->additional->result_status == 'Remedial' ? 'danger' : 'success' }} 
+                                                                                                        border border-{{ $act->additional->result_status == 'Remedial' ? 'danger' : 'success' }}">
+                                                        {{ $act->additional->result_status }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -234,8 +236,9 @@
                                                         {{ $act->remedial->result ?? '-' }}
                                                     </div>
                                                     <span
-                                                        class="badge bg-soft-{{ $act->remedial->result_status == 'pass' ? 'danger' : 'success' }} border border-{{ $act->remedial->result_status == 'pass' ? 'danger' : 'success' }}">
-                                                        {{ $act->remedial->result_status == 'pass' ? 'Remedial' : 'Lulus' }}
+                                                        class="badge bg-soft-{{ $act->remedial->result_status == 'Remedial' ? 'danger' : 'success' }} 
+                                                                                                        border border-{{ $act->remedial->result_status == 'Remedial' ? 'danger' : 'success' }}">
+                                                        {{ $act->remedial->result_status }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -277,5 +280,6 @@
                 });
             });
         </script>
+        
     @endpush
 @endsection

@@ -50,6 +50,10 @@ class User extends Authenticatable
         return $this->hasMany(Classes::class, 'created_by');
     }
 
+    public function nilaiSiswa()
+    {
+        return $this->hasMany(nilai::class, 'id_user');
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

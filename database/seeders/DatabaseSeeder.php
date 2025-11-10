@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\nilai;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -20,7 +21,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // === 1️⃣ Buat Guru ===
+
+        // === 1️⃣ Guru ===
         $guru1 = User::create([
             'id_other' => 'NIP001',
             'type_id_other' => 'NIP',
@@ -39,7 +41,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'teacher',
         ]);
 
-        // === 2️⃣ Buat Siswa ===
+        // === 2️⃣ Siswa ===
         $siswa1 = User::create([
             'id_other' => 'NISN001',
             'type_id_other' => 'NISN',
@@ -58,22 +60,18 @@ class DatabaseSeeder extends Seeder
             'role' => 'student',
         ]);
 
-
-
-        // === 3️⃣ Buat Badge ===
+        // === 3️⃣ Badge ===
         $badgeA = Badge::create(['name' => 'Badge A', 'description' => 'Pencapaian A']);
         $badgeB = Badge::create(['name' => 'Badge B', 'description' => 'Pencapaian B']);
 
-        // Assign badge random ke siswa
-        $siswaList = [$siswa1, $siswa2];
-        foreach ($siswaList as $siswa) {
+        foreach ([$siswa1, $siswa2] as $siswa) {
             UserBadge::create([
                 'id_student' => $siswa->id,
-                'id_badge' => rand(0, max: 1) ? $badgeA->id : $badgeB->id,
+                'id_badge' => rand(0, 1) ? $badgeA->id : $badgeB->id,
             ]);
         }
 
-        // === 4️⃣ Buat Kelas ===
+        // === 4️⃣ Kelas ===
         $kelas7 = Classes::create([
             'name' => '7 SMP',
             'description' => 'Kelas 7 SMP',
@@ -90,17 +88,15 @@ class DatabaseSeeder extends Seeder
             'created_by' => $guru2->id,
         ]);
 
-        // === 5️⃣ Assign guru ke kelas ===
         TeacherClasses::create(['id_teacher' => $guru1->id, 'id_class' => $kelas7->id]);
         TeacherClasses::create(['id_teacher' => $guru2->id, 'id_class' => $kelas8->id]);
 
-        // === 6️⃣ Assign siswa ke guru (masing-masing 2 siswa) ===
         StudentClasses::create(['id_student' => $siswa1->id, 'id_class' => $kelas7->id]);
         StudentClasses::create(['id_student' => $siswa2->id, 'id_class' => $kelas7->id]);
         StudentClasses::create(['id_student' => $siswa1->id, 'id_class' => $kelas8->id]);
         StudentClasses::create(['id_student' => $siswa2->id, 'id_class' => $kelas8->id]);
 
-        // === 7️⃣ Buat Subject ===
+        // === 5️⃣ Subject ===
         $subjectInformatika = Subject::create([
             'name' => 'Informatika',
             'id_class' => $kelas7->id,
@@ -113,7 +109,7 @@ class DatabaseSeeder extends Seeder
             'created_by' => $guru2->id,
         ]);
 
-        // === 8️⃣ Buat Topic ===
+        // === 6️⃣ Topic ===
         $topicInformatika = Topic::create([
             'title' => 'Kelola Data dengan Spreadsheet',
             'description' => 'Pengelolaan data menggunakan spreadsheet.',
@@ -128,7 +124,7 @@ class DatabaseSeeder extends Seeder
             'created_by' => $guru2->id,
         ]);
 
-        // === 9️⃣ Buat Activity untuk masing-masing subject ===
+        // === 7️⃣ Activity ===
         $statuses = ['basic', 'additional', 'remedial'];
 
         foreach ($statuses as $status) {
@@ -151,7 +147,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // === 🔟 Buat Question (2 tipe: MC & SA) ===
+        // === 8 Buat Question (2 tipe: MC & SA) ===
         $questionMC = Question::create([
             'type' => 'MultipleChoice',
             'question' => json_encode([
@@ -242,6 +238,27 @@ class DatabaseSeeder extends Seeder
                 'id_question' => $questionSA2->id,
             ]);
         }
+
+        // === 🔟 Nilai untuk setiap siswa ===
+        $allStudents = [$siswa1, $siswa2];
+        $allActivities = Activity::all();
+
+        foreach ($allStudents as $student) {
+            foreach ($allActivities as $activity) {
+                $randomResult = rand(40, 100); // nilai acak antara 40 - 100
+                $status = $randomResult < 60 ? 'Remedial' : 'Pass';
+                $poin = $randomResult < 60 ? 10 : 20;
+
+                nilai::create([
+                    'id_user' => $student->id,
+                    'id_activity' => $activity->id,
+                    'result_status' => $status,
+                    'poin' => $poin,
+                    'result' => $randomResult,
+                ]);
+            }
+        }
+
 
     }
 }

@@ -15,9 +15,6 @@ class Activity extends Model
         'status',
         'type',
         'deadline',
-        'result',
-        'result_status',
-        'poin',
         'id_topic'
     ];
 
@@ -31,5 +28,10 @@ class Activity extends Model
     public function questions()
     {
         return $this->belongsToMany(Question::class, 'activity_question', 'id_activity', 'id_question');
+    }
+
+    public function nilai()
+    {
+        return $this->hasOne(nilai::class, 'id_activity');
     }
 }
