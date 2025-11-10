@@ -1,5 +1,9 @@
 @extends('layouts.main')
 
+@section('aktivitas')
+@if(request()->is('*aktivitassiswa*')) active @endif
+@endsection
+
 @section('content')
     <style>
         .activity-card {

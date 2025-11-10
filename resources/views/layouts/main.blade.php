@@ -11,6 +11,11 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,900" rel="stylesheet">
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
 
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables with Bootstrap 5 integration -->
+    <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
+    
     <style>
         body {
             background-color: #f8f9fa;
@@ -47,6 +52,12 @@
             font-weight: 700;
             color: #0d6efd;
         }
+
+        .active{
+            font-weight: bold !important;
+            color: white !important;
+            background-color: #07439f !important
+        }
     </style>
 </head>
 
@@ -70,7 +81,7 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/dashboardsiswa') }}">
+                <a class="nav-link @yield('dashboard')" href="{{ url('/dashboardsiswa') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
@@ -78,7 +89,7 @@
 
             <!-- Nav Item - Aktivitas -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/aktivitassiswa') }}">
+                <a class="nav-link @yield('aktivitas')" href="{{ url('/aktivitassiswa') }}">
                     <i class="fas fa-fw fa-clipboard"></i>
                     <span>Aktivitas</span>
                 </a>
@@ -116,7 +127,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Putri Azizah</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->nama }}</span>
                                 <i class="fas fa-user fa-lg"></i>
                             </a>
 

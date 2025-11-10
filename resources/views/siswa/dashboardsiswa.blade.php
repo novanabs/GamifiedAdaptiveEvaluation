@@ -1,5 +1,10 @@
 @extends('layouts.main')
 
+@section('dashboard')
+@if(request()->is('*dashboard*')) active @endif
+@endsection
+
+
 @section('content')
     <style>
         .card {
@@ -82,6 +87,10 @@
         .table th,
         .table td {
             font-size: 0.9rem;
+        }
+
+        .table > thead > tr > th {
+            color: white !important
         }
     </style>
 
@@ -208,7 +217,7 @@
                                                     <small class="text-muted">{{ ucfirst($act->additional->status) }}</small>
                                                 </div>
                                                 <div class="text-end">
-                                                    <div class="nilai-score text-success">{{ $act->additional->result ?? '-' }}
+                                                    <div class="nilai-score {{ $act->additional->result < 60 ? 'text-danger' : 'text-success' }}">{{ $act->additional->result ?? '-' }}
                                                     </div>
                                                     <span
                                                         class="badge bg-soft-{{ $act->additional->result_status == 'Remedial' ? 'danger' : 'success' }} 
@@ -269,7 +278,7 @@
             $(document).ready(function () {
                 $('#nilaiTable').DataTable({
                     responsive: true,
-                    pageLength: 5,
+                    pageLength: 10,
                     language: {
                         search: "Cari:",
                         lengthMenu: "Tampilkan _MENU_ baris",
