@@ -81,7 +81,7 @@
             <hr class="sidebar-divider my-0">
 
             {{-- Jika role = siswa --}}
-            @if (Auth::user()->role === 'siswa')
+            @if (Auth::user()->role === 'student')
                 <!-- Nav Item - Dashboard -->
                 <li class="nav-item">
                     <a class="nav-link @yield('dashboard')" href="{{ url('/dashboardsiswa') }}">
