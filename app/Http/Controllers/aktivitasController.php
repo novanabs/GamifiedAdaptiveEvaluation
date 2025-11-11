@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\ActivityResult;
 use App\Models\nilai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,9 +36,9 @@ class aktivitasController extends Controller
             ->join('classes', 'subject.id_class', '=', 'classes.id')
             ->join('student_classes', 'classes.id', '=', 'student_classes.id_class')
             ->join('users', 'student_classes.id_student', '=', 'users.id')
-            ->leftJoin('nilai', function ($join) use ($user) {
-                $join->on('activities.id', '=', 'nilai.id_activity')
-                    ->where('nilai.id_user', '=', $user->id);
+            ->leftJoin('activity_result', function ($join) use ($user) {
+                $join->on('activities.id', '=', 'activity_result.id_activity')
+                    ->where('activity_result.id_user', '=', $user->id);
             })
             ->where('users.id', $user->id)
             ->whereIn('classes.token', $kelasList->pluck('token'))
@@ -49,8 +50,8 @@ class aktivitasController extends Controller
                 'topics.title as topik',
                 'subject.name as mapel',
                 'activities.created_at',
-                DB::raw('COALESCE(nilai.result, "-") as result'),
-                DB::raw('COALESCE(nilai.result_status, "Belum Dikerjakan") as result_status')
+                DB::raw('COALESCE(activity_result.result, "-") as result'),
+                DB::raw('COALESCE(activity_result.result_status, "Belum Dikerjakan") as result_status')
             )
             ->orderBy('topics.id')
             ->orderBy('activities.created_at', 'asc')
@@ -118,7 +119,7 @@ class aktivitasController extends Controller
             'result_status' => 'required|string',
         ]);
 
-        nilai::create([
+        ActivityResult::create([
             'id_activity' => $request->id_activity,
             'id_user' => $request->id_user,
             'result' => $request->result,

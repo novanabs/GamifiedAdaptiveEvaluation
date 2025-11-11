@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('id_other')->unique();
             $table->enum('type_id_other', ['NISN', 'NIM', 'NIP', 'NIDN', 'NUPTK']);
-            $table->string('nama');
+            $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ['student', 'teacher', 'admin']);

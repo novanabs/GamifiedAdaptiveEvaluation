@@ -26,16 +26,16 @@ class siswaController extends Controller
             ->select('classes.id', 'classes.name', 'classes.level', 'classes.token')
             ->get();
 
-        // 🔹 Ambil aktivitas + join tabel nilai
+        // 🔹 Ambil aktivitas + join tabel activity_result
         $rawActivities = DB::table('activities')
             ->join('topics', 'activities.id_topic', '=', 'topics.id')
             ->join('subject', 'topics.id_subject', '=', 'subject.id')
             ->join('classes', 'subject.id_class', '=', 'classes.id')
             ->join('student_classes', 'classes.id', '=', 'student_classes.id_class')
             ->join('users', 'student_classes.id_student', '=', 'users.id')
-            ->leftJoin('nilai', function ($join) use ($user) {
-                $join->on('activities.id', '=', 'nilai.id_activity')
-                    ->where('nilai.id_user', '=', $user->id);
+            ->leftJoin('activity_result', function ($join) use ($user) {
+                $join->on('activities.id', '=', 'activity_result.id_activity')
+                    ->where('activity_result.id_user', '=', $user->id);
             })
             ->where('users.id', $user->id)
             ->whereIn('classes.token', $kelasList->pluck('token'))
@@ -47,8 +47,8 @@ class siswaController extends Controller
                 'topics.title as topik',
                 'subject.name as mapel',
                 'activities.created_at',
-                DB::raw('COALESCE(nilai.result, "-") as result'),
-                DB::raw('COALESCE(nilai.result_status, "Belum Dikerjakan") as result_status')
+                DB::raw('COALESCE(activity_result.result, "-") as result'),
+                DB::raw('COALESCE(activity_result.result_status, "Belum Dikerjakan") as result_status')
             )
             ->orderBy('topics.id')
             ->orderBy('activities.created_at', 'asc')

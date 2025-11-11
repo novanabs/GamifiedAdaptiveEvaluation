@@ -14,8 +14,9 @@
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- DataTables with Bootstrap 5 integration -->
-    <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
-    
+    <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.6/css/dataTables.bootstrap5.min.css"
+        rel="stylesheet" />
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -53,7 +54,7 @@
             color: #0d6efd;
         }
 
-        .active{
+        .active {
             font-weight: bold !important;
             color: white !important;
             background-color: #07439f !important
@@ -79,21 +80,82 @@
 
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link @yield('dashboard')" href="{{ url('/dashboardsiswa') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            {{-- Jika role = siswa --}}
+            @if (Auth::user()->role === 'siswa')
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dashboard')" href="{{ url('/dashboardsiswa') }}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
 
-            <!-- Nav Item - Aktivitas -->
-            <li class="nav-item">
-                <a class="nav-link @yield('aktivitas')" href="{{ url('/aktivitassiswa') }}">
-                    <i class="fas fa-fw fa-clipboard"></i>
-                    <span>Aktivitas</span>
-                </a>
-            </li>
+                <!-- Nav Item - Aktivitas -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('aktivitas')" href="{{ url('/aktivitassiswa') }}">
+                        <i class="fas fa-fw fa-clipboard"></i>
+                        <span>Aktivitas</span>
+                    </a>
+                </li>
+            @endif
+
+            {{-- Jika role = teacher --}}
+            @if (Auth::user()->role === 'teacher')
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dashboardGuru')" href="{{ url('/dashboardguru') }}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <!-- Nav Item - Data Siswa -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataSiswa')" href="{{ url('/datasiswa') }}">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Data Siswa</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Data Kelas -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataKelas')" href="{{ url('/kelas-guru') }}">
+                        <i class="fas fa-fw fa-school"></i>
+                        <span>Data Kelas</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Data Subject -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataSubject')" href="{{ url('/guru/data-subject') }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Data Subject</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Data Subject -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataTopic')" href="{{  url('/data-topik') }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Data Topic</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Data Aktivitas -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataAktivitas')" href="{{  url('/dataaktivitas') }}">
+                        <i class="fas fa-fw fa-tasks"></i>
+                        <span>Data Aktivitas</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Data Soal -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataSoal')" href="{{ url('/soal') }}">
+                        <i class="fas fa-fw fa-question-circle"></i>
+                        <span>Data Soal</span>
+                    </a>
+                </li>
+            @endif
 
             <hr class="sidebar-divider d-none d-md-block">
 
@@ -104,6 +166,7 @@
 
         </ul>
         <!-- End Sidebar -->
+
 
 
         <!-- Content Wrapper -->
@@ -127,7 +190,8 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->nama }}</span>
+                                <span
+                                    class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->name }}</span>
                                 <i class="fas fa-user fa-lg"></i>
                             </a>
 
@@ -160,7 +224,7 @@
 
                 <!-- Page Content -->
                 <div class="container-fluid">
-                
+
                     @yield('content')
                 </div>
 
@@ -207,6 +271,12 @@
     <script src="{{ asset('vendor-assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('vendor-assets/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+
+    <!-- Pastikan Bootstrap JS dan dependensinya ada -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
 
     @stack('scripts')
 

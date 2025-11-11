@@ -13,7 +13,7 @@ class Subject extends Model
     protected $fillable = ['name', 'id_class', 'created_by'];
 
     // (6) belongsTo Class
-    public function class()
+    public function classes()
     {
         return $this->belongsTo(Classes::class, 'id_class');
     }

@@ -35,7 +35,7 @@ class loginController extends Controller
 
             // Redirect berdasarkan peran pengguna
             if ($user->role === 'teacher') {
-                return redirect()->route('dashboard.guru')
+                return redirect()->route('dashboardGuru')
                     ->with('success', 'Selamat datang, Guru!');
             } elseif ($user->role === 'student') {
                 return redirect()->route('dashboard.siswa')

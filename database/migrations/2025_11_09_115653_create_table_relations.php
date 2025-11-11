@@ -106,7 +106,7 @@ return new class extends Migration {
         // Sudah diwakili oleh foreign key `id_question` di atas
 
         //user dengan nilai
-        Schema::table('nilai', function (Blueprint $table) {
+        Schema::table('activity_result', function (Blueprint $table) {
             $table->foreign('id_user')
                 ->references('id')
                 ->on('users')
@@ -160,7 +160,7 @@ return new class extends Migration {
             $table->dropForeign(['id_activity']);
             $table->dropForeign(['id_question']);
         });
-        Schema::table('nilai', function (Blueprint $table) {
+        Schema::table('activity_result', function (Blueprint $table) {
             $table->dropForeign(['id_user']);
             $table->dropForeign(['id_badge']);
         });

@@ -32,6 +32,6 @@ class Activity extends Model
 
     public function nilai()
     {
-        return $this->hasOne(nilai::class, 'id_activity');
+        return $this->hasOne(ActivityResult::class, 'id_activity');
     }
 }

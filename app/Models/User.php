@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'id_other',
         'type_id_other',
-        'nama',
+        'name',
         'email',
         'password',
         'role'
@@ -52,7 +52,7 @@ class User extends Authenticatable
 
     public function nilaiSiswa()
     {
-        return $this->hasMany(nilai::class, 'id_user');
+        return $this->hasMany(ActivityResult::class, 'id_user');
     }
     /**
      * The attributes that should be hidden for serialization.

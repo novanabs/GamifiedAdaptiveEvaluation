@@ -79,7 +79,7 @@ return new class extends Migration {
             $table->string(column: 'description');
             $table->timestamps();
         });
-        Schema::create('nilai', function (Blueprint $table) {
+        Schema::create('activity_result', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_user');
             $table->unsignedBigInteger('id_activity');
@@ -106,6 +106,6 @@ return new class extends Migration {
         Schema::dropIfExists('question');
         Schema::dropIfExists('user_badge');
         Schema::dropIfExists('badge');
-        Schema::dropIfExists('nilai');
+        Schema::dropIfExists('activity_result');
     }
 };

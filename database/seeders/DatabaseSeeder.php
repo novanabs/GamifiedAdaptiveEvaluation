@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\nilai;
+use App\Models\ActivityResult;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         $guru1 = User::create([
             'id_other' => 'NIP001',
             'type_id_other' => 'NIP',
-            'nama' => 'Guru Informatika',
+            'name' => 'Guru Informatika',
             'email' => 'guru1@example.com',
             'password' => Hash::make('password'),
             'role' => 'teacher',
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         $guru2 = User::create([
             'id_other' => 'NIP002',
             'type_id_other' => 'NIP',
-            'nama' => 'Guru IPA',
+            'name' => 'Guru IPA',
             'email' => 'guru2@example.com',
             'password' => Hash::make('password'),
             'role' => 'teacher',
@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
         $siswa1 = User::create([
             'id_other' => 'NISN001',
             'type_id_other' => 'NISN',
-            'nama' => 'Siswa A',
+            'name' => 'Siswa A',
             'email' => 'siswa1@example.com',
             'password' => Hash::make('password'),
             'role' => 'student',
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         $siswa2 = User::create([
             'id_other' => 'NISN002',
             'type_id_other' => 'NISN',
-            'nama' => 'Siswa B',
+            'name' => 'Siswa B',
             'email' => 'siswa2@example.com',
             'password' => Hash::make('password'),
             'role' => 'student',
@@ -249,7 +249,7 @@ class DatabaseSeeder extends Seeder
                 $status = $randomResult < 60 ? 'Remedial' : 'Pass';
                 $poin = $randomResult < 60 ? 10 : 20;
 
-                nilai::create([
+                ActivityResult::create([
                     'id_user' => $student->id,
                     'id_activity' => $activity->id,
                     'result_status' => $status,

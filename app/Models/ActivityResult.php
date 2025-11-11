@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class nilai extends Model
+class ActivityResult extends Model
 {
-    protected $table = 'nilai';
+    protected $table = 'activity_result';
     protected $fillable = [
         'id_activity',
         'id_user',
