@@ -10,7 +10,7 @@ class Question extends Model
     use HasFactory;
 
     protected $table = 'question';
-    protected $fillable = ['type', 'question', 'MC_option', 'SA_answer', 'MC_answer', 'created_by'];
+    protected $fillable = ['type', 'question', 'MC_option', 'SA_answer', 'MC_answer', 'difficulty', 'created_by','id_topic'];
 
     // (9) manyToMany with Activity
     public function activities()
@@ -22,5 +22,10 @@ class Question extends Model
     public function activityQuestion()
     {
         return $this->hasOne(ActivityQuestion::class, 'id_question');
+    }
+
+    public function topic()
+    {
+        return $this->belongsTo(Topic::class, 'id_topic');
     }
 }

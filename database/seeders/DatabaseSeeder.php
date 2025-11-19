@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-
         // === 1️⃣ Guru ===
         $guru1 = User::create([
             'id_other' => 'NIP001',
@@ -75,7 +74,9 @@ class DatabaseSeeder extends Seeder
         $kelas7 = Classes::create([
             'name' => '7 SMP',
             'description' => 'Kelas 7 SMP',
-            'level' => '7',
+            'level' => 'SMP',
+            'grade' => '1',
+            'semester' => 'odd',
             'token' => 'KLS7TOKEN',
             'created_by' => $guru1->id,
         ]);
@@ -83,7 +84,9 @@ class DatabaseSeeder extends Seeder
         $kelas8 = Classes::create([
             'name' => '8 SMP',
             'description' => 'Kelas 8 SMP',
-            'level' => '8',
+            'level' => 'SMP',
+            'grade' => '2',
+            'semester' => 'even',
             'token' => 'KLS8TOKEN',
             'created_by' => $guru2->id,
         ]);
@@ -91,10 +94,12 @@ class DatabaseSeeder extends Seeder
         TeacherClasses::create(['id_teacher' => $guru1->id, 'id_class' => $kelas7->id]);
         TeacherClasses::create(['id_teacher' => $guru2->id, 'id_class' => $kelas8->id]);
 
-        StudentClasses::create(['id_student' => $siswa1->id, 'id_class' => $kelas7->id]);
-        StudentClasses::create(['id_student' => $siswa2->id, 'id_class' => $kelas7->id]);
-        StudentClasses::create(['id_student' => $siswa1->id, 'id_class' => $kelas8->id]);
-        StudentClasses::create(['id_student' => $siswa2->id, 'id_class' => $kelas8->id]);
+        StudentClasses::insert([
+            ['id_student' => $siswa1->id, 'id_class' => $kelas7->id],
+            ['id_student' => $siswa2->id, 'id_class' => $kelas7->id],
+            ['id_student' => $siswa1->id, 'id_class' => $kelas8->id],
+            ['id_student' => $siswa2->id, 'id_class' => $kelas8->id],
+        ]);
 
         // === 5️⃣ Subject ===
         $subjectInformatika = Subject::create([
@@ -134,6 +139,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'task',
                 'deadline' => now()->addDays(7),
                 'id_topic' => $topicInformatika->id,
+                'addaptive'=> 'yes'
             ]);
         }
 
@@ -144,11 +150,13 @@ class DatabaseSeeder extends Seeder
                 'type' => 'quiz',
                 'deadline' => now()->addDays(7),
                 'id_topic' => $topicIPA->id,
+                'addaptive'=> 'yes'
             ]);
         }
 
         // === 8 Buat Question (2 tipe: MC & SA) ===
         $questionMC = Question::create([
+            'id_topic'=>'1',
             'type' => 'MultipleChoice',
             'question' => json_encode([
                 'text' => 'Apa fungsi utama spreadsheet?',
@@ -162,10 +170,12 @@ class DatabaseSeeder extends Seeder
                 ['e' => ['teks' => 'Mendengarkan musik', 'url' => 'https://ids.ac.id/wp-content/uploads/2022/10/imgonline-com-ua-CompressToSize-j7Cq9PF91NhVUGy-1024x554.jpg']],
             ]),
             'MC_answer' => 'a',
+            'difficulty' => 'mudah',
             'created_by' => $guru1->id,
         ]);
 
         $questionMC2 = Question::create([
+            'id_topic'=>'1',
             'type' => 'MultipleChoice',
             'question' => json_encode([
                 'text' => 'File spreadsheet umumnya memiliki ekstensi apa?',
@@ -180,9 +190,11 @@ class DatabaseSeeder extends Seeder
             ]),
             'MC_answer' => 'a',
             'created_by' => $guru1->id,
+            'difficulty' => 'mudah'
         ]);
 
         $questionSA = Question::create([
+            'id_topic'=>'2',
             'type' => 'ShortAnswer',
             'question' => json_encode([
                 'text' => 'Jelaskan apa yang dimaksud dengan gerak lurus beraturan.',
@@ -194,9 +206,11 @@ class DatabaseSeeder extends Seeder
                 'beraturan'
             ]),
             'created_by' => $guru2->id,
+            'difficulty' => 'mudah'
         ]);
 
         $questionSA2 = Question::create([
+            'id_topic'=>'2',
             'type' => 'ShortAnswer',
             'question' => json_encode([
                 'text' => 'Sebutkan satuan kecepatan dalam SI!',
@@ -204,6 +218,7 @@ class DatabaseSeeder extends Seeder
             ]),
             'SA_answer' => json_encode(['m/s', 'km/jam', 'meter/detik']),
             'created_by' => $guru2->id,
+            'difficulty' => 'mudah'
         ]);
 
         $activitiesInformatika = Activity::whereHas(
@@ -239,26 +254,26 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // === 🔟 Nilai untuk setiap siswa ===
+
+        // === 🔟 Nilai Siswa ===
         $allStudents = [$siswa1, $siswa2];
         $allActivities = Activity::all();
 
         foreach ($allStudents as $student) {
             foreach ($allActivities as $activity) {
-                $randomResult = rand(40, 100); // nilai acak antara 40 - 100
-                $status = $randomResult < 60 ? 'Remedial' : 'Pass';
-                $poin = $randomResult < 60 ? 10 : 20;
+                $result = rand(40, 100);
+                $status = $result < 60 ? 'Remedial' : 'Pass';
+                $realPoin = $result < 60 ? 10 : 20;
 
                 ActivityResult::create([
                     'id_user' => $student->id,
                     'id_activity' => $activity->id,
                     'result_status' => $status,
-                    'poin' => $poin,
-                    'result' => $randomResult,
+                    'result' => $result,
+                    'real_poin' => $realPoin,
+                    'bonus_poin' => rand(0, 5),
                 ]);
             }
         }
-
-
     }
 }

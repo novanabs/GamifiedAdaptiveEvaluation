@@ -1,160 +1,308 @@
 @extends('layouts.main')
 
-@section('dataKelas')
-    @if(request()->is('*dataKelas*')) active @endif
-@endsection
+@section('dataKelas', request()->is('datakelas') ? 'active' : '')
 
 @section('content')
-    <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="fw-bold text-primary mb-0">Daftar Kelas yang Anda Ajar</h2>
-                <p class="text-muted small mb-0">Menampilkan kelas beserta subject, topic, dan activity</p>
-            </div>
-            <div>
-                <!-- Tombol tambah & gabung kelas -->
-                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalTambah">
-                    Tambah Kelas
-                </button>
-                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalGabung">
-                    Gabung Kelas
-                </button>
-            </div>
+<div class="container py-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Daftar Kelas Anda</h2>
+            <p class="text-muted small mb-0">Menampilkan kelas beserta guru, subject, topic & activity</p>
         </div>
 
-        {{-- DAFTAR KELAS --}}
-        @if($dataKelas->isEmpty())
-            <div class="alert alert-info shadow-sm border-0 rounded-3">
-                Belum ada kelas yang Anda ajar.
-            </div>
-        @else
-            <div class="row">
-                @foreach($dataKelas as $data)
-                    <div class="col-md-4 mb-4">
-                        <div class="card border-0 shadow-lg rounded-4 h-100 kelas-card" style="transition: transform 0.2s;">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h4 class="fw-bold text-primary mb-0">{{ $data->kelas->name }}</h4>
-                                    <span class="badge bg-light text-secondary px-3 py-2">
-                                        🎓 Level: {{ ucfirst($data->kelas->level) }}
-                                    </span>
-                                </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-1" viewBox="0 0 16 16">
+                    <path d="M8 1a.5.5 0 0 1 .5.5V7.5H14a.5.5 0 0 1 0 1H8.5V14a.5.5 0 0 1-1 0V8.5H2a.5.5 0 0 1 0-1h5.5V1.5A.5.5 0 0 1 8 1z"/>
+                </svg>
+                Tambah Kelas
+            </button>
 
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold text-secondary mb-1">Guru Pengajar</h6>
-                                    @if($data->guru->isNotEmpty())
-                                        <ol class="ps-3 mb-0">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalGabung">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right me-1" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5H13a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5a.5.5 0 0 1-.5-.5V11a.5.5 0 0 1 1 0v2h6V4h-6v2a.5.5 0 0 1-1 0V3.5z"/>
+                    <path fill-rule="evenodd" d="M1.146 8.354a.5.5 0 0 1 0-.708L3.793 5H3.5a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .354.854L3.854 8l3.5 3.146A.5.5 0 0 1 7 12.5H3.5a.5.5 0 0 1 0-1h.293L1.146 8.354z"/>
+                </svg>
+                Gabung Kelas
+            </button>
+        </div>
+    </div>
+
+    {{-- Jika tidak ada kelas --}}
+    @if($dataKelas->isEmpty())
+        <div class="alert alert-info">Anda belum mengajar kelas apa pun.</div>
+    @else
+        <div class="row g-4">
+            @foreach($dataKelas as $data)
+                <div class="col-12 col-md-6 col-lg-4">
+                    <article class="card h-100 shadow-sm border-0 rounded-4 kelas-card overflow-hidden">
+                        <div class="card-header bg-gradient p-3 d-flex justify-content-between align-items-start">
+                            <div class="text-primary">
+                                <h5 class="mb-1 fw-bold" style="letter-spacing: .2px;">{{ $data->kelas->name }}</h5>
+                                <div class="small opacity-85">
+                                    <span class="me-2">Semester: <strong>{{ $data->kelas->semester == 'odd' ? 'Ganjil' : 'Genap' }}</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light btn-icon rounded-circle" type="button" id="menuKelas{{ $loop->index }}" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                                    ⋮
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="menuKelas{{ $loop->index }}">
+                                    <li><a class="dropdown-item" href="#">Lihat Detail</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Kelas</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#">Hapus Kelas</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-3">
+                            {{-- Meta info vertical --}}
+                            <dl class="row mb-3">
+                                <dt class="col-4 text-muted small">Jenjang</dt>
+                                <dd class="col-8 mb-1"><span class="badge bg-light text-dark border px-3 py-2">{{ $data->kelas->level }}</span></dd>
+
+                                <dt class="col-4 text-muted small">Kelas</dt>
+                                <dd class="col-8 mb-1"><span class="badge bg-light text-dark border px-3 py-2">Grade {{ $data->kelas->grade }}</span></dd>
+
+                                <dt class="col-4 text-muted small">Token</dt>
+                                <dd class="col-8 mb-0 d-flex align-items-center gap-2">
+                                    <code class="px-2 py-1 rounded bg-white text-secondary border" id="tokenText{{ $loop->index }}">{{ $data->kelas->token }}</code>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="copyToken('tokenText{{ $loop->index }}')" data-bs-toggle="tooltip" title="Salin token">
+                                        Salin
+                                    </button>
+                                </dd>
+                            </dl>
+
+                            {{-- Lists with collapse (to keep kartu ringkas) --}}
+                            <div class="mb-3">
+                                <h6 class="fw-semibold text-secondary mb-1">Guru Pengajar</h6>
+                                @if($data->guru->isNotEmpty())
+                                    <div class="collapse show" id="guruList{{ $loop->index }}">
+                                        <ol class="ps-3 mb-0 small max-list" aria-hidden="false">
                                             @foreach($data->guru as $g)
                                                 <li>{{ $g }}</li>
                                             @endforeach
                                         </ol>
-                                    @else
-                                        <em class="text-muted">Belum ada guru pengajar</em>
+                                    </div>
+                                @else
+                                    <em class="text-muted small">Belum ada guru pengajar</em>
+                                @endif
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-semibold text-secondary mb-0">Mata Pelajaran</h6>
+                                    @if($data->subjects->count() > 3)
+                                        <a class="small" data-bs-toggle="collapse" href="#subjectList{{ $loop->index }}" role="button" aria-expanded="false">Lihat semua</a>
                                     @endif
                                 </div>
 
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold text-secondary mb-1">Subject</h6>
-                                    @if($data->subjects->isNotEmpty())
-                                        <ol class="ps-3 mb-0">
+                                @if($data->subjects->isNotEmpty())
+                                    <div class="collapse {{ $data->subjects->count() <= 3 ? 'show' : '' }}" id="subjectList{{ $loop->index }}">
+                                        <ol class="ps-3 mb-0 small max-list">
                                             @foreach($data->subjects as $s)
                                                 <li>{{ $s }}</li>
                                             @endforeach
                                         </ol>
-                                    @else
-                                        <em class="text-muted">Tidak ada subject</em>
+                                    </div>
+                                @else
+                                    <em class="text-muted small">Tidak ada Mata Pelajaran</em>
+                                @endif
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-semibold text-secondary mb-0">Topik</h6>
+                                    @if($data->topics->count() > 3)
+                                        <a class="small" data-bs-toggle="collapse" href="#topicList{{ $loop->index }}" role="button" aria-expanded="false">Lihat semua</a>
                                     @endif
                                 </div>
 
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold text-secondary mb-1">Topic</h6>
-                                    @if($data->topics->isNotEmpty())
-                                        <ol class="ps-3 mb-0">
+                                @if($data->topics->isNotEmpty())
+                                    <div class="collapse {{ $data->topics->count() <= 3 ? 'show' : '' }}" id="topicList{{ $loop->index }}">
+                                        <ol class="ps-3 mb-0 small max-list">
                                             @foreach($data->topics as $t)
                                                 <li>{{ $t }}</li>
                                             @endforeach
                                         </ol>
-                                    @else
-                                        <em class="text-muted">Tidak ada topic</em>
+                                    </div>
+                                @else
+                                    <em class="text-muted small">Tidak ada topic</em>
+                                @endif
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-semibold text-secondary mb-0">Aktivitas</h6>
+                                    @if($data->activities->count() > 3)
+                                        <a class="small" data-bs-toggle="collapse" href="#activityList{{ $loop->index }}" role="button" aria-expanded="false">Lihat semua</a>
                                     @endif
                                 </div>
 
-                                <div>
-                                    <h6 class="fw-semibold text-secondary mb-1">Activity</h6>
-                                    @if($data->activities->isNotEmpty())
-                                        <ol class="ps-3 mb-0">
+                                @if($data->activities->isNotEmpty())
+                                    <div class="collapse {{ $data->activities->count() <= 3 ? 'show' : '' }}" id="activityList{{ $loop->index }}">
+                                        <ol class="ps-3 mb-0 small max-list">
                                             @foreach($data->activities as $a)
                                                 <li>{{ $a }}</li>
                                             @endforeach
                                         </ol>
-                                    @else
-                                        <em class="text-muted">Tidak ada activity</em>
-                                    @endif
-                                </div>
+                                    </div>
+                                @else
+                                    <em class="text-muted small">Tidak ada activity</em>
+                                @endif
                             </div>
                         </div>
-                    </div>
-                @endforeach
+                    </article>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+{{-- Modal Tambah --}}
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ route('kelas.tambah') }}" method="POST" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Tambah Kelas Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-        @endif
-    </div>
 
-    <!-- Modal Tambah Kelas -->
-    <div class="modal fade" id="modalTambah" tabindex="-1" aria-labelledby="modalTambahLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <form action="{{ route('kelas.tambah') }}" method="POST" class="modal-content">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="modalTambahLabel">Tambah Kelas Baru</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nama Kelas</label>
+                    <input type="text" name="name" class="form-control" required>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Kelas</label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Level</label>
-                        <input type="text" name="level" class="form-control" placeholder="Contoh: X, XI, XII" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi (opsional)</label>
-                        <textarea name="description" class="form-control" rows="2"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Modal Gabung Kelas -->
-    <div class="modal fade" id="modalGabung" tabindex="-1" aria-labelledby="modalGabungLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <form action="{{ route('kelas.gabung') }}" method="POST" class="modal-content">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="modalGabungLabel">Gabung ke Kelas</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="mb-3">
+                    <label class="form-label">Level (Jenjang)</label>
+                    <select name="level" class="form-control form-select" required>
+                        <option value="">Pilih</option>
+                        <option>SD</option>
+                        <option>MI</option>
+                        <option>SMP</option>
+                        <option>MTs</option>
+                        <option>SMA</option>
+                        <option>SMK</option>
+                        <option>MA</option>
+                        <option>PT</option>
+                    </select>
                 </div>
-                <div class="modal-body">
-                    <label class="form-label">Masukkan Token Kelas</label>
-                    <input type="text" name="token" class="form-control" required>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button class="btn btn-success" type="submit">Gabung</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <style>
-        .kelas-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-        }
-    </style>
+                <div class="mb-3">
+                    <label class="form-label">Grade (Kelas)</label>
+                    <input type="text" name="grade" class="form-control" placeholder="contoh: 1, 2, 7, 10" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Semester</label>
+                    <select name="semester" class="form-control form-select" required>
+                        <option value="odd">Ganjil</option>
+                        <option value="even">Genap</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Deskripsi (Opsional)</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button class="btn btn-primary" type="submit">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal Gabung --}}
+<div class="modal fade" id="modalGabung" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{{ route('kelas.gabung') }}" method="POST" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Gabung Kelas</h5>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <label class="form-label">Token Kelas</label>
+                <input type="text" name="token" class="form-control" required>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button class="btn btn-success" type="submit">Gabung</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Styles khusus --}}
+<style>
+    .bg-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #3b82f6 100%);
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .kelas-card {
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .kelas-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(13, 110, 253, .12);
+    }
+
+    .max-list {
+        max-height: 6.5rem; /* membuat list tidak memanjang */
+        overflow: auto;
+    }
+
+    /* scrollbar kecil agar rapi */
+    .max-list::-webkit-scrollbar { height: 6px; width: 6px; }
+    .max-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 6px; }
+</style>
+
+{{-- Script kecil: copy token & tooltip --}}
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tooltips bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (el) {
+            return new bootstrap.Tooltip(el)
+        })
+    });
+
+    function copyToken(elementId) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        navigator.clipboard.writeText(el.textContent.trim()).then(function () {
+            // simple toast/feedback: gunakan alert atau bootstrap toast jika tersedia
+            const btn = event?.target;
+            if (btn) {
+                btn.setAttribute('data-bs-original-title', 'Tersalin!');
+                var t = bootstrap.Tooltip.getInstance(btn);
+                if (t) { t.show(); setTimeout(()=>t.hide(), 900); }
+            } else {
+                alert('Token disalin: ' + el.textContent.trim());
+            }
+        }).catch(function () {
+            alert('Gagal menyalin token. Silakan salin manual.');
+        });
+    }
+</script>
+@endpush
 @endsection

@@ -10,7 +10,7 @@ class Classes extends Model
     use HasFactory;
 
     protected $table = 'classes';
-    protected $fillable = ['name', 'description', 'level', 'token', 'created_by'];
+    protected $fillable = ['name', 'description', 'level','grade','semester', 'token', 'created_by'];
 
     // (5) belongsTo User
     public function creator()

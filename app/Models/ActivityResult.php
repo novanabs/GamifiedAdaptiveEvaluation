@@ -12,7 +12,8 @@ class ActivityResult extends Model
         'id_user',
         'result',
         'result_status',
-        'poin',
+        'real_poin',
+        'bonus_poin'
     ];
     public function nilaiSiswa()
     {

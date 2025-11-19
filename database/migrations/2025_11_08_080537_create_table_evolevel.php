@@ -24,7 +24,9 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('level');
+            $table->enum('level', ['SD', 'Mi', 'SMP','Mts','SMA','SMK','MA','PT']);
+            $table->enum('grade', ['1', '2', '3','4']);
+            $table->enum('semester', ['odd', 'even']);
             $table->string('token')->unique();
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
@@ -47,6 +49,7 @@ return new class extends Migration {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->string(column: 'title');
+            $table->enum('addaptive', ['yes', 'no']);
             $table->enum('status', ['basic', 'additional', 'remedial']);
             $table->enum('type', ['task', 'quiz']);
             $table->dateTime('deadline')->nullable();
@@ -65,6 +68,8 @@ return new class extends Migration {
             $table->json('MC_option')->nullable();
             $table->json('SA_answer')->nullable();
             $table->char('MC_answer')->nullable();
+            $table->enum('difficulty', ['mudah', 'sedang','sulit']);
+            $table->unsignedBigInteger('id_topic');
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
         });
@@ -84,9 +89,15 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_user');
             $table->unsignedBigInteger('id_activity');
             $table->enum('result_status', ['Pass', 'Remedial'])->nullable();
-            $table->integer('poin')->default(0)->nullable();
             $table->decimal('result', 5, 2)->nullable();
+            $table->integer('real_poin')->default(0)->nullable();
+            $table->integer('bonus_poin')->default(0)->nullable();
             $table->timestamps();
+        });
+        Schema::create('settings', function (Blueprint $table) {
+            $table->id();
+            $table->string(column: 'name');
+            $table->integer(column: 'value');
         });
     }
 
@@ -107,5 +118,6 @@ return new class extends Migration {
         Schema::dropIfExists('user_badge');
         Schema::dropIfExists('badge');
         Schema::dropIfExists('activity_result');
+        Schema::dropIfExists('settings');
     }
 };

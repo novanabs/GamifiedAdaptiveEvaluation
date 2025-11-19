@@ -11,6 +11,7 @@ use App\Models\Topic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -32,22 +33,34 @@ class guruController extends Controller
     {
         $token = $request->input('token');
 
-        // Ambil semua kelas milik guru yang login
+        // Ambil semua kelas milik guru login
         $kelas = DB::table('classes')
             ->where('created_by', Auth::id())
             ->get();
 
-        // Default nilai awal
-        $siswa = collect();
         $kelasTerpilih = null;
 
+        // 🟦 Default: tampilkan semua siswa dari semua kelas guru
+        $siswa = DB::table('student_classes')
+            ->join('users', 'student_classes.id_student', '=', 'users.id')
+            ->join('classes', 'student_classes.id_class', '=', 'classes.id')
+            ->select('users.id', 'users.name', 'users.email', 'classes.name as kelas')
+            ->where('classes.created_by', Auth::id())
+            ->get();
+
+        // 🟩 Jika memilih token → filter siswa sesuai kelas
         if ($token) {
-            $kelasTerpilih = DB::table('classes')->where('token', $token)->first();
+
+            $kelasTerpilih = DB::table('classes')
+                ->where('token', $token)
+                ->where('created_by', Auth::id())
+                ->first();
 
             if ($kelasTerpilih) {
                 $siswa = DB::table('student_classes')
                     ->join('users', 'student_classes.id_student', '=', 'users.id')
-                    ->select('users.name', 'users.email')
+                    ->join('classes', 'student_classes.id_class', '=', 'classes.id')
+                    ->select('users.id', 'users.name', 'users.email', 'classes.name as kelas')
                     ->where('student_classes.id_class', $kelasTerpilih->id)
                     ->get();
             }
@@ -55,43 +68,89 @@ class guruController extends Controller
 
         return view('guru.datasiswa', compact('kelas', 'siswa', 'kelasTerpilih', 'token'));
     }
+
+
+
+    public function updateSiswa(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'password' => 'nullable|string|min:6', // opsional
+        ]);
+
+        $dataUpdate = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'updated_at' => now(),
+        ];
+
+        // Jika password diisi, hash dulu baru update
+        if ($request->filled('password')) {
+            $dataUpdate['password'] = Hash::make($request->password);
+        }
+
+        DB::table('users')->where('id', $request->id)->update($dataUpdate);
+
+        return redirect()->back()->with('success', 'Data siswa berhasil diperbarui!');
+    }
+
+
+
     //export data siswa
     public function exportSiswa(Request $request)
     {
         $token = $request->query('token');
 
-        $kelas = DB::table('classes')->where('token', $token)->first();
-        if (!$kelas) {
-            return redirect()->route('dataSiswa')->with('error', 'Kelas tidak ditemukan.');
+        // Jika token ADA => export kelas tertentu
+        if ($token) {
+            $kelas = DB::table('classes')->where('token', $token)->first();
+
+            if (!$kelas) {
+                return redirect()->route('dataSiswa')->with('error', 'Kelas tidak ditemukan.');
+            }
+
+            $siswa = DB::table('student_classes')
+                ->join('users', 'student_classes.id_student', '=', 'users.id')
+                ->select('users.name', 'users.email', DB::raw("'" . $kelas->name . "' as kelas"))
+                ->where('student_classes.id_class', $kelas->id)
+                ->get();
+
+            $fileName = 'Data_Siswa_' . str_replace(' ', '_', $kelas->name) . '.xlsx';
+
+        } else {
+            // Jika token TIDAK ADA => export semua siswa dari semua kelas
+            $siswa = DB::table('student_classes')
+                ->join('users', 'student_classes.id_student', '=', 'users.id')
+                ->join('classes', 'student_classes.id_class', '=', 'classes.id')
+                ->select('users.name', 'users.email', 'classes.name as kelas')
+                ->orderBy('classes.name')
+                ->get();
+
+            $fileName = 'Data_Semua_Siswa.xlsx';
         }
 
-        $siswa = DB::table('student_classes')
-            ->join('users', 'student_classes.id_student', '=', 'users.id')
-            ->select('users.name', 'users.email')
-            ->where('student_classes.id_class', $kelas->id)
-            ->get();
-
-        // Buat spreadsheet baru
+        // Buat spreadsheet
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         // Header
         $sheet->setCellValue('A1', 'Nama Siswa');
         $sheet->setCellValue('B1', 'Email');
-        $sheet->getStyle('A1:B1')->getFont()->setBold(true);
+        $sheet->setCellValue('C1', 'Kelas');
+        $sheet->getStyle('A1:C1')->getFont()->setBold(true);
 
         // Isi data
         $row = 2;
         foreach ($siswa as $data) {
             $sheet->setCellValue('A' . $row, $data->name);
             $sheet->setCellValue('B' . $row, $data->email);
+            $sheet->setCellValue('C' . $row, $data->kelas);
             $row++;
         }
 
-        // Nama file
-        $fileName = 'Data_Siswa_' . str_replace(' ', '_', $kelas->name) . '.xlsx';
-
-        // Stream file ke browser
+        // Stream file
         $response = new StreamedResponse(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
@@ -103,11 +162,12 @@ class guruController extends Controller
 
         return $response;
     }
+
     public function kelasGuru()
     {
         $idGuru = Auth::id();
 
-        // Ambil kelas yang diajarkan oleh guru ini
+        // Ambil kelas yang diajar guru ini
         $kelas = DB::table('classes')
             ->join('teacher_classes', 'classes.id', '=', 'teacher_classes.id_class')
             ->where('teacher_classes.id_teacher', $idGuru)
@@ -115,20 +175,22 @@ class guruController extends Controller
             ->distinct()
             ->get();
 
-        // Ambil guru, subject, topic, dan activity terkait setiap kelas
+        // Susun relasi manual
         $dataKelas = $kelas->map(function ($k) {
-            // 🔹 Ambil semua guru pengajar kelas ini (bukan hanya first)
             $guru = DB::table('users')
                 ->join('teacher_classes', 'users.id', '=', 'teacher_classes.id_teacher')
                 ->where('teacher_classes.id_class', $k->id)
-                ->pluck('users.name'); // ->pluck menghasilkan koleksi nama
+                ->pluck('users.name');
 
-            // 🔹 Ambil data lain
-            $subjects = DB::table('subject')->where('id_class', $k->id)->pluck('name');
+            $subjects = DB::table('subject')
+                ->where('id_class', $k->id)
+                ->pluck('name');
+
             $topics = DB::table('topics')
                 ->join('subject', 'topics.id_subject', '=', 'subject.id')
                 ->where('subject.id_class', $k->id)
                 ->pluck('topics.title');
+
             $activities = DB::table('activities')
                 ->join('topics', 'activities.id_topic', '=', 'topics.id')
                 ->join('subject', 'topics.id_subject', '=', 'subject.id')
@@ -137,7 +199,7 @@ class guruController extends Controller
 
             return (object) [
                 'kelas' => $k,
-                'guru' => $guru, // <-- simpan collection guru
+                'guru' => $guru,
                 'subjects' => $subjects,
                 'topics' => $topics,
                 'activities' => $activities,
@@ -147,11 +209,14 @@ class guruController extends Controller
         return view('guru.datakelas', compact('dataKelas'));
     }
 
+
     public function tambahKelas(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'level' => 'required|string|max:50',
+            'level' => 'required|in:SD,MI,SMP,MTs,SMA,SMK,MA,PT',
+            'grade' => 'required|string|max:10',
+            'semester' => 'required|in:odd,even',
             'description' => 'nullable|string',
         ]);
 
@@ -161,6 +226,8 @@ class guruController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'level' => $request->level,
+            'grade' => $request->grade,
+            'semester' => $request->semester,
             'token' => $token,
             'created_by' => Auth::id(),
         ]);
@@ -172,6 +239,7 @@ class guruController extends Controller
 
         return redirect()->back()->with('success', 'Kelas baru berhasil dibuat dengan token: ' . $token);
     }
+
 
     public function gabungKelas(Request $request)
     {
@@ -331,6 +399,7 @@ class guruController extends Controller
     }
 
 
+
     /**
      * Menyimpan aktivitas baru.
      */
@@ -338,22 +407,24 @@ class guruController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'status' => 'required|in:basic,additional,remedial',
-            'type' => 'required|in:task,quiz',
             'deadline' => 'nullable|date',
-            'id_topic' => 'required|exists:topics,id'
+            'id_topic' => 'required|exists:topics,id',
+            'addaptive' => 'required|in:yes,no'
         ]);
 
         Activity::create([
             'title' => $request->title,
-            'status' => $request->status,
-            'type' => $request->type,
             'deadline' => $request->deadline,
             'id_topic' => $request->id_topic,
+            'addaptive' => $request->addaptive, // <= benar
         ]);
 
-        return redirect()->route('guru.aktivitas.tampil')->with('success', 'Aktivitas berhasil ditambahkan.');
+        return redirect()->route('guru.aktivitas.tampil')
+            ->with('success', 'Aktivitas berhasil ditambahkan.');
     }
+
+
+
 
     /**
      * Mengubah data aktivitas.
@@ -362,21 +433,24 @@ class guruController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'status' => 'required|in:basic,additional,remedial',
-            'type' => 'required|in:task,quiz',
-            'deadline' => 'nullable|date'
+            'deadline' => 'nullable|date',
+            'addaptive' => 'required|in:yes,no',
         ]);
 
         $aktivitas = Activity::findOrFail($id);
+
         $aktivitas->update([
             'title' => $request->title,
-            'status' => $request->status,
-            'type' => $request->type,
             'deadline' => $request->deadline,
+            'addaptive' => $request->addaptive, // <= benar
         ]);
 
-        return redirect()->route('guru.aktivitas.tampil')->with('success', 'Aktivitas berhasil diperbarui.');
+        return redirect()->route('guru.aktivitas.tampil')
+            ->with('success', 'Aktivitas berhasil diperbarui.');
     }
+
+
+
 
     /**
      * Menghapus aktivitas.
@@ -392,36 +466,64 @@ class guruController extends Controller
 
 
     //manajemen soal (bank soal)
+    // 🔹 Menampilkan daftar soal
     public function tampilanSoal()
     {
-        $data = Question::where('created_by', Auth::id())->get();
+        $data = Question::with('topic')
+            ->where('created_by', Auth::id())
+            ->get();
 
-        // Decode JSON agar siap dikirim ke Blade
         foreach ($data as $item) {
             $item->question = json_decode($item->question);
             $item->MC_option = $item->MC_option ? json_decode($item->MC_option) : null;
             $item->SA_answer = $item->SA_answer ? json_decode($item->SA_answer) : null;
         }
 
-        return view('guru.datasoal', compact('data'));
+        // daftar topik
+        $topics = Topic::all();
+
+        return view('guru.datasoal', compact('data', 'topics'));
     }
 
 
-    // Halaman tambah soal
+
+    public function editTopikSoal(Request $request, $id)
+    {
+        $request->validate([
+            'id_topic' => 'required|exists:topics,id'
+        ]);
+
+        $question = Question::where('id', $id)
+            ->where('created_by', Auth::id())
+            ->first();
+
+        if (!$question) {
+            return response()->json(['error' => 'Soal tidak ditemukan'], 404);
+        }
+
+        $question->id_topic = $request->id_topic;
+        $question->save();
+
+        return response()->json(['success' => 'Topik berhasil diperbarui']);
+    }
+
+
+
+    // 🔹 Halaman tambah soal
     public function tambahSoal()
     {
         return view('guru.tambahsoal');
     }
 
-    // Simpan soal baru
+    // 🔹 Simpan soal baru
     public function simpanSoal(Request $request)
     {
         $request->validate([
             'type' => 'required|in:MultipleChoice,ShortAnswer',
             'question_text' => 'required|string',
+            'difficulty' => 'nullable|in:easy,medium,hard',
         ]);
 
-        // Simpan data JSON untuk pertanyaan
         $questionData = [
             'text' => $request->question_text,
             'URL' => $request->question_url ?? null,
@@ -434,7 +536,7 @@ class guruController extends Controller
         if ($request->type === 'MultipleChoice') {
             $options = [];
             foreach ($request->option_text as $index => $text) {
-                $label = chr(97 + $index); // menghasilkan a,b,c,d,...
+                $label = chr(97 + $index); // a,b,c,d,e
                 $options[] = [
                     $label => [
                         'teks' => $text,
@@ -454,20 +556,21 @@ class guruController extends Controller
             'MC_option' => $mcOption,
             'SA_answer' => $saAnswer,
             'MC_answer' => $mcAnswer,
+            'difficulty' => $request->difficulty ?? 'medium', // default
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('tampilanSoal')->with('success', 'Soal berhasil disimpan!');
+        return redirect()->route('tampilanSoal')->with('success', '✅ Soal berhasil disimpan!');
     }
 
-    // Edit soal
+    // 🔹 Edit soal
     public function editSoal($id)
     {
         $data = Question::findOrFail($id);
         return view('guru.editsoal', compact('data'));
     }
 
-    // Update soal
+    // 🔹 Update soal
     public function updateSoal(Request $request, $id)
     {
         $data = Question::findOrFail($id);
@@ -481,7 +584,7 @@ class guruController extends Controller
         $saAnswer = null;
         $mcAnswer = null;
 
-        if ($request->type === 'MultipleChoice') {
+        if ($data->type === 'MultipleChoice') {
             $options = [];
             foreach ($request->option_text as $index => $text) {
                 $label = chr(97 + $index);
@@ -503,47 +606,18 @@ class guruController extends Controller
             'MC_option' => $mcOption,
             'SA_answer' => $saAnswer,
             'MC_answer' => $mcAnswer,
+            'difficulty' => $request->difficulty ?? $data->difficulty,
         ]);
 
-        return redirect()->route('tampilanSoal')->with('success', 'Soal berhasil diperbarui!');
+        return redirect()->route('tampilanSoal')->with('success', '✅ Soal berhasil diperbarui!');
     }
 
-    // Hapus soal
+    // 🔹 Hapus soal
     public function hapusSoal($id)
     {
         $data = Question::findOrFail($id);
         $data->delete();
-        return redirect()->route('tampilanSoal')->with('success', 'Soal berhasil dihapus!');
+        return redirect()->route('tampilanSoal')->with('success', '🗑️ Soal berhasil dihapus!');
     }
 
-    public function simpanAturSoal(Request $request, $id_activity)
-    {
-        $selected = $request->input('id_question', []);
-
-        $existing = DB::table('activity_question')
-            ->where('id_activity', $id_activity)
-            ->pluck('id_question')
-            ->toArray();
-
-        $toAdd = array_diff($selected, $existing);
-        $toRemove = array_diff($existing, $selected);
-
-        foreach ($toAdd as $q) {
-            DB::table('activity_question')->insert([
-                'id_activity' => $id_activity,
-                'id_question' => $q,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        if (!empty($toRemove)) {
-            DB::table('activity_question')
-                ->where('id_activity', $id_activity)
-                ->whereIn('id_question', $toRemove)
-                ->delete();
-        }
-
-        return redirect()->back()->with('success', 'Soal aktivitas berhasil diperbarui!');
-    }
 }

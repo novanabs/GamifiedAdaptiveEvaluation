@@ -116,6 +116,18 @@ return new class extends Migration {
                 ->on('activities')
                 ->onDelete('cascade');
         });
+
+        //question dengan topic
+        Schema::table('question', function (Blueprint $table) {
+            $table->foreign('id_topic')
+                ->references('id')
+                ->on('topics')
+                ->onDelete('cascade');
+            $table->foreign('created_by')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+        });
     }
 
     /**
@@ -163,6 +175,10 @@ return new class extends Migration {
         Schema::table('activity_result', function (Blueprint $table) {
             $table->dropForeign(['id_user']);
             $table->dropForeign(['id_badge']);
+        });
+        Schema::table('question', function (Blueprint $table) {
+            $table->dropForeign(['id_topic']);
+            $table->dropForeign(['created_by']);
         });
     }
 };

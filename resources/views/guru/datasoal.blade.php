@@ -1,130 +1,242 @@
 @extends('layouts.main')
+@section('dataSoal', request()->is('datasoal') ? 'active' : '')
 
 @section('content')
-    <div class="container py-3">
-        <h3 class="fw-bold mb-3">Daftar Soal</h3>
-        <a href="{{ route('tambahSoal') }}" class="btn btn-primary mb-3">+ Tambah Soal</a>
 
-        <table class="table table-bordered align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 60px;">No</th>
-                    <th style="width: 140px;">Tipe</th>
-                    <th>Pertanyaan</th>
-                    <th style="width: 220px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($data as $index => $item)
-                    @php $q = $item->question; @endphp
+<style>
+    .w-5 { width: 5%!important; }
+    .w-10 { width: 10%!important; }
+    .w-15 { width: 15%!important; }
+    .w-20 { width: 20%!important; }
+    .w-45 { width: 45%!important; }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0 text-primary">
+            <i class="bi bi-journal-check me-2"></i>Daftar Soal
+        </h3>
+
+        <div>
+            <a href="{{ route('tambahSoal') }}" class="btn btn-primary me-2 shadow-sm">
+                <i class="bi bi-plus-circle"></i> Tambah Soal Manual
+            </a>
+            <a href="{{ route('generateSoal') }}" class="btn btn-success shadow-sm">
+                <i class="bi bi-lightbulb"></i> Buat Soal Otomatis
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            {{-- TABEL SOAL --}}
+            <table id="soalTable" class="table table-striped table-hover align-middle">
+                <thead class="table-primary">
                     <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $item->type }}</td>
-                        <td>
-                            {{ $q->text ?? '-' }}
-                        </td>
-                        <td>
-                            <button class="btn btn-info btn-sm view-soal" data-bs-toggle="modal"
-                                data-bs-target="#modalLihatSoal" data-question='@json($item->question)'
-                                data-mcoption='@json($item->MC_option)' data-mcanswer='{{ $item->MC_answer }}'
-                                data-saanswer='@json($item->SA_answer)' data-type='{{ $item->type }}'>
-                                <i class="bi bi-eye"></i> Lihat
-                            </button>
-
-
-                            <a href="{{ route('editSoal', $item->id) }}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </a>
-
-                            <form action="{{ route('hapusSoal', $item->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </button>
-                            </form>
-                        </td>
+                        <th class="w-5">No</th>
+                        <th class="w-10">Tipe</th>
+                        <th class="w-45">Pertanyaan</th>
+                        <th class="w-20">Topik</th>
+                        <th class="w-10">Kesulitan</th>
+                        <th class="w-10">Aksi</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
 
-        <!-- Modal Lihat Soal -->
-        <div class="modal fade" id="modalLihatSoal" tabindex="-1" aria-labelledby="modalLihatSoalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content rounded-3 shadow-lg">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="modalLihatSoalLabel">Detail Soal</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <h5 id="soalText" class="fw-bold mb-3"></h5>
-                        <div id="soalImage" class="mb-3 text-center"></div>
-                        <hr>
-                        <div id="soalPilihan"></div>
-                        <hr>
-                        <div>
-                            <strong>Jawaban Benar:</strong>
-                            <p id="soalJawaban" class="text-success fw-semibold"></p>
-                        </div>
-                    </div>
+                <tbody>
+                    @foreach($data as $index => $item)
+                        <tr>
+                            <td class="fw-bold">{{ $index + 1 }}</td>
+
+                            <td>{{ $item->type }}</td>
+
+                            <td class="text-start">{{ $item->question->text ?? '-' }}</td>
+
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select class="form-select form-select-sm topic-select" data-id="{{ $item->id }}">
+                                        <option value="">-- Pilih Topik --</option>
+                                        @foreach($topics as $t)
+                                            <option value="{{ $t->id }}" {{ $item->id_topic == $t->id ? 'selected' : '' }}>
+                                                {{ $t->title }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <button class="btn btn-sm btn-success save-topic" data-id="{{ $item->id }}">
+                                        <i class="bi bi-save"></i>
+                                    </button>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="badge 
+                                    @if($item->difficulty=='mudah') bg-success
+                                    @elseif($item->difficulty=='sedang') bg-warning text-dark
+                                    @else bg-danger @endif">
+                                    {{ ucfirst($item->difficulty) }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-outline-primary btn-sm view-soal"
+                                    data-bs-toggle="modal" data-bs-target="#modalLihatSoal"
+                                    data-q="{{ base64_encode(json_encode($item->question)) }}"
+                                    data-opt="{{ base64_encode(json_encode($item->MC_option)) }}"
+                                    data-mcanswer="{{ $item->MC_answer }}"
+                                    data-sa="{{ base64_encode(json_encode($item->SA_answer)) }}"
+                                    data-type="{{ $item->type }}">
+                                    <i class="bi bi-eye-fill"></i>
+                                </button>
+
+                                <a href="{{ route('editSoal', $item->id) }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <form action="{{ route('hapusSoal', $item->id) }}" method="POST" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Yakin ingin menghapus soal ini?')">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            </td>
+
+                        </tr>
+                    @endforeach
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    {{-- MODAL DETAIL --}}
+    <div class="modal fade" id="modalLihatSoal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header bg-primary text-white rounded-top">
+                    <h5 class="modal-title"><i class="bi bi-card-text me-2"></i>Detail Soal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <h5 id="soalText" class="fw-bold mb-3 text-dark"></h5>
+                    <div id="soalImage" class="mb-3 text-center"></div>
+                    <hr>
+                    <div id="soalPilihan" class="mb-3"></div>
+                    <hr>
+                    <strong>Jawaban Benar:</strong>
+                    <p id="soalJawaban" class="text-success fw-semibold"></p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const soalText = document.getElementById('soalText');
-            const soalImage = document.getElementById('soalImage');
-            const soalPilihan = document.getElementById('soalPilihan');
-            const soalJawaban = document.getElementById('soalJawaban');
+</div>
 
-            document.querySelectorAll('.view-soal').forEach(button => {
-                button.addEventListener('click', function () {
-                    const q = JSON.parse(this.getAttribute('data-question'));
-                    const type = this.getAttribute('data-type');
-                    const mcOption = this.getAttribute('data-mcoption') ? JSON.parse(this.getAttribute('data-mcoption')) : null;
-                    const mcAnswer = this.getAttribute('data-mcanswer');
-                    const saAnswer = this.getAttribute('data-saanswer') ? JSON.parse(this.getAttribute('data-saanswer')) : null;
 
-                    // ✅ Tampilkan teks soal
-                    soalText.textContent = q.text ?? 'Tidak ada teks soal';
+{{-- SCRIPTS --}}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
 
-                    // ✅ Tampilkan gambar soal (jika ada)
-                    soalImage.innerHTML = q.URL
-                        ? `<img src="${q.URL}" alt="Gambar Soal" class="img-fluid rounded shadow-sm" style="max-height: 250px;">`
-                        : '';
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-                    // ✅ Reset dan isi pilihan
-                    soalPilihan.innerHTML = '';
-                    if (type === 'MultipleChoice' && mcOption) {
-                        mcOption.forEach(opt => {
-                            const label = Object.keys(opt)[0];
-                            const detail = opt[label];
-                            const div = document.createElement('div');
-                            div.classList.add('mb-2', 'p-2', 'border', 'rounded');
-                            div.innerHTML = `
-                                <strong>${label.toUpperCase()}.</strong> ${detail.teks}<br>
-                                ${detail.url ? `<img src="${detail.url}" alt="Opsi ${label}" class="img-thumbnail mt-2" style="max-height:100px;">` : ''}
-                            `;
-                            soalPilihan.appendChild(div);
-                        });
-                    } else if (type === 'ShortAnswer' && saAnswer) {
-                        soalPilihan.innerHTML = `<em>Soal jawaban singkat — tidak memiliki pilihan.</em>`;
-                    }
+    // === DATATABLES FIX ===
+    let table = new DataTable('#soalTable', {
+        responsive: true,
+        autoWidth: false,
+        pageLength: 10,
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ soal",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ soal",
+            zeroRecords: "Data tidak ditemukan",
+        }
+    });
 
-                    // ✅ Tampilkan jawaban benar
-                    if (type === 'MultipleChoice') {
-                        soalJawaban.textContent = mcAnswer ? mcAnswer.toUpperCase() : 'Belum ada jawaban';
-                    } else if (type === 'ShortAnswer') {
-                        soalJawaban.textContent = saAnswer ? saAnswer.join(', ') : 'Belum ada jawaban';
-                    } else {
-                        soalJawaban.textContent = '-';
-                    }
-                });
+    // FIX NOMOR URUT DATA TABLES
+    table.on('draw', () => {
+        table.column(0, { search: 'applied', order: 'applied' })
+            .nodes()
+            .each((cell, i) => { cell.innerHTML = i + 1; });
+    });
+
+    // === EVENT DELEGATION UNTUK MODAL ===
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest(".view-soal")) return;
+
+        let btn = e.target.closest(".view-soal");
+
+        const decode = (v) => v ? JSON.parse(atob(v)) : null;
+
+        let q = decode(btn.dataset.q);
+        let opt = decode(btn.dataset.opt);
+        let sa = decode(btn.dataset.sa);
+        let type = btn.dataset.type;
+        let mcAns = btn.dataset.mcanswer;
+
+        document.getElementById("soalText").textContent = q?.text ?? "-";
+        document.getElementById("soalImage").innerHTML =
+            q?.URL ? `<img src="${q.URL}" class="img-fluid rounded" style="max-height:250px">` : "";
+
+        let pilihan = document.getElementById("soalPilihan");
+        pilihan.innerHTML = "";
+
+        if (type === "MultipleChoice" && opt) {
+            opt.forEach(o => {
+                let label = Object.keys(o)[0];
+                let d = o[label];
+                pilihan.innerHTML += `
+                    <div class="border p-2 mb-2 rounded">
+                        <strong>${label.toUpperCase()}.</strong> ${d.teks}
+                        ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
+                    </div>
+                `;
             });
+        } else {
+            pilihan.innerHTML = "<em>Tidak ada pilihan jawaban.</em>";
+        }
+
+        document.getElementById("soalJawaban").textContent =
+            type === "MultipleChoice" ? mcAns : (sa?.join(", ") ?? "-");
+    });
+
+    // === SIMPAN TOPIK ===
+    document.addEventListener("click", function(e) {
+        if (!e.target.closest(".save-topic")) return;
+
+        let btn = e.target.closest(".save-topic");
+        let id = btn.dataset.id;
+        let select = document.querySelector(`.topic-select[data-id='${id}']`);
+        let topic = select.value;
+
+        if (!topic) return alert("Silahkan pilih topik.");
+
+        fetch(`/edit-topik-soal/${id}`, {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id_topic: topic })
+        })
+        .then(r => r.json())
+        .then(r => {
+            if (r.success) {
+                btn.innerHTML = '<i class="bi bi-check2-circle"></i>';
+                btn.classList.replace("btn-success", "btn-primary");
+                setTimeout(() => {
+                    btn.classList.replace("btn-primary", "btn-success");
+                    btn.innerHTML = '<i class="bi bi-save"></i>';
+                }, 1000);
+            }
         });
-    </script>
+
+    });
+
+});
+</script>
+
 @endsection

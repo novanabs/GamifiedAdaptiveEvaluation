@@ -16,6 +16,8 @@
     <!-- DataTables with Bootstrap 5 integration -->
     <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.6/css/dataTables.bootstrap5.min.css"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
 
     <style>
         body {
@@ -118,7 +120,7 @@
 
                 <!-- Nav Item - Data Kelas -->
                 <li class="nav-item">
-                    <a class="nav-link @yield('dataKelas')" href="{{ url('/kelas-guru') }}">
+                    <a class="nav-link @yield('dataKelas')" href="{{ url('/datakelas') }}">
                         <i class="fas fa-fw fa-school"></i>
                         <span>Data Kelas</span>
                     </a>
@@ -126,17 +128,17 @@
 
                 <!-- Nav Item - Data Subject -->
                 <li class="nav-item">
-                    <a class="nav-link @yield('dataSubject')" href="{{ url('/guru/data-subject') }}">
+                    <a class="nav-link @yield('dataSubject')" href="{{ url('/datamatapelajaran') }}">
                         <i class="fas fa-fw fa-book"></i>
-                        <span>Data Subject</span>
+                        <span>Data Mata Pelajaran</span>
                     </a>
                 </li>
 
                 <!-- Nav Item - Data Subject -->
                 <li class="nav-item">
-                    <a class="nav-link @yield('dataTopic')" href="{{  url('/data-topik') }}">
+                    <a class="nav-link @yield('dataTopic')" href="{{  url('/datatopik') }}">
                         <i class="fas fa-fw fa-book"></i>
-                        <span>Data Topic</span>
+                        <span>Data Topik</span>
                     </a>
                 </li>
 
@@ -150,7 +152,7 @@
 
                 <!-- Nav Item - Data Soal -->
                 <li class="nav-item">
-                    <a class="nav-link @yield('dataSoal')" href="{{ url('/soal') }}">
+                    <a class="nav-link @yield('dataSoal')" href="{{ url('/datasoal') }}">
                         <i class="fas fa-fw fa-question-circle"></i>
                         <span>Data Soal</span>
                     </a>

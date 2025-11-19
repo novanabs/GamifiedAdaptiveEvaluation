@@ -15,7 +15,8 @@ class Activity extends Model
         'status',
         'type',
         'deadline',
-        'id_topic'
+        'id_topic',
+        'addaptive'
     ];
 
     // (8) belongsTo Topic

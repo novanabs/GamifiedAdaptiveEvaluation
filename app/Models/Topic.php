@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Topic extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $table = 'topics';
     protected $fillable = ['title', 'description', 'id_subject', 'created_by'];
@@ -22,5 +22,10 @@ class Topic extends Model
     public function activities()
     {
         return $this->hasMany(Activity::class, 'id_topic');
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'id_topic');
     }
 }

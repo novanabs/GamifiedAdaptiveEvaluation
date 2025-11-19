@@ -1,8 +1,9 @@
 @extends('layouts.main')
 
+@section('dataSubject', request()->is('datamatapelajaran') ? 'active' : '')
 @section('content')
 <div class="container mt-4">
-    <h3 class="fw-bold mb-3">Data Subject Berdasarkan Kelas</h3>
+    <h3 class="fw-bold mb-3">Data Mata Pelajaran Berdasarkan Kelas</h3>
 
     {{-- Pesan sukses --}}
     @if(session('success'))
@@ -11,13 +12,13 @@
 
     {{-- Form tambah subject --}}
     <div class="card mb-4">
-        <div class="card-header">Tambah Subject</div>
+        <div class="card-header bg-primary text-white fw-semibold">Tambah Mata Pelajaran</div>
         <div class="card-body">
             <form action="{{ route('guru.subject.tambah') }}" method="POST">
                 @csrf
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="text" name="name" class="form-control" placeholder="Nama Subject" required>
+                        <input type="text" name="name" class="form-control" placeholder="Nama Mata Pelajaran" required>
                     </div>
                     <div class="col-md-4">
                         <select name="id_class" class="form-control" required>
@@ -38,7 +39,7 @@
     {{-- Daftar subject per kelas --}}
     @foreach($data as $item)
         <div class="card mb-3">
-            <div class="card-header bg-light fw-bold">Kelas: {{ $item->kelas->name }}</div>
+            <div class="card-header bg-secondary text-white fw-semibold">Kelas: {{ $item->kelas->name }}</div>
             <div class="card-body">
                 @if($item->subjects->isEmpty())
                     <p class="text-muted">Belum ada subject.</p>
