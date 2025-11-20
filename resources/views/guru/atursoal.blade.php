@@ -193,18 +193,18 @@
                                 // Jika sudah ada, jangan duplikat
                                 if (!document.querySelector("#selectedItem-" + id)) {
                                     document.querySelector("#selectedArea").innerHTML += `
-                                                                                                                                <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
-                                                                                                                                     id="selectedItem-${q.id}">
-                                                                                                                                    <div>
-                                                                                                                                        <small class="text-muted">${q.difficulty} — ${q.type}</small>
-                                                                                                                                        <div>${q.text}</div>
+                                                                                                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
+                                                                                                                                 id="selectedItem-${q.id}">
+                                                                                                                                <div>
+                                                                                                                                    <small class="text-muted">${q.difficulty} — ${q.type}</small>
+                                                                                                                                    <div>${q.text}</div>
 
-                                                                                                                                    </div>
-                                                                                                                                    <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${q.id})">
-                                                                                                                                        <i class="bi bi-x-circle"></i>
-                                                                                                                                    </button>
                                                                                                                                 </div>
-                                                                                                                            `;
+                                                                                                                                <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${q.id})">
+                                                                                                                                    <i class="bi bi-x-circle"></i>
+                                                                                                                                </button>
+                                                                                                                            </div>
+                                                                                                                        `;
                                 }
                                 updateCounter();
                             });
@@ -313,19 +313,19 @@
 
                     res.data.forEach(x => {
                         area.innerHTML += `
-                                                <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
-                                                    id="selectedItem-${x.id}">
-                                                    <div>
-                                                        <small class="text-muted">${x.difficulty} — ${x.type}</small>
-                                                        <div>${x.text}</div>
-                                                    </div>
-
-                                                    <button class="btn btn-sm btn-danger"
-                                                        onclick="hapusDariTerpilih(${x.id})">
-                                                        <i class="bi bi-x-circle"></i>
-                                                    </button>
+                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
+                                                id="selectedItem-${x.id}">
+                                                <div>
+                                                    <small class="text-muted">${x.difficulty} — ${x.type}</small>
+                                                    <div>${x.text}</div>
                                                 </div>
-                                            `;
+
+                                                <button class="btn btn-sm btn-danger"
+                                                    onclick="hapusDariTerpilih(${x.id})">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </div>
+                                        `;
                     });
 
                     // update tombol kanan
@@ -378,10 +378,10 @@
                         icon: "warning",
                         title: "Total Soal Tidak Sesuai",
                         html: `
-                                Total soal yang dipilih: <b>${jumlahDipilih}</b><br>
-                                Total soal yang seharusnya: <b>${totalRequired}</b><br><br>
-                                (Mudah: ${reqEasy}, Sedang: ${reqMedium}, Sulit: ${reqHard})
-                            `,
+                            Total soal yang dipilih: <b>${jumlahDipilih}</b><br>
+                            Total soal yang seharusnya: <b>${totalRequired}</b><br><br>
+                            (Mudah: ${reqEasy}, Sedang: ${reqMedium}, Sulit: ${reqHard})
+                        `,
                     });
                     return false;
                 }
