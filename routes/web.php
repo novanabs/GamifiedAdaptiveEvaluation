@@ -21,6 +21,13 @@ Route::get('/aktivitassiswa', [aktivitasController::class, 'aktivitasSiswa'])
     ->name('siswa.aktivitas');
 
 Route::get('/activity/{id}', [aktivitasController::class, 'show'])->name('activity.show');
+Route::get('/activity/{id}/start', [aktivitasController::class, 'start']);
+Route::get('/activity/{id}/question', [aktivitasController::class, 'getQuestion']);
+Route::post('/activity/{id}/submit', [aktivitasController::class, 'submitAnswer']);
+Route::post('/activity/{id}/finish', [aktivitasController::class, 'finishTest']);
+
+
+
 Route::post('/activity/saveResult', [aktivitasController::class, 'saveResult'])->name('activity.saveResult');
 
 
@@ -100,8 +107,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/soal/hapus/{id}', [guruController::class, 'hapusSoal'])->name('hapusSoal');
     Route::post('/edit-topik-soal/{id}', [guruController::class, 'editTopikSoal'])->name('editTopikSoal');
 
-    //tambah aktivitas soal
-    Route::post('/guru/aktivitas/{id}/atur-soal', [guruController::class, 'simpanAturSoal'])->name('guru.simpanAturSoal');
+
     //generate soal otomatis
     Route::get('/generate-soal', [SoalController::class, 'showGenerator'])->name('generateSoal');
     Route::post('/generate-soal', [SoalController::class, 'generateAI'])->name('generateSoal.post');
