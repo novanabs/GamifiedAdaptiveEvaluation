@@ -17,7 +17,7 @@ class aktivitasController extends Controller
     {
         $user = Auth::user();
 
-        // 🔹 Ambil data badge siswa
+        // 🔹 Ambil data badge
         $badge = DB::table('user_badge')
             ->join('badge', 'user_badge.id_badge', '=', 'badge.id')
             ->where('user_badge.id_student', $user->id)
@@ -31,7 +31,7 @@ class aktivitasController extends Controller
             ->select('classes.id', 'classes.name', 'classes.level', 'classes.token')
             ->get();
 
-        // 🔹 Ambil aktivitas + join nilai
+        // 🔹 Ambil aktivitas + nilai
         $rawActivities = DB::table('activities')
             ->join('topics', 'activities.id_topic', '=', 'topics.id')
             ->join('subject', 'topics.id_subject', '=', 'subject.id')
@@ -59,33 +59,18 @@ class aktivitasController extends Controller
             ->orderBy('activities.created_at', 'asc')
             ->get();
 
-        // 🔹 Kelompokkan aktivitas berdasarkan topik
+        // 🔹 Kelompokkan per-topik TANPA batasi status (semua aktivitas masuk list)
         $activities = $rawActivities->groupBy('id_topic')->map(function ($group) {
-            $data = [
+            return (object) [
                 'id_topic' => $group->first()->id_topic,
                 'topik' => $group->first()->topik,
                 'mapel' => $group->first()->mapel,
                 'tanggal' => $group->first()->created_at,
-                'basic' => null,
-                'additional' => null,
-                'remedial' => null,
+                'list' => $group        // ← di sini semua aktivitas dimasukkan
             ];
-
-
-            foreach ($group as $act) {
-                $status = strtolower($act->status);
-                if ($status === 'basic')
-                    $data['basic'] = $act;
-                if ($status === 'additional')
-                    $data['additional'] = $act;
-                if ($status === 'remedial')
-                    $data['remedial'] = $act;
-            }
-
-            return (object) $data;
         });
 
-        // 🔹 Hitung statistik
+        // 🔹 Statistik
         $jumlahAktivitas = $rawActivities->count();
         $jumlahRemedial = $rawActivities->where('result_status', 'Remedial')->count();
 
@@ -99,6 +84,7 @@ class aktivitasController extends Controller
             'jumlahRemedial' => $jumlahRemedial
         ]);
     }
+
 
     public function show($id)
     {
@@ -183,9 +169,9 @@ class aktivitasController extends Controller
             }
 
         } else {
-            // Mode normal tetap pakai indeks
+            // Mode normal urut biasa
             $question = $activity->questions()
-                ->whereNotIn('id', $used)
+                ->orderBy('id')
                 ->skip($index)
                 ->first();
         }
@@ -198,9 +184,13 @@ class aktivitasController extends Controller
             ]);
         }
 
-        // Simpan ID soal ini agar tidak muncul lagi
-        $used[] = $question->id;
-        session(["activity.$id.used_questions" => $used]);
+        // ========================
+        // HANYA ADAPTIVE yang pakai used_questions
+        // ========================
+        if ($adaptive) {
+            $used[] = $question->id;
+            session(["activity.$id.used_questions" => $used]);
+        }
 
         return response()->json([
             'question_id' => $question->id,
@@ -209,6 +199,7 @@ class aktivitasController extends Controller
             'question' => json_decode($question->question),
             'options' => json_decode($question->MC_option),
         ]);
+
     }
 
     public function submitAnswer(Request $req, $id)
@@ -362,24 +353,6 @@ class aktivitasController extends Controller
     }
 
 
-    public function saveResult(Request $request)
-    {
-        $request->validate([
-            'id_activity' => 'required',
-            'id_user' => 'required',
-            'result' => 'required|numeric',
-            'result_status' => 'required|string',
-        ]);
 
-        ActivityResult::create([
-            'id_activity' => $request->id_activity,
-            'id_user' => $request->id_user,
-            'result' => $request->result,
-            'result_status' => $request->result_status,
-            'poin' => null,
-        ]);
-
-        return redirect()->route('siswa.aktivitas')->with('success', 'Nilai berhasil disimpan!');
-    }
 
 }

@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('aktivitas')
-@if(request()->is('*aktivitassiswa*')) active @endif
+    @if(request()->is('*aktivitassiswa*')) active @endif
 @endsection
 
 @section('content')
@@ -44,17 +44,15 @@
         </div>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 gx-4 gy-4">
-            @forelse ($activities as $act)
-                @foreach (['basic', 'additional', 'remedial'] as $type)
-                    @php
-                        $sub = $act->$type;
-                        if (!$sub)
-                            continue;
+            @forelse ($activities as $topic)
 
+                {{-- Loop semua aktivitas dalam topik --}}
+                @foreach ($topic->list as $sub)
+                    @php
                         $nilai = $sub->result;
                         $status = $sub->result_status;
 
-                        // Tentukan warna badge berdasarkan status
+                        // Badge status
                         if (strtolower($status) === 'remedial') {
                             $cls = 'danger';
                         } elseif (strtolower($status) === 'pass') {
@@ -63,9 +61,8 @@
                             $cls = 'secondary';
                         }
 
-                        // Tombol disable jika sudah ada nilai
+                        // Disable jika sudah dinilai
                         $isDisabled = !is_null($nilai) && $nilai !== '-';
-
                     @endphp
 
                     <div class="col">
@@ -75,16 +72,18 @@
 
                             <div class="card-body d-flex flex-column p-3">
                                 <h5 class="card-title mb-2 text-primary fw-semibold">{{ $sub->aktivitas }}</h5>
+
                                 <p class="mb-2">
                                     <span class="badge bg-primary me-2 text-white">{{ $sub->mapel }}</span>
                                     <span class="badge bg-info text-white">{{ $sub->topik }}</span>
-                                    <span class="badge bg-secondary text-white ms-2">{{ ucfirst($type) }}</span>
+                                    <span class="badge bg-secondary text-white ms-2">{{ ucfirst($sub->status) }}</span>
                                 </p>
 
                                 <p class="text-muted mb-1">
                                     <i class="bi bi-collection me-1"></i>
                                     Status: <strong>{{ ucfirst($sub->status) }}</strong>
                                 </p>
+
                                 <p class="text-muted mb-2">
                                     <i class="bi bi-calendar-event me-1"></i>
                                     {{ \Carbon\Carbon::parse($sub->created_at)->format('d M Y') }}
@@ -107,6 +106,7 @@
                             </div>
                         </div>
                     </div>
+
                 @endforeach
             @empty
                 <div class="col-12 text-center py-5">
@@ -115,6 +115,7 @@
                 </div>
             @endforelse
         </div>
+
     </div>
 @endsection
 
