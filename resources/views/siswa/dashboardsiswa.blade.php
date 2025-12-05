@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('dashboard')
-@if(request()->is('*dashboard*')) active @endif
+    @if(request()->is('*dashboard*')) active @endif
 @endsection
 
 
@@ -89,7 +89,7 @@
             font-size: 0.9rem;
         }
 
-        .table > thead > tr > th {
+        .table>thead>tr>th {
             color: white !important
         }
     </style>
@@ -98,64 +98,116 @@
 
         <!-- 🔹 Profile + Statistik -->
         <div class="row g-3 mb-4">
-            <!-- Profile -->
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="card shadow-sm text-center h-100 status-card border-start-primary">
-                    <div class="card-body d-flex flex-column align-items-center">
-                        <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" alt="Foto Profile"
-                            class="rounded-circle profile-img mb-3">
-                        <h5 class="fw-bold mb-1 text-primary">{{ $user->name }}</h5>
-                        <p class="text-muted mb-0">Email: {{ $user->email }}</p>
-                        <small class="text-muted">
-                            Kelas:
-                            @if($kelasList->isNotEmpty())
-                                {{ $kelasList->pluck('name')->implode(', ') }}
-                            @else
-                                -
-                            @endif
-                        </small>
 
-                    </div>
-                </div>
-            </div>
-
-            <!-- Jumlah Aktivitas -->
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="card shadow-sm text-center h-100 status-card border-start-success">
-                    <div class="card-body d-flex flex-column justify-content-center">
-                        <h6 class="text-uppercase text-muted fw-semibold mb-2">Jumlah Aktivitas</h6>
-                        <h2 class="fw-bold text-success mb-0">{{ $jumlahAktivitas }}</h2>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Jumlah Remedial -->
-            <div class="col-12 col-sm-6 col-md-3">
-                <div class="card shadow-sm text-center h-100 status-card border-start-danger">
-                    <div class="card-body d-flex flex-column justify-content-center">
-                        <h6 class="text-uppercase text-muted fw-semibold mb-2">Jumlah Remedial</h6>
-                        <h2 class="fw-bold text-danger mb-0">{{ $jumlahRemedial }}</h2>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Informasi Badge -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <!-- COMBINED: Profile + Stats + Badge (gabungan jadi 1 card) -->
+            <div class="col-12 col-md-6">
                 <div class="card shadow-sm h-100 status-card border-start-primary">
-                    <div class="card-body d-flex flex-column justify-content-center">
-                        <h6 class="text-uppercase text-muted fw-semibold mb-2">Informasi</h6>
-                        @if($badge)
-                            <p class="text-dark mb-0">
-                                🎖️ {{ $badge->name }} <br>
-                                <small class="text-muted">{{ $badge->description }}</small>
-                            </p>
-                        @else
-                            <p class="text-dark mb-0">Belum ada badge 📬</p>
-                        @endif
+                    <div class="card-body">
+                        <div class="d-flex gap-3 align-items-center">
+                            {{-- Profile Image + Name --}}
+                            <div class="text-center" style="min-width:120px">
+                                <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                                    alt="Foto Profile" class="rounded-circle profile-img mb-2">
+                                <h6 class="fw-bold mb-0 text-primary" style="font-size:1rem">{{ $user->name }}</h6>
+                                <small class="text-muted d-block">{{ $user->email }}</small>
+                            </div>
+
+                            {{-- Right: stats and badge --}}
+                            <div class="flex-fill">
+                                <div class="d-flex gap-2 mb-3 flex-wrap">
+                                    <div class="card p-2 flex-fill shadow-sm border-start-success" style="min-width:120px">
+                                        <div class="small text-muted">Jumlah Aktivitas</div>
+                                        <div class="fw-bold text-success" style="font-size:1.25rem">{{ $jumlahAktivitas }}
+                                        </div>
+                                    </div>
+
+                                    <div class="card p-2 flex-fill shadow-sm border-start-danger" style="min-width:120px">
+                                        <div class="small text-muted">Jumlah Remedial</div>
+                                        <div class="fw-bold text-danger" style="font-size:1.25rem">{{ $jumlahRemedial }}
+                                        </div>
+                                    </div>
+
+                                    <div class="card p-2 flex-fill shadow-sm border-start-primary" style="min-width:120px">
+                                        <div class="small text-muted">Kelas</div>
+                                        <div class="fw-bold" style="font-size:0.95rem">
+                                            @if($kelasList->isNotEmpty())
+                                                {{ $kelasList->pluck('name')->implode(', ') }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-top">
+                                    <div class="small text-muted">Informasi Badge</div>
+
+                                    @if(isset($userBadges) && $userBadges->isNotEmpty())
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            @foreach($userBadges as $ub)
+                                                <div class="d-flex align-items-center gap-2 p-2 border rounded"
+                                                    style="min-width:160px;">
+                                                    {{-- gambar badge --}}
+                                                    @php
+                                                        // fallback jika path_icon kosong atau file tidak ada
+                                                        $icon = $ub->path_icon ? asset($ub->path_icon) : asset('img/default.png');
+                                                    @endphp
+
+                                                    <img src="{{ $icon }}" alt="{{ $ub->name }}" width="48" height="48"
+                                                        style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
+
+                                                    <div>
+                                                        <div class="fw-semibold" style="font-size:0.95rem;">{{ $ub->name }}</div>
+                                                        <div class="small text-muted">{{ $ub->description }}</div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="mt-1 text-muted">Belum ada badge</div>
+                                    @endif
+                                </div>
+
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <!-- LEADERBOARD  -->
+            <!-- Leaderboard swappable per kelas -->
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h6 class="fw-semibold mb-0">
+                                <i class="bi bi-trophy-fill text-warning me-1"></i> Leaderboard
+                            </h6>
+
+                            @if($kelasList->count() > 1)
+                                <select id="kelasSelector" class="form-select form-select-sm" style="width:200px;">
+                                    @foreach($leaderboardsPerClass as $cl)
+                                        <option value="{{ $cl->class_id }}">{{ $cl->class_name }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <small class="text-muted">Kelas: {{ $kelasList->first()->name ?? '-' }}</small>
+                            @endif
+                        </div>
+
+                        <div id="leaderboardArea" style="max-height:350px; overflow-y:auto; padding-right:6px;">
+                            <!-- content akan di-render oleh JS; inisialisasi ke kelas pertama -->
+                        </div>
+
+                        <div class="mt-3 text-end">
+                            <a href="#" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
+
 
         <!-- 🔹 Daftar Nilai -->
         <div class="card shadow-sm border-0">
@@ -174,94 +226,7 @@
                                 <th>Nilai Remedial</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @php $no = 1; @endphp
-                            @forelse($activities as $act)
-                                <tr>
-                                    <td class="text-center">{{ $no++ }}</td>
-                                    <td class="text-center">{{ \Carbon\Carbon::parse($act->tanggal)->format('Y-m-d') }}</td>
-                                    <td>{{ $act->mapel }}</td>
-                                    <td>{{ $act->topik }}</td>
 
-                                    {{-- ✅ Nilai Dasar --}}
-                                    <td>
-                                        @if($act->basic)
-                                            <div class="nilai-box d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <div class="nilai-title">{{ $act->basic->aktivitas }}</div>
-                                                    <small class="text-muted">{{ ucfirst($act->basic->status) }}</small>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div
-                                                        class="nilai-score {{ $act->basic->result < 60 ? 'text-danger' : 'text-success' }}">
-                                                        {{ $act->basic->result ?? '-' }}
-                                                    </div>
-                                                    <span
-                                                        class="badge bg-soft-{{ $act->basic->result_status == 'Remedial' ? 'danger' : 'success' }} 
-                                                                                                        border border-{{ $act->basic->result_status == 'Remedial' ? 'danger' : 'success' }}">
-                                                        {{ $act->basic->result_status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="text-center text-muted">-</div>
-                                        @endif
-                                    </td>
-
-                                    {{-- ✅ Nilai Tambahan --}}
-                                    <td>
-                                        @if($act->additional)
-                                            <div class="nilai-box d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <div class="nilai-title">{{ $act->additional->aktivitas }}</div>
-                                                    <small class="text-muted">{{ ucfirst($act->additional->status) }}</small>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="nilai-score {{ $act->additional->result < 60 ? 'text-danger' : 'text-success' }}">{{ $act->additional->result ?? '-' }}
-                                                    </div>
-                                                    <span
-                                                        class="badge bg-soft-{{ $act->additional->result_status == 'Remedial' ? 'danger' : 'success' }} 
-                                                                                                        border border-{{ $act->additional->result_status == 'Remedial' ? 'danger' : 'success' }}">
-                                                        {{ $act->additional->result_status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="text-center text-muted">-</div>
-                                        @endif
-                                    </td>
-
-                                    {{-- ✅ Nilai Remedial --}}
-                                    <td>
-                                        @if($act->remedial)
-                                            <div class="nilai-box d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <div class="nilai-title">{{ $act->remedial->aktivitas }}</div>
-                                                    <small class="text-muted">{{ ucfirst($act->remedial->status) }}</small>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div
-                                                        class="nilai-score {{ $act->remedial->result >= 60 ? 'text-success' : 'text-danger' }}">
-                                                        {{ $act->remedial->result ?? '-' }}
-                                                    </div>
-                                                    <span
-                                                        class="badge bg-soft-{{ $act->remedial->result_status == 'Remedial' ? 'danger' : 'success' }} 
-                                                                                                        border border-{{ $act->remedial->result_status == 'Remedial' ? 'danger' : 'success' }}">
-                                                        {{ $act->remedial->result_status }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="text-center text-muted">-</div>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">Belum ada aktivitas</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
                     </table>
 
                 </div>
@@ -289,6 +254,65 @@
                 });
             });
         </script>
-        
+        <script>
+            // ambil data dari backend (array of {class_id, class_name, students})
+            const leaderboardsPerClass = @json($leaderboardsPerClass);
+            const myUserId = {{ $user->id }};
+            // helper render
+            function renderLeaderboardForClass(classId) {
+                const block = leaderboardsPerClass.find(c => c.class_id == classId);
+                const area = document.getElementById('leaderboardArea');
+
+                if (!block || !block.students || block.students.length === 0) {
+                    area.innerHTML = `
+                                <div class="text-center py-4 text-muted">
+                                    <div class="mb-2">Belum ada peringkat</div>
+                                    <small>Leaderboard akan tampil setelah siswa mengerjakan aktivitas</small>
+                                </div>
+                            `;
+                    return;
+                }
+
+                let html = '<ul class="list-group list-group-flush">';
+
+                block.students.forEach((row, idx) => {
+                    const isMe = (row.id == myUserId);
+                    const score = Number(row.total_score) || 0;
+                    const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : (idx + 1)));
+                    html += `
+                                <li class="list-group-item d-flex align-items-center justify-content-between ${isMe ? 'bg-light' : ''}"
+                                    style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="fw-bold text-primary" style="min-width:36px;">${medal}</div>
+                                        <div>
+                                            <div class="fw-semibold">${row.name}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">${Number(score).toLocaleString()}</div>
+                                        <small class="text-muted">poin</small>
+                                    </div>
+                                </li>
+                            `;
+                });
+
+                html += '</ul>';
+                area.innerHTML = html;
+            }
+
+            // inisialisasi: gunakan kelas pertama jika ada
+            if (leaderboardsPerClass.length > 0) {
+                renderLeaderboardForClass(leaderboardsPerClass[0].class_id);
+            }
+
+            // swap handler
+            const sel = document.getElementById('kelasSelector');
+            if (sel) {
+                sel.addEventListener('change', function () {
+                    renderLeaderboardForClass(this.value);
+                });
+            }
+        </script>
+
     @endpush
 @endsection

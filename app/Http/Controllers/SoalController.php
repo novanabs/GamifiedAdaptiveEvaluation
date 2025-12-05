@@ -34,14 +34,11 @@ class SoalController extends Controller
     $jenjang = $request->jenjang;
     $jumlah = (int) $request->jumlah;
 
-    // 🔹 Hitung jumlah soal per tingkat kesulitan
-    $perDifficulty = ceil($jumlah / 3);
-
     // prompt sesuai instruksi kamu
     $prompt = <<<PROMPT
 Tolong buatkan soal dan jawaban untuk topik {$topic->title} jenjang {$jenjang} dengan catatan:
 - format JSON
-- Total ada {$jumlah} soal, dibagi rata ke tiga tingkat kesulitan: mudah, sedang, dan sulit (sekitar {$perDifficulty} soal per tingkat kesulitan).
+- Total ada {$jumlah} soal setiap tingkat kesulitan mudah, sedang, dan sulit., 
 - format pertanyaan terdiri dari URL (gambar) dan teks. Pertanyaan tanpa gambar dapat mengisi URL dengan null.
 - MC_option (multiple choice option) format: [{\"a\": {url, teks}, ..., \"e\": {url, teks}}]. Pilihan ganda memiliki 5 opsi (a sampai e)
 - SA_option (shortanswer option) berisi 3 pilihan jawaban isian singkat dengan format [jawaban1, jawaban2, jawaban3].

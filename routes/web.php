@@ -6,33 +6,37 @@ use App\Http\Controllers\guruController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\siswaController;
 use App\Http\Controllers\SoalController;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('landing');
 });
 
-Route::get('/dashboardsiswa', [siswaController::class, 'dashboardSiswa'])
-    ->name('dashboard.siswa')
-    ->middleware('auth');
-
-Route::get('/aktivitassiswa', [aktivitasController::class, 'aktivitasSiswa'])
-    ->middleware('auth')
-    ->name('siswa.aktivitas');
-
-Route::get('/activity/{id}', [aktivitasController::class, 'show'])->name('activity.show');
-Route::get('/activity/{id}/start', [aktivitasController::class, 'start']);
-Route::get('/activity/{id}/question', [aktivitasController::class, 'getQuestion']);
-Route::post('/activity/{id}/submit', [aktivitasController::class, 'submitAnswer']);
-Route::post('/activity/{id}/finish', [aktivitasController::class, 'finishTest']);
-
 
 
 Route::post('/activity/saveResult', [aktivitasController::class, 'saveResult'])->name('activity.saveResult');
 
+Route::middleware(['auth', RoleMiddleware::class . ':student'])->group(function () {
 
-//guru
-Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboardsiswa', [siswaController::class, 'dashboardSiswa'])
+        ->name('dashboard.siswa')
+        ->middleware('auth');
+
+    Route::get('/aktivitassiswa', [aktivitasController::class, 'aktivitasSiswa'])
+        ->middleware('auth')
+        ->name('siswa.aktivitas');
+
+    Route::get('/activity/{id}', [aktivitasController::class, 'show'])->name('activity.show');
+    Route::get('/activity/{id}/start', [aktivitasController::class, 'start']);
+    Route::get('/activity/{id}/question', [aktivitasController::class, 'getQuestion']);
+    Route::post('/activity/{id}/submit', [aktivitasController::class, 'submitAnswer']);
+    Route::post('/activity/{id}/finish', [aktivitasController::class, 'finishTest']);
+
+
+});
+
+Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function () {
     Route::get('/dashboardguru', [guruController::class, 'dashboardGuru'])->name('dashboardGuru');
     //manajemen siswa
     Route::get('/datasiswa', [guruController::class, 'dataSiswa'])->name('dataSiswa');
@@ -42,6 +46,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/datakelas', [guruController::class, 'kelasGuru'])->name('kelasGuru');
     Route::post('/kelas/tambah', [guruController::class, 'tambahKelas'])->name('kelas.tambah');
     Route::post('/kelas/gabung', [guruController::class, 'gabungKelas'])->name('kelas.gabung');
+    // Edit / Update / Delete (pastikan berada di group middleware auth)
+    Route::put('/kelas/{id}', [guruController::class, 'updateKelas'])->name('kelas.update');
+    Route::delete('/kelas/{id}', [guruController::class, 'hapusKelas'])->name('kelas.hapus');
+
     //manajemen subject
     Route::get('/datamatapelajaran', [guruController::class, 'dataSubject'])->name('guru.dataSubject');
     Route::post('/guru/subject/tambah', [guruController::class, 'tambahSubject'])->name('guru.subject.tambah');
@@ -58,43 +66,48 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/aktivitas/ubah/{id}', [guruController::class, 'ubahAktivitas'])->name('guru.aktivitas.ubah');
     Route::delete('/aktivitas/hapus/{id}', [guruController::class, 'hapusAktivitas'])->name('guru.aktivitas.hapus');
     // =============================
-// 🟦 1. Halaman Atur Soal (GET)
-// =============================
+    // 🟦 1. Halaman Atur Soal (GET)
+    // =============================
     Route::get(
         '/guru/aktivitas/{id}/atur-soal',
         [aturAktivitasController::class, 'halamanAturSoal']
     )->name('guru.aktivitas.aturSoal');
 
     // =============================
-// 🟩 2. AJAX Ambil Soal (POST)
-// =============================
+    // 🟩 2. AJAX Ambil Soal (POST)
+    // =============================
     Route::post(
         '/guru/ambil-soal/{id}',
         [aturAktivitasController::class, 'ambilSoalAjax']
     );
 
     // =============================
-// 🟧 3. Simpan Pilihan Soal (POST)
-// =============================
+    // 🟧 3. Simpan Pilihan Soal (POST)
+    // =============================
     Route::post(
         '/guru/simpan-atur-soal/{id}',
         [aturAktivitasController::class, 'simpanAturSoal']
     )->name('guru.simpanAturSoal');
     // =============================
-// ➕ Tambah 1 Soal ke Terpilih (POST)
-// =============================
+    // ➕ Tambah 1 Soal ke Terpilih (POST)
+    // =============================
     Route::post(
         '/guru/tambah-soal-manual/{id}',
         [aturAktivitasController::class, 'tambahSoalManual']
     );
 
     // =============================
-// ❌ Hapus 1 Soal dari Terpilih (POST)
-// =============================
+    // ❌ Hapus 1 Soal dari Terpilih (POST)
+    // =============================
     Route::post(
         '/guru/hapus-soal-manual/{id}',
         [aturAktivitasController::class, 'hapusSoalManual']
     );
+    Route::post(
+        '/guru/clear-all/{id}',
+        [aturAktivitasController::class, 'clearAll']
+    );
+
     Route::get('/get-question/{id}', [aturAktivitasController::class, 'getQuestion']);
 
 
@@ -113,7 +126,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/generate-soal', [SoalController::class, 'generateAI'])->name('generateSoal.post');
     Route::post('/import-question-json', [SoalController::class, 'importQuestionJson'])->name('importQuestionJson');
 
+
+
 });
+
 
 //route login dan logut
 Route::get('/login', [loginController::class, 'showLoginForm'])->name('login');

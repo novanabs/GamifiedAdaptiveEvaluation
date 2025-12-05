@@ -141,20 +141,18 @@
                         <span>Data Topik</span>
                     </a>
                 </li>
-
-                <!-- Nav Item - Data Aktivitas -->
-                <li class="nav-item">
-                    <a class="nav-link @yield('dataAktivitas')" href="{{  url('/dataaktivitas') }}">
-                        <i class="fas fa-fw fa-tasks"></i>
-                        <span>Data Aktivitas</span>
-                    </a>
-                </li>
-
                 <!-- Nav Item - Data Soal -->
                 <li class="nav-item">
                     <a class="nav-link @yield('dataSoal')" href="{{ url('/datasoal') }}">
                         <i class="fas fa-fw fa-question-circle"></i>
                         <span>Data Soal</span>
+                    </a>
+                </li>
+                <!-- Nav Item - Data Aktivitas -->
+                <li class="nav-item">
+                    <a class="nav-link @yield('dataAktivitas')" href="{{  url('/dataaktivitas') }}">
+                        <i class="fas fa-fw fa-tasks"></i>
+                        <span>Data Aktivitas</span>
                     </a>
                 </li>
             @endif

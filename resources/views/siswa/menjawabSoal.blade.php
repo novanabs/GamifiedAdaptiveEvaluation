@@ -47,6 +47,53 @@
         #onFire.active {
             animation: firePulse 1s infinite;
         }
+
+        /* Minimal styling — letakkan di <head> jika ingin */
+        .soal-meta {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: .9rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .question-panel {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 6px 18px rgba(17, 24, 39, .04);
+        }
+
+        #timer {
+            font-weight: 700;
+            color: #d9534f;
+            /* merah jam */
+            font-size: 1.05rem;
+        }
+
+        .option {
+            border: 1px solid #eef2f6;
+            border-radius: 8px;
+            padding: .7rem .9rem;
+            margin-bottom: .6rem;
+            cursor: pointer;
+            transition: background .12s ease, transform .08s ease;
+        }
+
+        .option:hover {
+            background: #fbfdff;
+            transform: translateY(-1px);
+        }
+
+        .option.selected {
+            background: rgba(13, 110, 253, .06);
+            border-color: rgba(13, 110, 253, .25);
+        }
+
+        /* tombol di kanan tetap rapi pada layar kecil */
+        .btn-next {
+            min-width: 120px;
+        }
     </style>
 
 </head>
@@ -61,36 +108,61 @@
 
         <!-- INFORMASI AWAL -->
         <div id="info-test" class="text-center">
-            <div class="card mx-auto p-4 shadow-sm" style="max-width:600px">
-                <p class="fw-bold">Keterangan Aktivitas</p>
-                <p><b>Jumlah Soal:</b> <span id="jumlahSoal">-</span></p>
-                <p><b>Durasi:</b> 30 Menit</p>
-                <p class="text-muted">Waktu mulai setelah menekan tombol <b>Mulai</b></p>
+            <div class="card mx-auto shadow-sm border-0" style="max-width: 550px;">
+                <div class="card-body p-4">
 
-                <button class="btn btn-primary me-2" onclick="mulai()">Mulai</button>
-                <a href="{{ route('dashboard.siswa') }}" class="btn btn-outline-secondary">Kembali</a>
+                    <h5 class="fw-bold mb-3">Keterangan Aktivitas</h5>
+
+
+                    <div class="mb-2">
+                        <span class="fw-semibold">Durasi:</span>
+                        <span id="infoDurasi" class="text-primary fw-bold">30 Menit</span>
+                    </div>
+
+
+                    <p class="text-muted small mb-4">
+                        Waktu akan mulai dihitung setelah Anda menekan tombol <b>Mulai</b>.
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-primary px-4" onclick="mulai()">Mulai</button>
+                        <a href="{{ route('dashboard.siswa') }}" class="btn btn-outline-secondary px-4">Kembali</a>
+                    </div>
+
+                </div>
             </div>
         </div>
 
+
         <!-- AREA SOAL -->
         <div id="soal-test" hidden>
-
-            <div class="question-panel">
-
-                <!-- TIMER -->
-                <div class="text-end mb-3">
-                    ⏰ <span id="timer">30:00</span>
+            <!-- ringkasan singkat -->
+            <div class="soal-meta d-flex justify-content-between align-items-start">
+                <div>
+                    <div><strong>Kelas:</strong> {{ $kelas }}</div>
+                    <div><strong>Mata Pelajaran:</strong> {{ $mapel }}</div>
+                    <div><strong>Topik:</strong> {{ $topik }}</div>
                 </div>
 
-                <div id="questionText" class="mb-3 fw-semibold"></div>
-                <div id="optionsContainer" class="mb-4"></div>
-
-                <div class="d-flex justify-content-end">
-                    <button id="nextBtn" class="btn btn-success" onclick="checkAnswer()">Selanjutnya</button>
+                <div class="text-end">
+                    <small class="text-muted">Waktu tersisa</small>
+                    <div id="timer">30:00</div>
                 </div>
-
             </div>
 
+            <!-- panel soal -->
+            <div class="question-panel">
+                <!-- header / soal -->
+                <div id="questionText" class="mb-3 fw-semibold"></div>
+
+                <!-- opsi akan di-render di sini -->
+                <div id="optionsContainer" class="mb-4"></div>
+
+                <!-- footer -->
+                <div class="d-flex justify-content-end">
+                    <button id="nextBtn" class="btn btn-success btn-next" onclick="checkAnswer()">Selanjutnya</button>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -141,18 +213,27 @@
             fetch(`/activity/{{ $id_activity }}/start`)
                 .then(r => r.json())
                 .then(data => {
-
                     totalQuestions = data.totalQuestions;
                     answers = Array(totalQuestions).fill(null);
 
-                    document.getElementById("jumlahSoal").innerText = totalQuestions;
                     document.getElementById("info-test").hidden = true;
                     document.getElementById("soal-test").hidden = false;
 
+                    // set timer berdasarkan durasi yang dikirim server (menit). fallback: 30 menit
+                    const durasiMenit = (data.durasi_pengerjaan && Number.isInteger(data.durasi_pengerjaan))
+                        ? data.durasi_pengerjaan
+                        : 30;
+                    timeLeft = durasiMenit * 60;
+
                     loadQuestion();
                     startTimer();
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire("Error", "Gagal memulai aktivitas. Coba lagi.", "error");
                 });
         }
+
 
         function loadQuestion() {
 
@@ -309,12 +390,20 @@
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 }
-            }).then(() => {
-                Swal.fire("Selesai!", "Jawaban kamu telah disimpan.", "success")
-                    .then(() => location.href = "{{ route('siswa.aktivitas') }}");
-            });
-        }
+            })
+                .then(r => r.json())
+                .then(res => {
+                    const sec = res.duration_seconds ?? 0;
+                    const m = Math.floor(sec / 60);
+                    const s = sec % 60;
+                    Swal.fire({
+                        title: "Selesai!",
+                        html: `Jawaban kamu telah disimpan.<br>Waktu mengerjakan: <b>${m}m ${s}s</b>`,
+                        icon: "success"
+                    }).then(() => location.href = "{{ route('siswa.aktivitas') }}");
 
+                });
+        }
     </script>
 
 </body>

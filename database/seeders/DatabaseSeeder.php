@@ -60,15 +60,34 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // === 3️⃣ Badge ===
-        $badgeA = Badge::create(['name' => 'Badge A', 'description' => 'Pencapaian A']);
-        $badgeB = Badge::create(['name' => 'Badge B', 'description' => 'Pencapaian B']);
+        $badgeA = Badge::create([
+            'name' => 'Fastest Students',
+            'description' => 'Pencapaian Siswa Paling Cepat Selesai Mengerjakan Satu Aktivitas',
+            'path_icon' => 'img/1.png'
+        ]);
+
+        $badgeB = Badge::create([
+            'name' => 'Top 3 Students',
+            'description' => 'Pencapaian Siswa menjadi peringkat 3 terbaik dalam leaderboard',
+            'path_icon' => 'img/2.png'
+        ]);
+
+        $badgeC = Badge::create([
+            'name' => 'Smartest Students',
+            'description' => 'Pencapaian Siswa dengan menjawab benar semua dalam satu aktivitas',
+            'path_icon' => 'img/3.png'
+        ]);
+
+
+        $badges = [$badgeA->id, $badgeB->id, $badgeC->id];
 
         foreach ([$siswa1, $siswa2] as $siswa) {
             UserBadge::create([
                 'id_student' => $siswa->id,
-                'id_badge' => rand(0, 1) ? $badgeA->id : $badgeB->id,
+                'id_badge' => $badges[array_rand($badges)],
             ]);
         }
+
 
         // === 4️⃣ Kelas ===
         $kelas7 = Classes::create([
@@ -139,7 +158,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'task',
                 'deadline' => now()->addDays(7),
                 'id_topic' => $topicInformatika->id,
-                'addaptive'=> 'yes'
+                'addaptive' => 'yes'
             ]);
         }
 
@@ -150,13 +169,13 @@ class DatabaseSeeder extends Seeder
                 'type' => 'quiz',
                 'deadline' => now()->addDays(7),
                 'id_topic' => $topicIPA->id,
-                'addaptive'=> 'yes'
+                'addaptive' => 'yes'
             ]);
         }
 
         // === 8 Buat Question (2 tipe: MC & SA) ===
         $questionMC = Question::create([
-            'id_topic'=>'1',
+            'id_topic' => '1',
             'type' => 'MultipleChoice',
             'question' => json_encode([
                 'text' => 'Apa fungsi utama spreadsheet?',
@@ -175,7 +194,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $questionMC2 = Question::create([
-            'id_topic'=>'1',
+            'id_topic' => '1',
             'type' => 'MultipleChoice',
             'question' => json_encode([
                 'text' => 'File spreadsheet umumnya memiliki ekstensi apa?',
@@ -194,7 +213,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $questionSA = Question::create([
-            'id_topic'=>'2',
+            'id_topic' => '2',
             'type' => 'ShortAnswer',
             'question' => json_encode([
                 'text' => 'Jelaskan apa yang dimaksud dengan gerak lurus beraturan.',
@@ -210,7 +229,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $questionSA2 = Question::create([
-            'id_topic'=>'2',
+            'id_topic' => '2',
             'type' => 'ShortAnswer',
             'question' => json_encode([
                 'text' => 'Sebutkan satuan kecepatan dalam SI!',

@@ -16,7 +16,8 @@ class Activity extends Model
         'type',
         'deadline',
         'id_topic',
-        'addaptive'
+        'addaptive',
+        'durasi_pengerjaan'
     ];
 
     // (8) belongsTo Topic

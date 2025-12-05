@@ -39,36 +39,41 @@
 
                     <div class="card-footer">
 
-                        <div class="mb-2">
-                            <div>Mudah: <span id="cnt-easy">0</span></div>
-                            <div>Sedang: <span id="cnt-medium">0</span></div>
-                            <div>Sulit: <span id="cnt-hard">0</span></div>
+                        <div class="mb-3">
+                            <div class="fw-semibold mb-1">Jumlah Soal per Tingkat</div>
+                            <div class="d-flex justify-content-between">
+                                <div>Mudah: <span id="cnt-easy">0</span></div>
+                                <div>Sedang: <span id="cnt-medium">0</span></div>
+                                <div>Sulit: <span id="cnt-hard">0</span></div>
+                            </div>
                         </div>
 
-
-
-                        <label class="fw-semibold">Pilih Jumlah Soal</label>
-                        <div class="d-flex gap-2 flex-wrap mb-2">
+                        <label class="fw-semibold mb-2 d-block">Pilih Jumlah Soal</label>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
                             @foreach ([5, 10, 15, 20, 25, 30] as $opt)
-                                <label class="btn btn-outline-primary">
+                                <label class="btn btn-outline-primary d-flex align-items-center">
                                     <input type="radio" name="jumlahRadio" value="{{ $opt }}" class="me-1">
                                     {{ $opt }}
                                 </label>
                             @endforeach
                         </div>
+
                         <input type="hidden" id="jumlah">
 
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="ambilSoal()">
+                                Ambil Soal Otomatis
+                            </button>
+                            <button class="btn btn-danger" onclick="clearAll()">
+                                Hapus Semua Pilihan
+                            </button>
+                            <button class="btn btn-success" onclick="simpanPilihan()">
+                                Simpan Pilihan
+                            </button>
+                        </div>
 
-
-
-                        <button class="btn btn-primary w-100 mb-2" onclick="ambilSoal()">
-                            Ambil Soal Otomatis
-                        </button>
-
-                        <button class="btn btn-success w-100" onclick="simpanPilihan()">
-                            Simpan Pilihan
-                        </button>
                     </div>
+
 
                 </div>
             </div>
@@ -193,18 +198,18 @@
                                 // Jika sudah ada, jangan duplikat
                                 if (!document.querySelector("#selectedItem-" + id)) {
                                     document.querySelector("#selectedArea").innerHTML += `
-                                                                                                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
-                                                                                                                                 id="selectedItem-${q.id}">
-                                                                                                                                <div>
-                                                                                                                                    <small class="text-muted">${q.difficulty} — ${q.type}</small>
-                                                                                                                                    <div>${q.text}</div>
+                                                                                                                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
+                                                                                                                                                 id="selectedItem-${q.id}">
+                                                                                                                                                <div>
+                                                                                                                                                    <small class="text-muted">${q.difficulty} — ${q.type}</small>
+                                                                                                                                                    <div>${q.text}</div>
 
-                                                                                                                                </div>
-                                                                                                                                <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${q.id})">
-                                                                                                                                    <i class="bi bi-x-circle"></i>
-                                                                                                                                </button>
-                                                                                                                            </div>
-                                                                                                                        `;
+                                                                                                                                                </div>
+                                                                                                                                                <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${q.id})">
+                                                                                                                                                    <i class="bi bi-x-circle"></i>
+                                                                                                                                                </button>
+                                                                                                                                            </div>
+                                                                                                                                        `;
                                 }
                                 updateCounter();
                             });
@@ -247,6 +252,53 @@
                 });
         }
 
+        function clearAll() {
+            Swal.fire({
+                title: "Hapus Semua?",
+                text: "Semua soal terpilih akan dihapus.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, hapus!"
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                fetch("{{ url('/guru/clear-all/' . $aktivitas->id) }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    }
+                })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+
+                            // kosongkan area kiri
+                            document.getElementById("selectedArea").innerHTML = "";
+
+                            // reset array JS
+                            window.lastPicked = [];
+
+                            // reset tombol kanan
+                            document.querySelectorAll("tbody tr").forEach(tr => {
+                                let id = parseInt(tr.id.replace("rowRight-", ""));
+                                let btn = tr.querySelector("button");
+
+                                btn.className = "btn btn-sm btn-success";
+                                btn.innerHTML = `<i class="bi bi-plus-circle"></i>`;
+                                btn.setAttribute("onclick", `tambahKeTerpilih(${id})`);
+                            });
+
+                            updateCounter();
+
+                            Swal.fire("Berhasil!", "Semua soal terpilih telah dihapus.", "success");
+                        }
+                    });
+            });
+        }
+
         /* =============================
            🎯 AMBIL SOAL OTOMATIS (AJAX)
         ============================= */
@@ -267,7 +319,7 @@
 
                 var easy = n - 2;
                 var hard = n - 2;
-                var medium = n + 1;
+                var medium = n;
 
                 // kirim ke backend
                 var payload = {
@@ -313,19 +365,19 @@
 
                     res.data.forEach(x => {
                         area.innerHTML += `
-                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
-                                                id="selectedItem-${x.id}">
-                                                <div>
-                                                    <small class="text-muted">${x.difficulty} — ${x.type}</small>
-                                                    <div>${x.text}</div>
-                                                </div>
+                                                            <div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between"
+                                                                id="selectedItem-${x.id}">
+                                                                <div>
+                                                                    <small class="text-muted">${x.difficulty} — ${x.type}</small>
+                                                                    <div>${x.text}</div>
+                                                                </div>
 
-                                                <button class="btn btn-sm btn-danger"
-                                                    onclick="hapusDariTerpilih(${x.id})">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        `;
+                                                                <button class="btn btn-sm btn-danger"
+                                                                    onclick="hapusDariTerpilih(${x.id})">
+                                                                    <i class="bi bi-x-circle"></i>
+                                                                </button>
+                                                            </div>
+                                                        `;
                     });
 
                     // update tombol kanan
@@ -368,7 +420,7 @@
 
                 const reqEasy = Math.max(0, n - 2);
                 const reqHard = Math.max(0, n - 2);
-                const reqMedium = Math.max(0, n + 1);
+                const reqMedium = Math.max(0, n);
 
                 const totalRequired = reqEasy + reqMedium + reqHard;
 
@@ -378,10 +430,10 @@
                         icon: "warning",
                         title: "Total Soal Tidak Sesuai",
                         html: `
-                            Total soal yang dipilih: <b>${jumlahDipilih}</b><br>
-                            Total soal yang seharusnya: <b>${totalRequired}</b><br><br>
-                            (Mudah: ${reqEasy}, Sedang: ${reqMedium}, Sulit: ${reqHard})
-                        `,
+                                            Total soal yang dipilih: <b>${jumlahDipilih}</b><br>
+                                            Total soal yang seharusnya: <b>${totalRequired}</b><br><br>
+                                            (Mudah: ${reqEasy}, Sedang: ${reqMedium}, Sulit: ${reqHard})
+                                        `,
                     });
                     return false;
                 }
@@ -442,6 +494,8 @@
                     });
                 });
         }
+
+
 
 
     </script>

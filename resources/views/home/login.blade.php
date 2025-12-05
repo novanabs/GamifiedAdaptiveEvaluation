@@ -113,7 +113,8 @@
                                 </div>
 
                                 <div class="d-grid mb-3">
-                                    <button id="pilih" type="button" class="btn btn-primary">Masuk</button>
+                                    <!-- tombol sekarang langsung submit -->
+                                    <button id="pilih" type="submit" class="btn btn-primary">Masuk</button>
                                 </div>
                             </form>
 
@@ -126,28 +127,6 @@
                 </div>
             </div>
 
-        </div>
-    </div>
-
-    <!-- Modal pilih peran -->
-    <div class="modal fade" id="choiceModal" tabindex="-1" aria-labelledby="choiceModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="choiceModalLabel">Pilih Peran Anda</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <div class="btn-group d-flex flex-column gap-3 mb-4" role="group">
-                        <button type="button" id="btnGuru" class="btn btn-outline-success btn-lg">👨‍🏫 Guru</button>
-                        <button type="button" id="btnSiswa" class="btn btn-outline-info btn-lg">📚 Siswa</button>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Kembali</button>
-                        <button type="button" id="btnPilih" class="btn btn-primary">Pilih</button>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -166,56 +145,19 @@
             }
         });
 
-        // === Validasi Form + Buka Modal ===
-        document.getElementById("pilih").addEventListener("click", function () {
-            const form = document.getElementById("loginForm");
-            if (!form.checkValidity()) {
-                form.classList.add("was-validated");
-                return;
-            }
+        // === Validasi Form saat submit (HTML5 validation) ===
+        (function () {
+            const form = document.getElementById('loginForm');
 
-            const modal = new bootstrap.Modal(document.getElementById("choiceModal"));
-            modal.show();
-        });
-
-        // === Pilihan peran ===
-        let selectedRole = null;
-        const btnGuru = document.getElementById("btnGuru");
-        const btnSiswa = document.getElementById("btnSiswa");
-
-        btnGuru.addEventListener("click", function () {
-            selectedRole = "teacher";
-            btnGuru.classList.add("btn-success");
-            btnSiswa.classList.remove("btn-info");
-        });
-
-        btnSiswa.addEventListener("click", function () {
-            selectedRole = "student";
-            btnSiswa.classList.add("btn-info");
-            btnGuru.classList.remove("btn-success");
-        });
-
-        // === Tombol pilih (konfirmasi peran dan kirim form) ===
-        document.getElementById("btnPilih").addEventListener("click", function () {
-            if (!selectedRole) {
-                alert("Silakan pilih peran terlebih dahulu!");
-                return;
-            }
-
-            // Tambahkan input hidden berisi peran ke form
-            const form = document.getElementById("loginForm");
-            let roleInput = document.createElement("input");
-            roleInput.type = "hidden";
-            roleInput.name = "role";
-            roleInput.value = selectedRole;
-            form.appendChild(roleInput);
-
-            // Tutup modal, lalu submit form
-            const modal = bootstrap.Modal.getInstance(document.getElementById("choiceModal"));
-            modal.hide();
-
-            form.submit();
-        });
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                }
+                // jika valid, form akan submit ke server seperti biasa
+            }, false);
+        })();
     </script>
 </body>
 

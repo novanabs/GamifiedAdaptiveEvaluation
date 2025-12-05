@@ -7,6 +7,7 @@ use App\Models\ActivityResult;
 use App\Models\nilai;
 use App\Models\Question;
 use App\Models\Settings;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -90,13 +91,28 @@ class aktivitasController extends Controller
     {
         $activity = Activity::findOrFail($id);
 
+        // Ambil relasi lengkap berdasarkan id_topic
+        $info = DB::table('topics')
+            ->join('subject', 'topics.id_subject', '=', 'subject.id')
+            ->join('classes', 'subject.id_class', '=', 'classes.id')
+            ->where('topics.id', $activity->id_topic)
+            ->select(
+                'topics.title as topik',
+                'subject.name as mapel',
+                'classes.name as kelas'
+            )
+            ->first();
+
         return view('siswa.menjawabSoal', [
             'judul' => $activity->title,
-            'topik' => $activity->status,
+            'kelas' => $info->kelas,
+            'mapel' => $info->mapel,
+            'topik' => $info->topik,
             'id_activity' => $activity->id,
             'addaptive' => $activity->addaptive,
         ]);
     }
+
     public function start($id)
     {
         session()->forget("activity.$id");
@@ -106,18 +122,9 @@ class aktivitasController extends Controller
         $totalDB = $activity->questions()->count();
         $adaptive = $activity->addaptive === 'yes';
 
-        // Mapping jumlah soal adaptive
-        $map = [
-            12 => 5,
-            27 => 10,
-            42 => 15,
-            57 => 20,
-            72 => 25,
-            87 => 30
-        ];
-
+        $map = [11 => 5, 26 => 10, 41 => 15, 56 => 20, 71 => 25, 86 => 30];
         if ($adaptive) {
-            $jumlahSoal = $map[$totalDB] ?? 5; // fallback
+            $jumlahSoal = $map[$totalDB] ?? 5;
         } else {
             $jumlahSoal = $totalDB;
         }
@@ -128,17 +135,31 @@ class aktivitasController extends Controller
             "activity.$id.streak_wrong" => 0,
             "activity.$id.difficulty" => "sedang",
             "activity.$id.totalQuestions" => $jumlahSoal,
-            "activity.$id.used_questions" => [],  // NEW
+            "activity.$id.used_questions" => [],
         ]);
 
+        // simpan start_time ke session + DB (sudah saya jelaskan sebelumnya)
+        $startTime = Carbon::now();
+        session(["activity.$id.start_time" => $startTime->toDateTimeString()]);
 
+        $userId = auth()->id();
+        ActivityResult::updateOrCreate(
+            ['id_activity' => $id, 'id_user' => $userId],
+            ['start_time' => $startTime, 'waktu_mengerjakan' => null, 'end_time' => null]
+        );
+
+        // baca durasi dari activity (dalam menit)
+        $durasiMenit = $activity->durasi_pengerjaan ? (int) $activity->durasi_pengerjaan : null;
 
         return response()->json([
             'mode' => $adaptive ? 'adaptive' : 'normal',
             'level' => session("activity.$id.difficulty"),
-            'totalQuestions' => $jumlahSoal
+            'totalQuestions' => $jumlahSoal,
+            'started_at' => $startTime->toDateTimeString(),
+            'durasi_pengerjaan' => $durasiMenit // dikirim ke front-end
         ]);
     }
+
 
     public function getQuestion(Request $req, $id)
     {
@@ -319,8 +340,6 @@ class aktivitasController extends Controller
 
     }
 
-
-
     public function finishTest(Request $req, $id)
     {
         $userId = auth()->id();
@@ -333,23 +352,49 @@ class aktivitasController extends Controller
 
         // Status kelulusan
         $status = $totalReal >= 70 ? 'Pass' : 'Remedial';
+        // Ambil start_time dari DB jika ada, kalau tidak ambil dari session
+        $activityResult = ActivityResult::where('id_activity', $id)
+            ->where('id_user', $userId)
+            ->first();
 
+        if ($activityResult && $activityResult->start_time) {
+            $start = Carbon::parse($activityResult->start_time);
+        } else {
+            $startString = session("activity.$id.start_time", null);
+            $start = $startString ? Carbon::parse($startString) : Carbon::now();
+        }
+
+        $end = Carbon::now();
+
+        // hitung durasi dalam detik
+        $durationSeconds = max(0, $end->getTimestamp() - $start->getTimestamp());
+
+        // Simpan hasil ke DB (update existing record atau buat baru)
         ActivityResult::updateOrCreate(
             [
                 'id_activity' => $id,
                 'id_user' => $userId,
             ],
             [
-                'result' => $totalBase,   // nilai dasar
-                'bonus_poin' => $bonusPoint,  // total bonus
-                'real_poin' => $totalReal,   // nilai akhir
+                'result' => $totalBase,
+                'bonus_poin' => $bonusPoint,
+                'real_poin' => $totalReal,
                 'result_status' => $status,
+                'waktu_mengerjakan' => $durationSeconds,
+                'start_time' => $start,
+                'end_time' => $end,
             ]
         );
 
+        // bersihkan session
         session()->forget("activity.$id");
 
-        return response()->json(['status' => 'saved']);
+        return response()->json([
+            'status' => 'saved',
+            'duration_seconds' => $durationSeconds,
+            'start_time' => $start->toDateTimeString(),
+            'end_time' => $end->toDateTimeString(),
+        ]);
     }
 
 

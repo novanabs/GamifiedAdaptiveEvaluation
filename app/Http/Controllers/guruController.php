@@ -205,8 +205,9 @@ class guruController extends Controller
                 'activities' => $activities,
             ];
         });
+        $grades = [1, 2, 3, 4];
 
-        return view('guru.datakelas', compact('dataKelas'));
+        return view('guru.datakelas', compact('dataKelas', 'grades'));
     }
 
 
@@ -269,6 +270,58 @@ class guruController extends Controller
 
         return redirect()->back()->with('success', 'Berhasil bergabung ke kelas: ' . $kelas->name);
     }
+    public function updateKelas(Request $request, $id)
+    {
+        $kelas = Classes::findOrFail($id);
+
+        // cek otorisasi: pastikan guru ini mengajar di kelas tersebut
+        $isTeacher = TeacherClasses::where('id_class', $id)
+            ->where('id_teacher', Auth::id())
+            ->exists();
+
+        if (!$isTeacher) {
+            return redirect()->back()->with('error', 'Anda tidak berwenang mengubah kelas ini.');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'level' => 'required|in:SD,MI,SMP,MTs,SMA,SMK,MA,PT',
+            'grade' => 'required|string|max:10',
+            'semester' => 'required|in:odd,even',
+            'description' => 'nullable|string',
+        ]);
+
+        $kelas->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'level' => $request->level,
+            'grade' => $request->grade,
+            'semester' => $request->semester,
+        ]);
+
+        return redirect()->back()->with('success', 'Kelas berhasil diperbarui.');
+    }
+
+    public function hapusKelas(Request $request, $id)
+    {
+        $kelas = Classes::findOrFail($id);
+
+        // cek otorisasi
+        $isTeacher = TeacherClasses::where('id_class', $id)
+            ->where('id_teacher', Auth::id())
+            ->exists();
+
+        if (!$isTeacher) {
+            return redirect()->back()->with('error', 'Anda tidak berwenang menghapus kelas ini.');
+        }
+
+        // hapus relasi teacher_classes dulu
+        TeacherClasses::where('id_class', $id)->delete();
+
+        $kelas->delete();
+
+        return redirect()->back()->with('success', 'Kelas berhasil dihapus.');
+    }
 
     //manajemen subject
     public function dataSubject()
@@ -307,7 +360,7 @@ class guruController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('guru.dataSubject')->with('success', 'Subject berhasil ditambahkan!');
+        return redirect()->route('guru.dataSubject')->with('success', 'Mata Pelajaran berhasil ditambahkan!');
     }
 
     // Edit subject
@@ -316,7 +369,7 @@ class guruController extends Controller
         $request->validate(['name' => 'required|string|max:255']);
         $subject = Subject::findOrFail($id);
         $subject->update(['name' => $request->name]);
-        return redirect()->route('guru.dataSubject')->with('success', 'Subject berhasil diperbarui!');
+        return redirect()->route('guru.dataSubject')->with('success', 'Mata Pelajaran berhasil diperbarui!');
     }
 
     // Hapus subject
@@ -324,7 +377,7 @@ class guruController extends Controller
     {
         $subject = Subject::findOrFail($id);
         $subject->delete();
-        return redirect()->route('guru.dataSubject')->with('success', 'Subject berhasil dihapus!');
+        return redirect()->route('guru.dataSubject')->with('success', 'Mata Pelajaran berhasil dihapus!');
     }
 
     // 🟦 Tampilkan semua topik berdasarkan subject
@@ -386,19 +439,63 @@ class guruController extends Controller
 
     public function tampilAktivitas()
     {
-        $data = Topic::with(['activities', 'subject.classes'])
-            ->where('created_by', Auth::id())
+        $idGuru = Auth::id();
+
+        // ambil topik beserta activities dan subject->classes
+        $topics = Topic::with(['activities', 'subject.classes'])
+            ->where('created_by', $idGuru)
             ->get();
 
-        // ambil soal yang dibuat oleh guru yang sama
-        $questions = Question::where('created_by', Auth::id())->get();
-        // Ambil mapping soal-aktivitas
+        // soal yang dibuat guru ini (Eloquent Collection)
+        $questions = Question::where('created_by', $idGuru)->get();
+
+        // pivot table: activity_question (kumpulan baris {id_activity, id_question})
         $activityQuestions = DB::table('activity_question')->get();
 
-        return view('guru.dataaktivitas', compact('data', 'questions', 'activityQuestions'));
+        // flatten activities ke $rows
+        $rows = collect();
+        foreach ($topics as $topic) {
+            $className = $topic->subject && $topic->subject->classes ? $topic->subject->classes->name : null;
+            foreach ($topic->activities as $a) {
+                $rows->push((object) [
+                    'id' => $a->id,
+                    'title' => $a->title,
+                    'deadline' => $a->deadline,
+                    'addaptive' => $a->addaptive,
+                    'topic_id' => $topic->id,
+                    'topic_title' => $topic->title,
+                    'subject_name' => $topic->subject->name ?? null,
+                    'class_name' => $className,
+                    'durasi_pengerjaan' => $a->durasi_pengerjaan,
+                ]);
+
+            }
+        }
+
+        // build questions map: [ id_activity => Collection(Question models) ]
+        $questionsMap = [];
+        $qById = $questions->keyBy('id'); // keyed by question id for fast lookup
+
+        foreach ($activityQuestions as $aq) {
+            // $aq bisa object stdClass dari query builder
+            $aid = $aq->id_activity ?? null;
+            $qid = $aq->id_question ?? null;
+            if (!$aid || !$qid)
+                continue;
+
+            if (!isset($questionsMap[$aid]))
+                $questionsMap[$aid] = collect();
+            if (isset($qById[$qid])) {
+                $questionsMap[$aid]->push($qById[$qid]);
+            }
+        }
+
+        // pastikan setiap entry adalah Collection (jika perlu)
+        foreach ($questionsMap as $k => $v)
+            $questionsMap[$k] = collect($v);
+
+        return view('guru.dataaktivitas', compact('rows', 'questionsMap'));
     }
-
-
 
     /**
      * Menyimpan aktivitas baru.
@@ -409,22 +506,21 @@ class guruController extends Controller
             'title' => 'required|string|max:255',
             'deadline' => 'nullable|date',
             'id_topic' => 'required|exists:topics,id',
-            'addaptive' => 'required|in:yes,no'
+            'addaptive' => 'required|in:yes,no',
+            'durasi_pengerjaan' => 'nullable|integer|min:1' // menit
         ]);
 
         Activity::create([
             'title' => $request->title,
             'deadline' => $request->deadline,
             'id_topic' => $request->id_topic,
-            'addaptive' => $request->addaptive, // <= benar
+            'addaptive' => $request->addaptive,
+            'durasi_pengerjaan' => $request->durasi_pengerjaan ?? null,
         ]);
 
         return redirect()->route('guru.aktivitas.tampil')
             ->with('success', 'Aktivitas berhasil ditambahkan.');
     }
-
-
-
 
     /**
      * Mengubah data aktivitas.
@@ -435,6 +531,7 @@ class guruController extends Controller
             'title' => 'required|string|max:255',
             'deadline' => 'nullable|date',
             'addaptive' => 'required|in:yes,no',
+            'durasi_pengerjaan' => 'nullable|integer|min:1'
         ]);
 
         $aktivitas = Activity::findOrFail($id);
@@ -442,13 +539,13 @@ class guruController extends Controller
         $aktivitas->update([
             'title' => $request->title,
             'deadline' => $request->deadline,
-            'addaptive' => $request->addaptive, // <= benar
+            'addaptive' => $request->addaptive,
+            'durasi_pengerjaan' => $request->durasi_pengerjaan ?? null,
         ]);
 
         return redirect()->route('guru.aktivitas.tampil')
             ->with('success', 'Aktivitas berhasil diperbarui.');
     }
-
 
 
 
@@ -466,7 +563,7 @@ class guruController extends Controller
 
 
     //manajemen soal (bank soal)
-    // 🔹 Menampilkan daftar soal
+    //Menampilkan daftar soal
     public function tampilanSoal()
     {
         $data = Question::with('topic')

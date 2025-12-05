@@ -42,7 +42,7 @@
       <p class="lead mt-3 text-dark">
         Sistem evaluasi interaktif dan adaptif untuk siswa dengan fitur gamifikasi dan kemudahan navigasi.
       </p>
-      <a href="{{ url('/progress') }}" class="btn btn-light btn-lg mt-4">Mulai Evaluasi</a>
+      <a href="{{ url('/login') }}" class="btn btn-light btn-lg mt-4">Mulai Evaluasi</a>
     </div>
   </section>
 

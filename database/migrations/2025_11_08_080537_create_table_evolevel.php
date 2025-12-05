@@ -52,6 +52,7 @@ return new class extends Migration {
             $table->enum('addaptive', ['yes', 'no']);
             $table->enum('status', ['basic', 'additional', 'remedial']);
             $table->enum('type', ['task', 'quiz']);
+            $table->integer('durasi_pengerjaan')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->unsignedBigInteger('id_topic');
             $table->timestamps();
@@ -82,6 +83,7 @@ return new class extends Migration {
             $table->id();
             $table->string(column: 'name');
             $table->string(column: 'description');
+            $table->string(column: 'path_icon');
             $table->timestamps();
         });
         Schema::create('activity_result', function (Blueprint $table) {
@@ -92,6 +94,9 @@ return new class extends Migration {
             $table->decimal('result', 5, 2)->nullable();
             $table->integer('real_poin')->default(0)->nullable();
             $table->integer('bonus_poin')->default(0)->nullable();
+            $table->integer('waktu_mengerjakan')->nullable();
+            $table->timestamp('start_time')->nullable();
+            $table->timestamp('end_time')->nullable();
             $table->timestamps();
         });
         Schema::create('settings', function (Blueprint $table) {

@@ -39,48 +39,62 @@ class aturAktivitasController extends Controller
     }
 
 
-public function ambilSoalAjax(Request $request, $idAktivitas)
-{
-    $request->validate([
-        'jumlah' => 'required|numeric|min:1'
-    ]);
+    public function ambilSoalAjax(Request $request, $idAktivitas)
+    {
+        $request->validate([
+            'jumlah' => 'required|numeric|min:1'
+        ]);
 
-    // Ambil aktivitas beserta topiknya
-    $aktivitas = Activity::findOrFail($idAktivitas);
-    $isAdaptive = ($aktivitas->addaptive === 'yes');
+        // Ambil aktivitas beserta topiknya
+        $aktivitas = Activity::findOrFail($idAktivitas);
+        $isAdaptive = ($aktivitas->addaptive === 'yes');
 
-    // 🔥 Filter soal BENAR: guru yg membuat + topik yg sama
-    $baseQuery = Question::where('created_by', Auth::id())
-        ->where('id_topic', $aktivitas->id_topic);
+        // 🔥 Filter soal BENAR: guru yg membuat + topik yg sama
+        $baseQuery = Question::where('created_by', Auth::id())
+            ->where('id_topic', $aktivitas->id_topic);
 
-    $n = intval($request->jumlah);
+        $n = intval($request->jumlah);
 
-    /* ======================================================
-       🔵 MODE ADAPTIVE — MENGGUNAKAN RUMUS YANG KAMU BUAT
-    ======================================================= */
-    if ($isAdaptive) {
+        if ($isAdaptive) {
 
-        $easyCount = max(0, $n - 2);
-        $hardCount = max(0, $n - 2);
-        $mediumCount = max(0, $n + 1);
+            $easyCount = max(0, $n - 2);
+            $hardCount = max(0, $n - 2);
+            $mediumCount = max(0, $n);
 
-        // Ambil soal berdasarkan kesulitan
-        $easyPool = (clone $baseQuery)->where('difficulty', 'mudah')
-            ->inRandomOrder()->take($easyCount)->get();
+            // Ambil soal berdasarkan kesulitan
+            $easyPool = (clone $baseQuery)->where('difficulty', 'mudah')
+                ->inRandomOrder()->take($easyCount)->get();
 
-        $mediumPool = (clone $baseQuery)->where('difficulty', 'sedang')
-            ->inRandomOrder()->take($mediumCount)->get();
+            $mediumPool = (clone $baseQuery)->where('difficulty', 'sedang')
+                ->inRandomOrder()->take($mediumCount)->get();
 
-        $hardPool = (clone $baseQuery)->where('difficulty', 'sulit')
-            ->inRandomOrder()->take($hardCount)->get();
+            $hardPool = (clone $baseQuery)->where('difficulty', 'sulit')
+                ->inRandomOrder()->take($hardCount)->get();
 
-        $final = $easyPool->merge($mediumPool)->merge($hardPool);
+            $final = $easyPool->merge($mediumPool)->merge($hardPool);
+
+            return response()->json([
+                'adaptive' => true,
+                'easy' => $easyCount,
+                'medium' => $mediumCount,
+                'hard' => $hardCount,
+                'total' => $final->count(),
+                'data' => $final->map(fn($q) => [
+                    'id' => $q->id,
+                    'difficulty' => $q->difficulty,
+                    'type' => $q->type,
+                    'text' => json_decode($q->question)->text ?? '-'
+                ])
+            ]);
+        }
+
+        $final = $baseQuery
+            ->inRandomOrder()
+            ->take($n)
+            ->get();
 
         return response()->json([
-            'adaptive' => true,
-            'easy' => $easyCount,
-            'medium' => $mediumCount,
-            'hard' => $hardCount,
+            'adaptive' => false,
             'total' => $final->count(),
             'data' => $final->map(fn($q) => [
                 'id' => $q->id,
@@ -90,26 +104,6 @@ public function ambilSoalAjax(Request $request, $idAktivitas)
             ])
         ]);
     }
-
-    /* ======================================================
-       🔵 MODE NORMAL — AMBIL RANDOM DARI TOPIK
-    ======================================================= */
-    $final = $baseQuery
-        ->inRandomOrder()
-        ->take($n)
-        ->get();
-
-    return response()->json([
-        'adaptive' => false,
-        'total' => $final->count(),
-        'data' => $final->map(fn($q) => [
-            'id' => $q->id,
-            'difficulty' => $q->difficulty,
-            'type' => $q->type,
-            'text' => json_decode($q->question)->text ?? '-'
-        ])
-    ]);
-}
 
 
 
@@ -187,6 +181,15 @@ public function ambilSoalAjax(Request $request, $idAktivitas)
             'text' => $qData->text ?? '-',
         ]);
     }
+    public function clearAll($id)
+    {
+        DB::table('activity_question')
+            ->where('id_activity', $id)
+            ->delete();
+
+        return response()->json(['success' => true]);
+    }
+
 
 
 
