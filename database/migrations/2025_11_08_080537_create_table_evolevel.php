@@ -24,8 +24,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('level', ['SD', 'Mi', 'SMP','Mts','SMA','SMK','MA','PT']);
-            $table->enum('grade', ['1', '2', '3','4']);
+            $table->enum('level', ['SD', 'Mi', 'SMP', 'Mts', 'SMA', 'SMK', 'MA', 'PT']);
+            $table->enum('grade', ['1', '2', '3', '4']);
             $table->enum('semester', ['odd', 'even']);
             $table->string('token')->unique();
             $table->unsignedBigInteger('created_by');
@@ -69,7 +69,7 @@ return new class extends Migration {
             $table->json('MC_option')->nullable();
             $table->json('SA_answer')->nullable();
             $table->char('MC_answer')->nullable();
-            $table->enum('difficulty', ['mudah', 'sedang','sulit']);
+            $table->enum('difficulty', ['mudah', 'sedang', 'sulit']);
             $table->unsignedBigInteger('id_topic');
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
@@ -95,6 +95,8 @@ return new class extends Migration {
             $table->integer('real_poin')->default(0)->nullable();
             $table->integer('bonus_poin')->default(0)->nullable();
             $table->integer('waktu_mengerjakan')->nullable();
+            $table->integer('total_benar')->nullable();
+            $table->boolean('status_benar')->default(false)->nullable();
             $table->timestamp('start_time')->nullable();
             $table->timestamp('end_time')->nullable();
             $table->timestamps();

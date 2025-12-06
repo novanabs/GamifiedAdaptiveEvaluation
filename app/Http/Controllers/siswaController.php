@@ -193,12 +193,20 @@ class siswaController extends Controller
             ];
         }
 
+        $allBadges = DB::table('badge')
+            ->select('id', 'name', 'description', 'path_icon')
+            ->orderBy('id')
+            ->get();
+        // Buat array ID badge yang sudah diklaim (untuk pengecekan di view)
+        $claimedBadgeIds = $userBadges->pluck('id')->toArray();
         // -----------------------------
         // View
         // -----------------------------
         return view('siswa.dashboardsiswa', [
             'user' => $user,
             'userBadges' => $userBadges,
+            'allBadges' => $allBadges,                 // <-- baru
+            'claimedBadgeIds' => $claimedBadgeIds,
             'kelasList' => $kelasList,
             'activitiesByClass' => $activitiesByClass,
             'jumlahAktivitas' => $jumlahAktivitas,

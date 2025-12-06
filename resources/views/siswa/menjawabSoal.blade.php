@@ -116,7 +116,9 @@
 
                     <div class="mb-2">
                         <span class="fw-semibold">Durasi:</span>
-                        <span id="infoDurasi" class="text-primary fw-bold">30 Menit</span>
+                        <span id="infoDurasi" class="text-primary fw-bold">
+                            {{ isset($durasi) ? $durasi . ' Menit' : '—' }}
+                        </span>
                     </div>
 
 
@@ -144,10 +146,10 @@
                     <div><strong>Topik:</strong> {{ $topik }}</div>
                 </div>
 
-                <div class="text-end">
-                    <small class="text-muted">Waktu tersisa</small>
-                    <div id="timer">30:00</div>
+                <div id="timer">
+                    {{ str_pad($durasi, 2, '0', STR_PAD_LEFT) }}:00
                 </div>
+
             </div>
 
             <!-- panel soal -->

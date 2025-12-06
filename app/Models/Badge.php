@@ -10,7 +10,7 @@ class Badge extends Model
     use HasFactory;
 
     protected $table = 'badge';
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['name', 'description',];
 
     // (2) hasMany UserBadge
     public function userBadges()

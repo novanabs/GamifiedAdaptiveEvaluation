@@ -15,10 +15,17 @@ class ActivityResult extends Model
         'real_poin',
         'bonus_poin',
         'waktu_mengerjakan',
-        'start_time', 
-        'end_time'
+        'start_time',
+        'end_time',
+        'total_benar',
+        'status_benar'
+
     ];
     protected $dates = ['start_time', 'end_time'];
+    protected $casts = [
+        'status_benar' => 'boolean',
+    ];
+
     public function nilaiSiswa()
     {
         return $this->belongsTo(User::class, 'id_user');

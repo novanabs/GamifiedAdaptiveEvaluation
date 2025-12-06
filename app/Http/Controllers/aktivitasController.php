@@ -110,6 +110,7 @@ class aktivitasController extends Controller
             'topik' => $info->topik,
             'id_activity' => $activity->id,
             'addaptive' => $activity->addaptive,
+            'durasi' => $activity->durasi_pengerjaan,
         ]);
     }
 
@@ -124,7 +125,7 @@ class aktivitasController extends Controller
 
         $map = [11 => 5, 26 => 10, 41 => 15, 56 => 20, 71 => 25, 86 => 30];
         if ($adaptive) {
-            $jumlahSoal = $map[$totalDB] ?? 5;
+            $jumlahSoal = $map[$totalDB];
         } else {
             $jumlahSoal = $totalDB;
         }
@@ -136,6 +137,7 @@ class aktivitasController extends Controller
             "activity.$id.difficulty" => "sedang",
             "activity.$id.totalQuestions" => $jumlahSoal,
             "activity.$id.used_questions" => [],
+            "activity.$id.total_correct" => 0,
         ]);
 
         // simpan start_time ke session + DB (sudah saya jelaskan sebelumnya)
@@ -145,7 +147,7 @@ class aktivitasController extends Controller
         $userId = auth()->id();
         ActivityResult::updateOrCreate(
             ['id_activity' => $id, 'id_user' => $userId],
-            ['start_time' => $startTime, 'waktu_mengerjakan' => null, 'end_time' => null]
+            ['start_time' => $startTime, 'waktu_mengerjakan' => null, 'end_time' => null, 'total_benar' => null]
         );
 
         // baca durasi dari activity (dalam menit)
@@ -240,6 +242,11 @@ class aktivitasController extends Controller
             $answers = json_decode($question->SA_answer, true);
             $user = strtolower(trim($req->user_answer));
             $correct = in_array($user, array_map('strtolower', $answers));
+        }
+        // Hitung total jawaban benar (akumulasi)
+        $prevCorrect = session("activity.$id.total_correct", 0);
+        if ($correct) {
+            session(["activity.$id.total_correct" => $prevCorrect + 1]);
         }
 
         // =======================
@@ -350,8 +357,9 @@ class aktivitasController extends Controller
         // Bonus = totalReal - totalBase
         $bonusPoint = $totalReal - $totalBase;
 
-        // Status kelulusan
+        // Status kelulusan (angka)
         $status = $totalReal >= 70 ? 'Pass' : 'Remedial';
+
         // Ambil start_time dari DB jika ada, kalau tidak ambil dari session
         $activityResult = ActivityResult::where('id_activity', $id)
             ->where('id_user', $userId)
@@ -368,6 +376,23 @@ class aktivitasController extends Controller
 
         // hitung durasi dalam detik
         $durationSeconds = max(0, $end->getTimestamp() - $start->getTimestamp());
+        $totalCorrect = session("activity.$id.total_correct", 0);
+
+        // ====== DAPATKAN JUMLAH SOAL YANG DIPAKAI ======
+        // Prioritaskan nilai yang disimpan di session saat start() (adaptive/normal)
+        $jumlahSoal = session("activity.$id.totalQuestions", null);
+
+        if ($jumlahSoal === null) {
+            // fallback: hitung dari relasi questions (pastikan ini merepresentasikan soal yang dipakai)
+            $activity = Activity::find($id);
+            $jumlahSoal = $activity ? $activity->questions()->count() : 0;
+        } else {
+            // pastikan integer
+            $jumlahSoal = (int) $jumlahSoal;
+        }
+
+        // tentukan statusBenar: true jika totalCorrect sama persis dengan jumlahSoal
+        $statusBenar = ($totalCorrect === $jumlahSoal) ? true : false;
 
         // Simpan hasil ke DB (update existing record atau buat baru)
         ActivityResult::updateOrCreate(
@@ -381,21 +406,28 @@ class aktivitasController extends Controller
                 'real_poin' => $totalReal,
                 'result_status' => $status,
                 'waktu_mengerjakan' => $durationSeconds,
+                'total_benar' => $totalCorrect,
                 'start_time' => $start,
                 'end_time' => $end,
+                'status_benar' => $statusBenar,
             ]
         );
 
         // bersihkan session
         session()->forget("activity.$id");
+        session()->forget("activity.$id.total_correct");
 
         return response()->json([
             'status' => 'saved',
             'duration_seconds' => $durationSeconds,
             'start_time' => $start->toDateTimeString(),
             'end_time' => $end->toDateTimeString(),
+            'total_correct' => $totalCorrect,
+            'jumlah_soal' => $jumlahSoal,
+            'status_benar' => $statusBenar,
         ]);
     }
+
 
 
 

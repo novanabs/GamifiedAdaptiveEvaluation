@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\aktivitasController;
 use App\Http\Controllers\aturAktivitasController;
+use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\guruController;
 use App\Http\Controllers\loginController;
 use App\Http\Controllers\siswaController;
@@ -32,7 +33,8 @@ Route::middleware(['auth', RoleMiddleware::class . ':student'])->group(function 
     Route::get('/activity/{id}/question', [aktivitasController::class, 'getQuestion']);
     Route::post('/activity/{id}/submit', [aktivitasController::class, 'submitAnswer']);
     Route::post('/activity/{id}/finish', [aktivitasController::class, 'finishTest']);
-
+    Route::post('/badges/claim', [BadgeController::class, 'claim'])->name('badges.claim');
+    Route::get('/badges/{id}/eligibility', [BadgeController::class, 'eligibility'])->name('badges.eligibility');
 
 });
 

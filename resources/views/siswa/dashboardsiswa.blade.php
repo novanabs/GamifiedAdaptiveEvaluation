@@ -105,7 +105,7 @@
                     <div class="card-body">
                         <div class="d-flex gap-3 align-items-center">
                             {{-- Profile Image + Name --}}
-                            <div class="text-center" style="min-width:120px">
+                            <div class="text-center" style="min-width:150px">
                                 <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
                                     alt="Foto Profile" class="rounded-circle profile-img mb-2">
                                 <h6 class="fw-bold mb-0 text-primary" style="font-size:1rem">{{ $user->name }}</h6>
@@ -138,10 +138,9 @@
                                         </div>
                                     </div>
                                 </div>
-
+                                <!-- badge siswa -->
                                 <div class="pt-2 border-top">
                                     <div class="small text-muted">Informasi Badge</div>
-
                                     @if(isset($userBadges) && $userBadges->isNotEmpty())
                                         <div class="d-flex flex-wrap gap-2 mt-2">
                                             @foreach($userBadges as $ub)
@@ -149,7 +148,6 @@
                                                     style="min-width:160px;">
                                                     {{-- gambar badge --}}
                                                     @php
-                                                        // fallback jika path_icon kosong atau file tidak ada
                                                         $icon = $ub->path_icon ? asset($ub->path_icon) : asset('img/default.png');
                                                     @endphp
 
@@ -166,6 +164,13 @@
                                     @else
                                         <div class="mt-1 text-muted">Belum ada badge</div>
                                     @endif
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                            data-bs-target="#badgeListModal">
+                                            <i class="bi bi-award"></i> Lihat Badge
+                                        </button>
+                                    </div>
+
                                 </div>
 
                             </div>
@@ -233,6 +238,69 @@
             </div>
         </div>
     </div>
+    <!-- Modal Daftar Semua Badge  -->
+    <div class="modal fade" id="badgeListModal" tabindex="-1" aria-labelledby="badgeListModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="badgeListModalLabel">Semua Badge</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+
+                <div class="modal-body">
+                    @if(!isset($allBadges) || $allBadges->isEmpty())
+                        <div class="text-center text-muted py-4">Belum ada data badge di sistem.</div>
+                    @else
+                        <div class="row g-3">
+                            @foreach($allBadges as $b)
+                                @php
+                                    $icon = $b->path_icon ? asset($b->path_icon) : asset('img/default.png');
+                                    $isClaimed = in_array($b->id, $claimedBadgeIds ?? []);
+                                @endphp
+
+                                <div class="col-md-4" id="badge-card-{{ $b->id }}">
+                                    <div class="card h-100 shadow-sm p-3">
+                                        <div class="d-flex gap-3 align-items-start">
+                                            <img src="{{ $icon }}" width="64" height="64" alt="{{ $b->name }}"
+                                                style="object-fit:contain; border-radius:8px;">
+                                            <div class="grow">
+                                                <div class="fw-bold">{{ $b->name }}</div>
+                                                <div class="small text-muted mb-2">{{ $b->description }}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 text-end">
+                                            @if($isClaimed)
+                                                <span class="badge bg-success">Terklaim</span>
+                                            @else
+                                                <form method="POST" action="{{ route('badges.claim') }}"
+                                                    class="d-inline badge-claim-form" data-badge-id="{{ $b->id }}">
+                                                    @csrf
+                                                    <input type="hidden" name="badge_id" value="{{ $b->id }}">
+                                                    <button type="submit" class="btn btn-primary btn-sm claim-btn"
+                                                        data-badge-id="{{ $b->id }}" disabled>
+                                                        Klaim
+                                                    </button>
+                                                    <div class="small text-muted mt-1 reason-text" id="reason-{{ $b->id }}"
+                                                        style="display:none;"></div>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                    @endif
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     {{-- DataTables --}}
     @push('scripts')
@@ -265,11 +333,11 @@
 
                 if (!block || !block.students || block.students.length === 0) {
                     area.innerHTML = `
-                                <div class="text-center py-4 text-muted">
-                                    <div class="mb-2">Belum ada peringkat</div>
-                                    <small>Leaderboard akan tampil setelah siswa mengerjakan aktivitas</small>
-                                </div>
-                            `;
+                                                                                <div class="text-center py-4 text-muted">
+                                                                                    <div class="mb-2">Belum ada peringkat</div>
+                                                                                    <small>Leaderboard akan tampil setelah siswa mengerjakan aktivitas</small>
+                                                                                </div>
+                                                                            `;
                     return;
                 }
 
@@ -280,20 +348,20 @@
                     const score = Number(row.total_score) || 0;
                     const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : (idx + 1)));
                     html += `
-                                <li class="list-group-item d-flex align-items-center justify-content-between ${isMe ? 'bg-light' : ''}"
-                                    style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="fw-bold text-primary" style="min-width:36px;">${medal}</div>
-                                        <div>
-                                            <div class="fw-semibold">${row.name}</div>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold">${Number(score).toLocaleString()}</div>
-                                        <small class="text-muted">poin</small>
-                                    </div>
-                                </li>
-                            `;
+                                                                                <li class="list-group-item d-flex align-items-center justify-content-between ${isMe ? 'bg-light' : ''}"
+                                                                                    style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                                                                    <div class="d-flex align-items-center gap-3">
+                                                                                        <div class="fw-bold text-primary" style="min-width:36px;">${medal}</div>
+                                                                                        <div>
+                                                                                            <div class="fw-semibold">${row.name}</div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="text-end">
+                                                                                        <div class="fw-bold">${Number(score).toLocaleString()}</div>
+                                                                                        <small class="text-muted">poin</small>
+                                                                                    </div>
+                                                                                </li>
+                                                                            `;
                 });
 
                 html += '</ul>';
@@ -313,6 +381,117 @@
                 });
             }
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const badgeModal = document.getElementById('badgeListModal');
+
+                async function checkEligibilityFor(badgeId) {
+                    try {
+                        const res = await fetch("{{ url('/badges') }}/" + badgeId + "/eligibility", {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'same-origin'
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        console.error('eligibility fetch error', e);
+                        return { eligible: false, reason: 'Gagal mengecek syarat (network).' };
+                    }
+                }
+
+                async function refreshBadgeEligibility() {
+                    document.querySelectorAll('.claim-btn').forEach(async btn => {
+                        const badgeId = btn.dataset.badgeId;
+                        // reset
+                        btn.disabled = true;
+                        const reasonEl = document.getElementById('reason-' + badgeId);
+                        if (reasonEl) { reasonEl.style.display = 'none'; reasonEl.textContent = ''; }
+
+                        const json = await checkEligibilityFor(badgeId);
+
+                        if (json.claimed === true) {
+                            // ganti UI: sudah diklaim
+                            const card = document.getElementById('badge-card-' + badgeId);
+                            if (card) card.querySelector('.mt-3.text-end').innerHTML = '<span class="badge bg-success">Terklaim</span>';
+                            return;
+                        }
+
+                        if (json.eligible === true) {
+                            btn.disabled = false;
+                            if (reasonEl) reasonEl.style.display = 'none';
+                        } else {
+                            btn.disabled = true;
+                            if (reasonEl) {
+                                reasonEl.textContent = json.reason || 'Belum memenuhi syarat.';
+                                reasonEl.style.display = 'block';
+                            }
+                        }
+                    });
+                }
+
+                // ketika modal dibuka (Bootstrap 5 event)
+                if (badgeModal) {
+                    badgeModal.addEventListener('show.bs.modal', function () {
+                        refreshBadgeEligibility();
+                    });
+                }
+
+                // AJAX submit: intercept form submit untuk klaim
+                document.querySelectorAll('.badge-claim-form').forEach(form => {
+                    form.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        const badgeId = this.dataset.badgeId;
+                        const btn = this.querySelector('.claim-btn');
+                        if (!btn || btn.disabled) return;
+
+                        // disable button sementara
+                        btn.disabled = true;
+                        btn.innerText = 'Memproses…';
+
+                        // ambil CSRF token dari meta atau field
+                        const token = document.querySelector('meta[name="csrf-token"]')?.content
+                            || document.querySelector('input[name="_token"]')?.value;
+
+                        try {
+                            const res = await fetch("{{ route('badges.claim') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': token,
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ badge_id: badgeId }),
+                                credentials: 'same-origin'
+                            });
+
+                            const json = await res.json();
+
+                            if (res.ok && json.success) {
+                                // sukses klaim -> ubah UI jadi Terklaim
+                                const card = document.getElementById('badge-card-' + badgeId);
+                                if (card) card.querySelector('.mt-3.text-end').innerHTML = '<span class="badge bg-success">Terklaim</span>';
+                                // optional: tampil notifikasi
+                                Swal.fire('Berhasil', json.message || 'Badge diklaim', 'success');
+                            } else {
+                                // gagal -> tampil pesan dan re-enable tombol (jika bukan already claimed)
+                                const msg = json.message || json.reason || 'Gagal klaim badge.';
+                                Swal.fire('Gagal', msg, 'error');
+                                // show reason text if ada
+                                const reasonEl = document.getElementById('reason-' + badgeId);
+                                if (reasonEl) { reasonEl.textContent = msg; reasonEl.style.display = 'block'; }
+                                btn.disabled = false;
+                                btn.innerText = 'Klaim';
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error');
+                            btn.disabled = false;
+                            btn.innerText = 'Klaim';
+                        }
+                    });
+                });
+            });
+        </script>
+
 
     @endpush
 @endsection
