@@ -8,63 +8,52 @@ use Illuminate\Support\Facades\DB;
 
 class BadgeController extends Controller
 {
+    // App/Http/Controllers/BadgeController.php
+
     public function claim(Request $request)
     {
         $user = $request->user();
         $badgeId = (int) $request->input('badge_id');
 
+        // cek badge exist
         $badge = DB::table('badge')->where('id', $badgeId)->first();
         if (!$badge) {
-            if ($request->ajax())
-                return response()->json(['success' => false, 'message' => 'Badge tidak ditemukan.'], 404);
-            return back()->with('error', 'Badge tidak ditemukan.');
+            return response()->json(['success' => false, 'message' => 'Badge tidak ditemukan.'], 404);
         }
 
-        // cek sudah klaim
-        $exists = DB::table('user_badge')
+        // cek sudah diklaim?
+        $already = DB::table('user_badge')
             ->where('id_student', $user->id)
             ->where('id_badge', $badgeId)
             ->exists();
 
-        if ($exists) {
-            if ($request->ajax())
-                return response()->json(['success' => false, 'message' => 'Badge sudah diklaim.', 'claimed' => true]);
-            return back()->with('info', 'Badge sudah diklaim.');
+        if ($already) {
+            return response()->json(['success' => false, 'message' => 'Sudah diklaim sebelumnya.', 'claimed' => true], 409);
         }
 
-        // Periksa eligibility sesuai badge id
-        if ($badgeId === 1) {
-            $eligibleResult = $this->checkBadgeEligibilityForFastest($user->id);
-        } elseif ($badgeId === 2) {
-            $eligibleResult = $this->checkBadgeEligibilityForTop3($user->id);
-        } elseif ($badgeId === 3) {
-            $eligibleResult = $this->checkBadgeEligibilityForFullCorrectPerActivity($user->id);
-        } else {
-            if ($request->ajax())
-                return response()->json(['success' => false, 'message' => 'Aturan klaim untuk badge ini belum diatur.'], 400);
-            return back()->with('error', 'Aturan klaim untuk badge ini belum diatur.');
-        }
-
-        if ($eligibleResult['eligible'] === false) {
-            $msg = $eligibleResult['reason'] ?? 'Anda belum memenuhi syarat untuk klaim badge ini.';
-            if ($request->ajax())
-                return response()->json(['success' => false, 'message' => $msg], 403);
-            return back()->with('error', $msg);
-        }
-        // insert klaim
+        // simpan klaim
         DB::table('user_badge')->insert([
             'id_student' => $user->id,
             'id_badge' => $badgeId,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Badge berhasil diklaim!']);
-        }
+        // siapkan payload badge (pastikan path_icon bisa diakses)
+        $badgeData = [
+            'id' => $badge->id,
+            'name' => $badge->name,
+            'description' => $badge->description,
+            'path_icon' => $badge->path_icon ? asset($badge->path_icon) : asset('img/default.png'),
+        ];
 
-        return back()->with('success', 'Badge berhasil diklaim!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Badge berhasil diklaim.',
+            'badge' => $badgeData,
+        ]);
     }
+
 
     public function eligibility(Request $request, $id)
     {

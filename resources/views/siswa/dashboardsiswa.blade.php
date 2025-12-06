@@ -243,7 +243,7 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="badgeListModalLabel">Semua Badge</h5>
+                    <h5 class="modal-title" id="badgeListModalLabel">Badge Tersedia</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
 
@@ -333,11 +333,11 @@
 
                 if (!block || !block.students || block.students.length === 0) {
                     area.innerHTML = `
-                                                                                <div class="text-center py-4 text-muted">
-                                                                                    <div class="mb-2">Belum ada peringkat</div>
-                                                                                    <small>Leaderboard akan tampil setelah siswa mengerjakan aktivitas</small>
-                                                                                </div>
-                                                                            `;
+                                                                                                <div class="text-center py-4 text-muted">
+                                                                                                    <div class="mb-2">Belum ada peringkat</div>
+                                                                                                    <small>Leaderboard akan tampil setelah siswa mengerjakan aktivitas</small>
+                                                                                                </div>
+                                                                                            `;
                     return;
                 }
 
@@ -348,20 +348,20 @@
                     const score = Number(row.total_score) || 0;
                     const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : (idx + 1)));
                     html += `
-                                                                                <li class="list-group-item d-flex align-items-center justify-content-between ${isMe ? 'bg-light' : ''}"
-                                                                                    style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
-                                                                                    <div class="d-flex align-items-center gap-3">
-                                                                                        <div class="fw-bold text-primary" style="min-width:36px;">${medal}</div>
-                                                                                        <div>
-                                                                                            <div class="fw-semibold">${row.name}</div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="text-end">
-                                                                                        <div class="fw-bold">${Number(score).toLocaleString()}</div>
-                                                                                        <small class="text-muted">poin</small>
-                                                                                    </div>
-                                                                                </li>
-                                                                            `;
+                                                                                                <li class="list-group-item d-flex align-items-center justify-content-between ${isMe ? 'bg-light' : ''}"
+                                                                                                    style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                                                                                    <div class="d-flex align-items-center gap-3">
+                                                                                                        <div class="fw-bold text-primary" style="min-width:36px;">${medal}</div>
+                                                                                                        <div>
+                                                                                                            <div class="fw-semibold">${row.name}</div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="text-end">
+                                                                                                        <div class="fw-bold">${Number(score).toLocaleString()}</div>
+                                                                                                        <small class="text-muted">poin</small>
+                                                                                                    </div>
+                                                                                                </li>
+                                                                                            `;
                 });
 
                 html += '</ul>';
@@ -434,63 +434,142 @@
                         refreshBadgeEligibility();
                     });
                 }
+            });
+        </script>
+        <script>
+            $(function () {
+                // buat HTML badge (sama seperti Blade)
+                function buildProfileBadgeHtml(badge) {
+                    var icon = badge.path_icon || '{{ asset("img/default.png") }}';
+                    var safeName = $('<div/>').text(badge.name || '').html();
+                    var safeDesc = $('<div/>').text(badge.description || '').html();
 
-                // AJAX submit: intercept form submit untuk klaim
-                document.querySelectorAll('.badge-claim-form').forEach(form => {
-                    form.addEventListener('submit', async function (e) {
-                        e.preventDefault();
-                        const badgeId = this.dataset.badgeId;
-                        const btn = this.querySelector('.claim-btn');
-                        if (!btn || btn.disabled) return;
+                    var html = '';
+                    html += '<div class="d-flex align-items-center gap-2 p-2 border rounded" style="min-width:160px;" id="profile-badge-' + badge.id + '">';
+                    html += '  <img src="' + icon + '" alt="' + safeName + '" width="48" height="48" style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">';
+                    html += '  <div>';
+                    html += '    <div class="fw-semibold" style="font-size:0.95rem;">' + safeName + '</div>';
+                    html += '    <div class="small text-muted">' + safeDesc + '</div>';
+                    html += '  </div>';
+                    html += '</div>';
+                    return html;
+                }
 
-                        // disable button sementara
-                        btn.disabled = true;
-                        btn.innerText = 'Memproses…';
+                // cari atau buat container profil badge. Kembalikan jQuery element container.
+                function ensureProfileBadgeContainer() {
+                    // coba cari container yang sudah ada
+                    var $container = $('.card-body .d-flex.flex-wrap.gap-2.mt-2').first();
+                    if ($container.length) return $container;
 
-                        // ambil CSRF token dari meta atau field
-                        const token = document.querySelector('meta[name="csrf-token"]')?.content
-                            || document.querySelector('input[name="_token"]')?.value;
+                    // jika tidak ada, cari 'Informasi Badge' section; di Blade itu berada di .pt-2 border-top
+                    var $info = null;
+                    $('.card-body').each(function () {
+                        if ($(this).text().trim().indexOf('Informasi Badge') !== -1) {
+                            $info = $(this);
+                            return false;
+                        }
+                    });
 
-                        try {
-                            const res = await fetch("{{ route('badges.claim') }}", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': token,
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                },
-                                body: JSON.stringify({ badge_id: badgeId }),
-                                credentials: 'same-origin'
-                            });
+                    if (!$info || !$info.length) {
+                        // fallback: coba cari element yang berisi tombol "Lihat Badge"
+                        $info = $('button[data-bs-target="#badgeListModal"]').closest('.card-body');
+                    }
 
-                            const json = await res.json();
+                    if (!$info || !$info.length) {
+                        // terakhir fallback: pilih kolom kiri pertama
+                        $info = $('.col-12.col-md-6 .card-body').first();
+                    }
 
-                            if (res.ok && json.success) {
-                                // sukses klaim -> ubah UI jadi Terklaim
-                                const card = document.getElementById('badge-card-' + badgeId);
-                                if (card) card.querySelector('.mt-3.text-end').innerHTML = '<span class="badge bg-success">Terklaim</span>';
-                                // optional: tampil notifikasi
-                                Swal.fire('Berhasil', json.message || 'Badge diklaim', 'success');
+                    // jika ada teks placeholder "Belum ada badge", hapus
+                    $info.find('.mt-1.text-muted:contains("Belum ada badge")').remove();
+
+                    // buat container baru dan sisipkan setelah judul "Informasi Badge"
+                    var $titleEl = $info.find('.small.text-muted:contains("Informasi Badge")').first();
+                    if ($titleEl.length) {
+                        // kalau struktur mengikuti Blade, container dapat ditaruh setelah title
+                        var $new = $('<div/>').addClass('d-flex flex-wrap gap-2 mt-2');
+                        $titleEl.after($new);
+                        return $new;
+                    } else {
+                        // kalau tidak ditemukan, tambahkan di akhir .card-body
+                        var $new2 = $('<div/>').addClass('d-flex flex-wrap gap-2 mt-2');
+                        $info.append($new2);
+                        return $new2;
+                    }
+                }
+
+                // submit handler (intercept badge claim)
+                $(document).on('submit', '.badge-claim-form', function (e) {
+                    e.preventDefault();
+                    var $form = $(this);
+                    var badgeId = $form.data('badge-id');
+                    var $btn = $form.find('.claim-btn');
+                    if (!$btn.length || $btn.prop('disabled')) return;
+
+                    $btn.prop('disabled', true).text('Memproses…');
+
+                    var token = $('meta[name="csrf-token"]').attr('content') || $form.find('input[name="_token"]').val();
+
+                    $.ajax({
+                        url: $form.attr('action'),
+                        method: 'POST',
+                        data: JSON.stringify({ badge_id: badgeId }),
+                        contentType: 'application/json',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        success: function (res) {
+                            if (res.success) {
+                                // 1) ubah card modal jadi Terklaim
+                                var $card = $('#badge-card-' + badgeId);
+                                if ($card.length) $card.find('.mt-3.text-end').html('<span class="badge bg-success">Terklaim</span>');
+
+                                // 2) tambahkan ke profil — pastikan container ada atau dibuat
+                                var badge = res.badge || {
+                                    id: badgeId,
+                                    name: $card.find('.fw-bold').first().text().trim(),
+                                    description: $card.find('.small.text-muted').first().text().trim(),
+                                    path_icon: $card.find('img').first().attr('src') || '{{ asset("img/default.png") }}'
+                                };
+
+                                var $profileContainer = ensureProfileBadgeContainer();
+                                if ($profileContainer.length && $('#profile-badge-' + badge.id).length === 0) {
+                                    var html = buildProfileBadgeHtml(badge);
+                                    $profileContainer.append(html);
+                                }
+
+                                // notifikasi sukses
+                                if (typeof Swal !== 'undefined') Swal.fire('Berhasil', res.message || 'Badge diklaim', 'success');
+
+                                // disable semua tombol klaim untuk badge ini (jika ada duplikat)
+                                $('.claim-btn[data-badge-id="' + badgeId + '"]').prop('disabled', true).text('Terklaim');
                             } else {
-                                // gagal -> tampil pesan dan re-enable tombol (jika bukan already claimed)
-                                const msg = json.message || json.reason || 'Gagal klaim badge.';
-                                Swal.fire('Gagal', msg, 'error');
-                                // show reason text if ada
-                                const reasonEl = document.getElementById('reason-' + badgeId);
-                                if (reasonEl) { reasonEl.textContent = msg; reasonEl.style.display = 'block'; }
-                                btn.disabled = false;
-                                btn.innerText = 'Klaim';
+                                // jika sudah diklaim sebelumnya
+                                if (res.claimed) {
+                                    $('#badge-card-' + badgeId).find('.mt-3.text-end').html('<span class="badge bg-success">Terklaim</span>');
+                                    if (typeof Swal !== 'undefined') Swal.fire('Info', res.message || 'Sudah diklaim', 'info');
+                                } else {
+                                    var msg = res.message || res.reason || 'Gagal klaim badge.';
+                                    if (typeof Swal !== 'undefined') Swal.fire('Gagal', msg, 'error');
+                                    $btn.prop('disabled', false).text('Klaim');
+                                    $('#reason-' + badgeId).text(msg).show();
+                                }
                             }
-                        } catch (err) {
-                            console.error(err);
-                            Swal.fire('Error', 'Terjadi kesalahan jaringan.', 'error');
-                            btn.disabled = false;
-                            btn.innerText = 'Klaim';
+                        },
+                        error: function (xhr) {
+                            var json = xhr.responseJSON || {};
+                            var msg = json.message || json.reason || 'Terjadi kesalahan jaringan/server.';
+                            if (typeof Swal !== 'undefined') Swal.fire('Error', msg, 'error');
+                            $btn.prop('disabled', false).text('Klaim');
+                            $('#reason-' + badgeId).text(msg).show();
                         }
                     });
                 });
             });
         </script>
+
+
 
 
     @endpush
