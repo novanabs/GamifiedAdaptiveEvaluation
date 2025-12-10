@@ -52,24 +52,64 @@ class aktivitasController extends Controller
                 'activities.status',
                 'topics.title as topik',
                 'subject.name as mapel',
+                'classes.id as id_class',
+                'classes.name as nama_kelas',
+                'classes.level as level_kelas',
                 'activities.created_at',
+                // 🔹 pastikan kolom deadline ini ada, kalau beda nama ganti di sini
+                'activities.deadline',
                 DB::raw('COALESCE(activity_result.result, "-") as result'),
                 DB::raw('COALESCE(activity_result.result_status, "Belum Dikerjakan") as result_status')
             )
-            ->orderBy('topics.id')
-            ->orderBy('activities.created_at', 'asc')
             ->get();
 
-        // 🔹 Kelompokkan per-topik TANPA batasi status (semua aktivitas masuk list)
-        $activities = $rawActivities->groupBy('id_topic')->map(function ($group) {
-            return (object) [
-                'id_topic' => $group->first()->id_topic,
-                'topik' => $group->first()->topik,
-                'mapel' => $group->first()->mapel,
-                'tanggal' => $group->first()->created_at,
-                'list' => $group        // ← di sini semua aktivitas dimasukkan
-            ];
-        });
+        // 🔹 List paling atas: semua yang Belum Dikerjakan, urut deadline terdekat
+        $belumDikerjakan = $rawActivities
+            ->where('result_status', 'Belum Dikerjakan')
+            ->sortBy(function ($item) {
+                return $item->deadline ?? $item->created_at;
+            })
+            ->values();
+
+        // 🔹 Activities per kelas
+        $activitiesByClass = $rawActivities
+            ->groupBy('id_class')
+            ->map(function ($group) {
+                // urutkan di dalam kelas:
+                // 1) Belum Dikerjakan
+                // 2) Remedial
+                // 3) Pass
+                // 4) lainnya
+                $sortedList = $group->sortBy(function ($item) {
+                    $status = $item->result_status;
+
+                    if ($status === 'Belum Dikerjakan') {
+                        $order = 0;
+                    } elseif ($status === 'Remedial') {
+                        $order = 1;
+                    } elseif ($status === 'Pass') {
+                        $order = 2;
+                    } else {
+                        $order = 3;
+                    }
+
+                    $tanggal = $item->deadline ?? $item->created_at;
+
+                    return $order . '|' . $tanggal;
+                })->values();
+
+                return (object) [
+                    'id_class' => $group->first()->id_class,
+                    'nama_kelas' => $group->first()->nama_kelas,
+                    'level_kelas' => $group->first()->level_kelas,
+                    'list' => $sortedList,
+                ];
+            })
+            // urutkan kelas: level lalu nama
+            ->sortBy(function ($kelas) {
+                return $kelas->level_kelas . '|' . $kelas->nama_kelas;
+            })
+            ->values();
 
         // 🔹 Statistik
         $jumlahAktivitas = $rawActivities->count();
@@ -80,11 +120,13 @@ class aktivitasController extends Controller
             'user' => $user,
             'badge' => $badge,
             'kelasList' => $kelasList,
-            'activities' => $activities,
+            'belumDikerjakan' => $belumDikerjakan,
+            'activitiesByClass' => $activitiesByClass,
             'jumlahAktivitas' => $jumlahAktivitas,
             'jumlahRemedial' => $jumlahRemedial
         ]);
     }
+
 
 
     public function show($id)

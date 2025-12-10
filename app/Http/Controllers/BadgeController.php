@@ -245,7 +245,7 @@ class BadgeController extends Controller
             }
 
             $msg = $best
-                ? "Belum eligible. Waktu terbaik Anda: {$best['waktu_detik']} detik, harus < {$best['batas']} detik (40%)."
+                ? "Contoh memperoleh : Waktu pengerjan Anda: {$best['waktu_detik']} detik, harus < {$best['batas']} detik (40%) dari waktu pengerjaan. untuk eligible"
                 : "Belum eligible. Tidak ditemukan waktu yg valid.";
             return ['eligible' => false, 'reason' => $msg, 'matches' => []];
         }

@@ -134,6 +134,30 @@
             background: linear-gradient(135deg, #18b077, #159a66);
         }
 
+        /* Buat radio button lebih besar dan terlihat */
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-top: 4px;
+            cursor: pointer;
+
+    
+            border: 2px solid #555 !important;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
+
+          
+            accent-color: #1cc88a;
+        }
+
+
+        /* Label agar lebih dekat dengan radio */
+        .form-check-label {
+            margin-left: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+
         /* Animation */
         @keyframes fadeIn {
             from {

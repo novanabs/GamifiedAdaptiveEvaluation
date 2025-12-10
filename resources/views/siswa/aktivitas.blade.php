@@ -43,80 +43,175 @@
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 gx-4 gy-4">
-            @forelse ($activities as $topic)
+        {{-- =======================
+        1. BELUM DIKERJAKAN
+        ======================= --}}
+        @if($belumDikerjakan->count())
+            <div class="mb-4">
+                <h2 class="h5 fw-semibold mb-3 text-danger">
+                    <i class="bi bi-exclamation-circle me-2"></i> Belum Dikerjakan (Deadline Terdekat)
+                </h2>
 
-                {{-- Loop semua aktivitas dalam topik --}}
-                @foreach ($topic->list as $sub)
-                    @php
-                        $nilai = $sub->result;
-                        $status = $sub->result_status;
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 gx-4 gy-4">
+                    @foreach ($belumDikerjakan as $sub)
+                        @php
+                            $nilai = $sub->result;
+                            $status = $sub->result_status;
 
-                        // Badge status
-                        if (strtolower($status) === 'remedial') {
-                            $cls = 'danger';
-                        } elseif (strtolower($status) === 'pass') {
-                            $cls = 'success';
-                        } else {
-                            $cls = 'secondary';
-                        }
+                            if (strtolower($status) === 'remedial') {
+                                $cls = 'danger';
+                            } elseif (strtolower($status) === 'pass') {
+                                $cls = 'success';
+                            } else {
+                                $cls = 'secondary';
+                            }
 
-                        // Disable jika sudah dinilai
-                        $isDisabled = !is_null($nilai) && $nilai !== '-';
-                    @endphp
+                            $isDisabled = !is_null($nilai) && $nilai !== '-';
+                        @endphp
 
-                    <div class="col">
-                        <div class="card shadow-sm border-0 activity-card">
-                            <img src="https://picsum.photos/600/300?random={{ $loop->parent->iteration }}{{ $loop->iteration }}"
-                                class="card-img-top" alt="Gambar Aktivitas">
+                        <div class="col">
+                            <div class="card shadow-sm border-0 activity-card border-danger">
+                                <img src="https://picsum.photos/600/300?random=belum{{ $loop->iteration }}" class="card-img-top"
+                                    alt="Gambar Aktivitas">
 
-                            <div class="card-body d-flex flex-column p-3">
-                                <h5 class="card-title mb-2 text-primary fw-semibold">{{ $sub->aktivitas }}</h5>
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h5 class="card-title mb-2 text-primary fw-semibold">{{ $sub->aktivitas }}</h5>
 
-                                <p class="mb-2">
-                                    <span class="badge bg-primary me-2 text-white">{{ $sub->mapel }}</span>
-                                    <span class="badge bg-info text-white">{{ $sub->topik }}</span>
-                                    <span class="badge bg-secondary text-white ms-2">{{ ucfirst($sub->status) }}</span>
-                                </p>
+                                    <p class="mb-2">
+                                        <span class="badge bg-primary me-2 text-white">{{ $sub->mapel }}</span>
+                                        <span class="badge bg-info text-white">{{ $sub->topik }}</span>
+                                        <span class="badge bg-warning text-dark ms-2">Kelas {{ $sub->nama_kelas }}</span>
+                                        <span class="badge bg-secondary text-white ms-2">{{ ucfirst($sub->status) }}</span>
+                                    </p>
 
-                                <p class="text-muted mb-1">
-                                    <i class="bi bi-collection me-1"></i>
-                                    Status: <strong>{{ ucfirst($sub->status) }}</strong>
-                                </p>
+                                    <p class="text-muted mb-1">
+                                        <i class="bi bi-collection me-1"></i>
+                                        Status: <strong>{{ ucfirst($sub->status) }}</strong>
+                                    </p>
 
-                                <p class="text-muted mb-2">
-                                    <i class="bi bi-calendar-event me-1"></i>
-                                    {{ \Carbon\Carbon::parse($sub->created_at)->format('d M Y') }}
-                                </p>
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        @php
+                                            $tanggal = $sub->deadline ?? $sub->created_at;
+                                        @endphp
+                                        {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
+                                    </p>
 
-                                <p class="mb-3">
-                                    <span class="fw-semibold">Nilai:</span>
-                                    {!! $nilai ? "<strong>$nilai</strong>" : '<span class="text-muted">Belum Ada</span>' !!}
-                                    <span class="badge bg-{{ $cls }} ms-2 text-white">{{ ucfirst($status) }}</span>
-                                </p>
+                                    <p class="mb-3">
+                                        <span class="fw-semibold">Nilai:</span>
+                                        {!! $nilai ? "<strong>$nilai</strong>" : '<span class="text-muted">Belum Ada</span>' !!}
+                                        <span class="badge bg-{{ $cls }} ms-2 text-white">{{ ucfirst($status) }}</span>
+                                    </p>
 
-                                <div class="mt-auto">
-                                    <button class="btn btn-{{ $isDisabled ? 'secondary' : 'success' }} w-100 fw-semibold shadow-sm"
-                                        {{ $isDisabled ? 'disabled' : '' }} onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
-                                        {!! $isDisabled
-                        ? '<i class="bi bi-check2-circle me-1"></i> Sudah Dinilai'
-                        : '<i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang' !!}
-                                    </button>
+                                    <div class="mt-auto">
+                                        <button class="btn btn-success w-100 fw-semibold shadow-sm"
+                                            onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
+                                            <i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                @endforeach
-            @empty
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-emoji-frown display-6 text-muted"></i>
-                    <p class="mt-2 text-muted">Belum ada aktivitas untukmu.</p>
+                    @endforeach
                 </div>
-            @endforelse
-        </div>
+            </div>
+        @endif
 
+        {{-- =======================
+        2. ACTIVITIES PER KELAS
+        ======================= --}}
+        @forelse ($activitiesByClass as $kelas)
+            <div class="mb-5">
+                {{-- Header card per kelas --}}
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="h5 mb-1 fw-semibold">
+                                <i class="bi bi-people me-2"></i>
+                                Kelas {{ $kelas->nama_kelas }} (Level {{ $kelas->level_kelas }})
+                            </h2>
+                            <p class="mb-0 text-muted">
+                                Total aktivitas: {{ $kelas->list->count() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- List aktivitas di dalam kelas --}}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 gx-4 gy-4">
+                    @foreach ($kelas->list as $sub)
+                        @php
+                            $nilai = $sub->result;
+                            $status = $sub->result_status;
+
+                            if (strtolower($status) === 'remedial') {
+                                $cls = 'danger';
+                            } elseif (strtolower($status) === 'pass') {
+                                $cls = 'success';
+                            } else {
+                                $cls = 'secondary';
+                            }
+
+                            $isDisabled = !is_null($nilai) && $nilai !== '-';
+                        @endphp
+
+                        <div class="col">
+                            <div class="card shadow-sm border-0 activity-card">
+                                <img src="https://picsum.photos/600/300?random={{ $kelas->id_class }}{{ $loop->iteration }}"
+                                    class="card-img-top" alt="Gambar Aktivitas">
+
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h5 class="card-title mb-2 text-primary fw-semibold">{{ $sub->aktivitas }}</h5>
+
+                                    <p class="mb-2">
+                                        <span class="badge bg-primary me-2 text-white">{{ $sub->mapel }}</span>
+                                        <span class="badge bg-info text-white">{{ $sub->topik }}</span>
+                                        <span class="badge bg-warning text-dark ms-2">Kelas {{ $kelas->nama_kelas }}</span>
+                                        <span class="badge bg-secondary text-white ms-2">{{ ucfirst($sub->status) }}</span>
+                                    </p>
+
+                                    <p class="text-muted mb-1">
+                                        <i class="bi bi-collection me-1"></i>
+                                        Status: <strong>{{ ucfirst($sub->status) }}</strong>
+                                    </p>
+
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        @php
+                                            $tanggal = $sub->deadline ?? $sub->created_at;
+                                        @endphp
+                                        {{ \Carbon\Carbon::parse($tanggal)->format('d M Y') }}
+                                    </p>
+
+                                    <p class="mb-3">
+                                        <span class="fw-semibold">Nilai:</span>
+                                        {!! $nilai ? "<strong>$nilai</strong>" : '<span class="text-muted">Belum Ada</span>' !!}
+                                        <span class="badge bg-{{ $cls }} ms-2 text-white">{{ ucfirst($status) }}</span>
+                                    </p>
+
+                                    <div class="mt-auto">
+                                        <button
+                                            class="btn btn-{{ $isDisabled ? 'secondary' : 'success' }} w-100 fw-semibold shadow-sm"
+                                            {{ $isDisabled ? 'disabled' : '' }} onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
+                                            {!! $isDisabled
+                        ? '<i class="bi bi-check2-circle me-1"></i> Sudah Dinilai'
+                        : '<i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang' !!}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @empty
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-emoji-frown display-6 text-muted"></i>
+                <p class="mt-2 text-muted">Belum ada aktivitas untukmu.</p>
+            </div>
+        @endforelse
     </div>
+
 @endsection
 
 @push('scripts')
