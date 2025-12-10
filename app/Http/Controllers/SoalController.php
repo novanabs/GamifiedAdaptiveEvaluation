@@ -40,6 +40,7 @@ Tolong buatkan soal dan jawaban untuk topik {$topic->title} jenjang {$jenjang} d
 - format JSON
 - Total ada {$jumlah} soal setiap tingkat kesulitan mudah, sedang, dan sulit., 
 - format pertanyaan terdiri dari URL (gambar) dan teks. Pertanyaan tanpa gambar dapat mengisi URL dengan null.
+- Pertahankan id_topic sesuai dengan ID topik yang diberikan: {$topic->id}
 - MC_option (multiple choice option) format: [{\"a\": {url, teks}, ..., \"e\": {url, teks}}]. Pilihan ganda memiliki 5 opsi (a sampai e)
 - SA_option (shortanswer option) berisi 3 pilihan jawaban isian singkat dengan format [jawaban1, jawaban2, jawaban3].
 - Selanjutnya ada MC_Answer berisi jawaban dari pilihan ganda.

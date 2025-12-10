@@ -13,16 +13,25 @@ class siswaController extends Controller
         $user = Auth::user();
 
         // 🔹 Ambil semua badge siswa (jika ingin menampilkan banyak)
-        $userBadges = DB::table('user_badge')
-            ->join('badge', 'user_badge.id_badge', '=', 'badge.id')
-            ->where('user_badge.id_student', $user->id)
+        $userBadges = DB::table('user_badge as ub')
+            ->join('badge as b', 'ub.id_badge', '=', 'b.id')
+            ->where('ub.id_student', $user->id)
             ->select(
-                'badge.id',
-                'badge.name',
-                'badge.description',
-                'badge.path_icon'
+                'b.id',
+                'b.name',
+                'b.description',
+                'b.path_icon',
+                'ub.id_class' // penting: scope klaim per kelas (nullable)
             )
+            ->orderBy('ub.created_at', 'desc')
             ->get();
+        $badgesByClass = [];
+        foreach ($userBadges as $ub) {
+            $key = is_null($ub->id_class) ? 'general' : 'class_' . $ub->id_class;
+            if (!isset($badgesByClass[$key]))
+                $badgesByClass[$key] = [];
+            $badgesByClass[$key][] = $ub;
+        }
 
         // 🔹 Ambil data kelas siswa login
         $kelasList = DB::table('student_classes')
@@ -126,8 +135,6 @@ class siswaController extends Controller
         $leaderboardsPerClass = [];
 
         foreach ($kelasList as $kelas) {
-
-            // Ambil siswa dalam kelas
             $students = DB::table('student_classes')
                 ->where('id_class', $kelas->id)
                 ->pluck('id_student');
@@ -141,7 +148,6 @@ class siswaController extends Controller
                 continue;
             }
 
-            // Ambil subject yang dimiliki kelas
             $subjectIds = DB::table('subject')
                 ->where('id_class', $kelas->id)
                 ->pluck('id');
@@ -149,7 +155,6 @@ class siswaController extends Controller
             if ($subjectIds->isEmpty())
                 continue;
 
-            // Ambil topics milik subject tersebut
             $topicIds = DB::table('topics')
                 ->whereIn('id_subject', $subjectIds)
                 ->pluck('id');
@@ -157,7 +162,6 @@ class siswaController extends Controller
             if ($topicIds->isEmpty())
                 continue;
 
-            // Ambil aktivitas milik topics tersebut
             $activityIds = DB::table('activities')
                 ->whereIn('id_topic', $topicIds)
                 ->pluck('id');
@@ -165,7 +169,6 @@ class siswaController extends Controller
             if ($activityIds->isEmpty())
                 continue;
 
-            // Cari result siswa *khusus aktivitas kelas ini*
             $lb = DB::table('activity_result')
                 ->join('users', 'activity_result.id_user', '=', 'users.id')
                 ->whereIn('activity_result.id_user', $students)
@@ -179,7 +182,6 @@ class siswaController extends Controller
                 ->orderByDesc('total_score')
                 ->get();
 
-            // 6️⃣ Format output
             $leaderboardsPerClass[] = (object) [
                 'class_id' => $kelas->id,
                 'class_name' => $kelas->name,
@@ -197,21 +199,49 @@ class siswaController extends Controller
             ->select('id', 'name', 'description', 'path_icon')
             ->orderBy('id')
             ->get();
-        // Buat array ID badge yang sudah diklaim (untuk pengecekan di view)
+
         $claimedBadgeIds = $userBadges->pluck('id')->toArray();
+
+        // -----------------------------
+        // Tambahan: Daftar Nilai (ambil dari activity_result + relasi)
+        // -----------------------------
+        // Cari semua activity_result milik user yang berkaitan dengan kelas user
+        $kelasIds = $kelasList->pluck('id')->toArray();
+
+        $nilaiList = DB::table('activity_result')
+            ->join('activities', 'activity_result.id_activity', '=', 'activities.id')
+            ->join('topics', 'activities.id_topic', '=', 'topics.id')
+            ->join('subject', 'topics.id_subject', '=', 'subject.id')
+            ->join('classes', 'subject.id_class', '=', 'classes.id')
+            ->where('activity_result.id_user', $user->id)
+            ->whereIn('classes.id', $kelasIds)
+            ->select(
+                'activity_result.id as id_result',
+                'activity_result.result as nilai_akhir',
+                'activity_result.created_at as result_created_at',
+                'activities.title as aktivitas',
+                'topics.title as topik',
+                'subject.name as mapel',
+                'classes.name as kelas'
+            )
+            ->orderByDesc('activity_result.created_at')
+            ->get();
+
         // -----------------------------
         // View
         // -----------------------------
         return view('siswa.dashboardsiswa', [
             'user' => $user,
             'userBadges' => $userBadges,
-            'allBadges' => $allBadges,                 // <-- baru
+            'badgesByClass' => $badgesByClass,
+            'allBadges' => $allBadges,
             'claimedBadgeIds' => $claimedBadgeIds,
             'kelasList' => $kelasList,
             'activitiesByClass' => $activitiesByClass,
             'jumlahAktivitas' => $jumlahAktivitas,
             'jumlahRemedial' => $jumlahRemedial,
-            'leaderboardsPerClass' => $leaderboardsPerClass
+            'leaderboardsPerClass' => $leaderboardsPerClass,
+            'nilaiList' => $nilaiList
         ]);
     }
 

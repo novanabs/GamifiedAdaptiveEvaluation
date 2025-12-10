@@ -394,7 +394,6 @@ class aktivitasController extends Controller
         // tentukan statusBenar: true jika totalCorrect sama persis dengan jumlahSoal
         $statusBenar = ($totalCorrect === $jumlahSoal) ? true : false;
 
-        // Simpan hasil ke DB (update existing record atau buat baru)
         ActivityResult::updateOrCreate(
             [
                 'id_activity' => $id,
@@ -413,18 +412,33 @@ class aktivitasController extends Controller
             ]
         );
 
+        // Ambil record lagi dari DB untuk dikembalikan ke frontend (source of truth)
+        $activityResult = ActivityResult::where('id_activity', $id)
+            ->where('id_user', $userId)
+            ->first();
+
         // bersihkan session
         session()->forget("activity.$id");
         session()->forget("activity.$id.total_correct");
 
         return response()->json([
             'status' => 'saved',
+            // ringkasan cepat
             'duration_seconds' => $durationSeconds,
-            'start_time' => $start->toDateTimeString(),
-            'end_time' => $end->toDateTimeString(),
             'total_correct' => $totalCorrect,
             'jumlah_soal' => $jumlahSoal,
-            'status_benar' => $statusBenar,
+            // data dari DB (string/angka/timestamp)
+            'result_db' => $activityResult ? [
+                'result' => $activityResult->result,
+                'bonus_poin' => $activityResult->bonus_poin,
+                'real_poin' => $activityResult->real_poin,
+                'result_status' => $activityResult->result_status,
+                'waktu_mengerjakan' => $activityResult->waktu_mengerjakan,
+                'total_benar' => $activityResult->total_benar,
+                'start_time' => optional($activityResult->start_time)->toDateTimeString(),
+                'end_time' => optional($activityResult->end_time)->toDateTimeString(),
+                'status_benar' => (bool) $activityResult->status_benar,
+            ] : null,
         ]);
     }
 

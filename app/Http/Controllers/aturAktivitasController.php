@@ -105,11 +105,6 @@ class aturAktivitasController extends Controller
         ]);
     }
 
-
-
-
-
-
     public function simpanAturSoal(Request $request, $idAktivitas)
     {
         $request->validate([

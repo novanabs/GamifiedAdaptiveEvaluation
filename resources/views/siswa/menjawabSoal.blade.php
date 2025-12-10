@@ -48,51 +48,103 @@
             animation: firePulse 1s infinite;
         }
 
-        /* Minimal styling — letakkan di <head> jika ingin */
-        .soal-meta {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: .9rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e9ecef;
-        }
-
-        .question-panel {
+        /* Container utama */
+        #soal-test {
             background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* Meta soal (kelas, mapel, topik + timer) */
+        .soal-meta {
+            padding: 15px 20px;
             border-radius: 10px;
-            padding: 1.25rem;
-            box-shadow: 0 6px 18px rgba(17, 24, 39, .04);
+            background: #f8f9fa;
+            margin-bottom: 20px;
+            border: 1px solid #e3e6f0;
         }
 
+        .soal-meta strong {
+            color: #4e73df;
+        }
+
+        /* Timer */
         #timer {
+            font-size: 1.4rem;
             font-weight: 700;
-            color: #d9534f;
-            /* merah jam */
-            font-size: 1.05rem;
-        }
-
-        .option {
-            border: 1px solid #eef2f6;
+            background: #CF0F0F;
+            color: white;
+            padding: 6px 14px;
             border-radius: 8px;
-            padding: .7rem .9rem;
-            margin-bottom: .6rem;
+            min-width: 90px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(78, 115, 223, 0.3);
+        }
+
+        /* Panel Soal */
+        .question-panel {
+            background: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* Teks Soal */
+        #questionText {
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+
+        /* Opsi jawaban */
+        .option-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid #dce1eb;
+            margin-bottom: 10px;
             cursor: pointer;
-            transition: background .12s ease, transform .08s ease;
+            transition: all 0.25s ease;
+            background: #fdfdfd;
+            font-size: 1rem;
         }
 
-        .option:hover {
-            background: #fbfdff;
-            transform: translateY(-1px);
+        .option-item:hover {
+            border-color: #4e73df;
+            background: #f4f7ff;
         }
 
-        .option.selected {
-            background: rgba(13, 110, 253, .06);
-            border-color: rgba(13, 110, 253, .25);
+        .option-item.selected {
+            border-color: #1cc88a !important;
+            background: #e8fff3 !important;
+            box-shadow: 0 0 0 3px rgba(28, 200, 138, 0.25);
         }
 
-        /* tombol di kanan tetap rapi pada layar kecil */
+        /* Tombol Next */
         .btn-next {
-            min-width: 120px;
+            padding: 10px 22px;
+            font-size: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1cc88a, #18b077);
+            border: none;
+        }
+
+        .btn-next:hover {
+            background: linear-gradient(135deg, #18b077, #159a66);
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
@@ -138,7 +190,8 @@
 
         <!-- AREA SOAL -->
         <div id="soal-test" hidden>
-            <!-- ringkasan singkat -->
+
+            <!-- Header Soal -->
             <div class="soal-meta d-flex justify-content-between align-items-start">
                 <div>
                     <div><strong>Kelas:</strong> {{ $kelas }}</div>
@@ -149,23 +202,25 @@
                 <div id="timer">
                     {{ str_pad($durasi, 2, '0', STR_PAD_LEFT) }}:00
                 </div>
-
             </div>
 
-            <!-- panel soal -->
+            <!-- Panel Soal -->
             <div class="question-panel">
-                <!-- header / soal -->
                 <div id="questionText" class="mb-3 fw-semibold"></div>
 
-                <!-- opsi akan di-render di sini -->
+                <!-- Tempat opsi -->
                 <div id="optionsContainer" class="mb-4"></div>
 
-                <!-- footer -->
+                <!-- Tombol -->
                 <div class="d-flex justify-content-end">
-                    <button id="nextBtn" class="btn btn-success btn-next" onclick="checkAnswer()">Selanjutnya</button>
+                    <button id="nextBtn" class="btn btn-success btn-next" onclick="checkAnswer()">
+                        Selanjutnya
+                    </button>
                 </div>
             </div>
+
         </div>
+
 
     </div>
     <!-- COMBO METER -->
@@ -259,10 +314,6 @@
                         <div class="mb-2">
                             <b>Soal ${currentIndex + 1}:</b> ${q.question.text}
                         </div>
-
-                        <span class="badge ${badgeClass}">
-                            Difficulty: ${diff}
-                        </span>
                     `;
 
                     let html = "";
@@ -297,7 +348,7 @@
                     // 🔥 UBAH TOMBOL JADI “SELESAI” JIKA INI SOAL TERAKHIR
                     if (currentIndex === totalQuestions - 1) {
                         document.getElementById("nextBtn").innerText = "Selesai";
-                        document.getElementById("nextBtn").classList.replace("btn-success", "btn-danger");
+                        document.getElementById("nextBtn").classList.replace("btn-success", "btn-primary");
                     } else {
                         document.getElementById("nextBtn").innerText = "Selanjutnya";
                         document.getElementById("nextBtn").classList.replace("btn-danger", "btn-success");
@@ -350,9 +401,6 @@
                     updateComboUI(res.correct ? res.streak_correct : 0);
                 });
 
-
-
-
             if (currentIndex < totalQuestions - 1) {
                 currentIndex++;
                 loadQuestion();
@@ -395,17 +443,54 @@
             })
                 .then(r => r.json())
                 .then(res => {
-                    const sec = res.duration_seconds ?? 0;
+                    // Jika server balikkan result_db, pakai itu; kalau tidak, fallback ke res
+                    const db = res.result_db ?? null;
+                    const sec = res.duration_seconds ?? (db ? db.waktu_mengerjakan : 0);
                     const m = Math.floor(sec / 60);
                     const s = sec % 60;
+
+                    // Ambil nilai tampil: prioritas dari DB
+                    const totalBenar = db ? db.total_benar : (res.total_correct ?? 0);
+                    const jumlahSoal = res.jumlah_soal ?? (db ? (db.total_benar + 0) : 0); // kalau perlu ubah metode ambil
+                    const base = db ? db.result : null;
+                    const bonus = db ? db.bonus_poin : null;
+                    const real = db ? db.real_poin : null;
+                    const statusText = db ? db.result_status : (res.status_benar ? 'Pass' : 'Remedial');
+
+                    // Bangun HTML ringkasan hasil
+                    const html = `
+            <div style="text-align:left">
+                <p><strong>Waktu mengerjakan:</strong> ${m} m ${s} s</p>
+                <p><strong>Jumlah benar:</strong> ${totalBenar} / ${res.jumlah_soal}</p>
+                <p><strong>Nilai dasar:</strong> ${base !== null ? base : '-'}</p>
+                <p><strong>Bonus poin:</strong> ${bonus !== null ? bonus : '-'}</p>
+                <p><strong>Nilai akhir:</strong> ${real !== null ? real : '-'}</p>
+                <p><strong>Status:</strong> ${statusText}</p>
+            </div>
+        `;
+
+                    // Tampilkan modal Swal dengan detail hasil
                     Swal.fire({
                         title: "Selesai!",
-                        html: `Jawaban kamu telah disimpan.<br>Waktu mengerjakan: <b>${m}m ${s}s</b>`,
-                        icon: "success"
-                    }).then(() => location.href = "{{ route('siswa.aktivitas') }}");
+                        html: html,
+                        icon: "success",
+                        showCancelButton: true,
+                        confirmButtonText: "Kembali ke Aktivitas",
+                        reverseButtons: true,
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            location.href = "{{ route('siswa.aktivitas') }}";
+                        }
+                    });
 
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire("Error", "Gagal menyelesaikan tes. Coba lagi.", "error")
+                        .then(() => location.href = "{{ route('siswa.aktivitas') }}");
                 });
         }
+
     </script>
 
 </body>

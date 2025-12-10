@@ -245,11 +245,7 @@
                 updateAndDraw($td, this.value);
             });
 
-            // Optional: update hidden text on page load (already set server-side),
-            // but if you have dynamic rows you may need to ensure dt-search exists.
 
-            // If you prefer lighter behavior, replace 'input' with 'blur' to only redraw on blur:
-            // $('#topicsTable').on('blur', '.topic-edit-title, .topic-edit-desc', function () { ... });
         });
     </script>
 @endpush

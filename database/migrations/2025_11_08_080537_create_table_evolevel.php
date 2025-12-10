@@ -77,6 +77,7 @@ return new class extends Migration {
         Schema::create('user_badge', function (Blueprint $table) {
             $table->unsignedBigInteger('id_student');
             $table->unsignedBigInteger('id_badge');
+            $table->unsignedBigInteger('id_class')->nullable();
             $table->timestamps();
         });
         Schema::create('badge', function (Blueprint $table) {

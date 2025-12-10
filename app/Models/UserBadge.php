@@ -10,7 +10,7 @@ class UserBadge extends Model
     use HasFactory;
 
     protected $table = 'user_badge';
-    protected $fillable = ['id_student', 'id_badge'];
+    protected $fillable = ['id_student', 'id_badge','id_class'];
 
     // (1) belongsTo User
     public function user()
@@ -22,5 +22,9 @@ class UserBadge extends Model
     public function badge()
     {
         return $this->belongsTo(Badge::class, 'id_badge');
+    }
+     public function kelas()
+    {
+        return $this->belongsTo(Classes::class, 'id_class'); // sesuaikan namespace / nama model
     }
 }
