@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classes;
+use App\Models\StudentClasses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -244,5 +246,32 @@ class siswaController extends Controller
             'nilaiList' => $nilaiList
         ]);
     }
+    public function gabungKelasSiswa(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string'
+        ]);
 
+        $kelas = Classes::where('token', $request->token)->first();
+
+        if (!$kelas) {
+            return redirect()->back()->with('error', 'Token kelas tidak ditemukan.');
+        }
+
+        // Cegah siswa bergabung dua kali
+        $sudahGabung = StudentClasses::where('id_student', Auth::id())
+            ->where('id_class', $kelas->id)
+            ->exists();
+
+        if ($sudahGabung) {
+            return redirect()->back()->with('info', 'Anda sudah tergabung di kelas ini.');
+        }
+
+        StudentClasses::create([
+            'id_student' => Auth::id(),
+            'id_class' => $kelas->id,
+        ]);
+
+        return redirect()->back()->with('success', 'Berhasil bergabung ke kelas: ' . $kelas->name);
+    }
 }

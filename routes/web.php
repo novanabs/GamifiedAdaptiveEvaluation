@@ -35,6 +35,7 @@ Route::middleware(['auth', RoleMiddleware::class . ':student'])->group(function 
     Route::post('/activity/{id}/finish', [aktivitasController::class, 'finishTest']);
     Route::post('/badges/claim', [BadgeController::class, 'claim'])->name('badges.claim');
     Route::get('/badges/{id}/eligibility', [BadgeController::class, 'eligibility'])->name('badges.eligibility');
+    Route::post('/student/gabung-kelas', [siswaController::class, 'gabungKelasSiswa'])->name('student.gabungKelas');
 
 });
 

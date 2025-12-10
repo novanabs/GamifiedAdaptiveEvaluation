@@ -126,9 +126,19 @@
                                         @endif
                                     </td>
 
-                                    <td class="align-middle">{{ $r->topic_title }}</td>
-                                    <td class="align-middle">{{ $r->subject_name ?? '-' }}</td>
-                                    <td class="align-middle">{{ $r->class_name ?? '-' }}</td>
+                                    <td class="align-middle col-title">
+                                        <div class="cell-inner" title="{{ $r->title }}">{{ $r->title }}</div>
+                                    </td>
+
+                                    <td class="align-middle col-subject hide-sm">
+                                        <div class="cell-inner" title="{{ $r->subject_name ?? '-' }}">
+                                            {{ $r->subject_name ?? '-' }}</div>
+                                    </td>
+
+                                    <td class="align-middle col-class hide-sm">
+                                        <div class="cell-inner" title="{{ $r->class_name ?? '-' }}">{{ $r->class_name ?? '-' }}
+                                        </div>
+                                    </td>
 
                                     <td class="align-middle text-center">
                                         <div class="action-group">
@@ -307,25 +317,54 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
     <style>
-        /* kolom nomor & aksi */
-        #activitiesTable th:nth-child(1),
-        #activitiesTable td:nth-child(1) {
-            width: 60px;
+        /* truncate dengan ellipsis */
+        .text-ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            /* ubah ke normal untuk wrap */
         }
 
-        #activitiesTable th:nth-child(8),
-        #activitiesTable td:nth-child(8) {
-            width: 260px;
+        /* bila ingin boleh wrap (multi-line) gunakan kelas ini */
+        .text-wrap {
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* batas lebar kolom agar tidak memanjangkan layout */
+        td.col-title {
+            max-width: 220px;
+        }
+
+        /* Judul */
+        td.col-topic {
+            max-width: 180px;
+        }
+
+        /* Topik */
+        td.col-subject {
+            max-width: 140px;
+        }
+
+        /* Subject */
+        td.col-class {
+            max-width: 120px;
+        }
+
+        /* Kelas */
+
+        /* buat cell truncate (multi size) */
+        td.col-title>.cell-inner,
+        td.col-topic>.cell-inner,
+        td.col-subject>.cell-inner,
+        td.col-class>.cell-inner {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        /* vertical align semua sel */
-        #activitiesTable td,
-        #activitiesTable th {
-            vertical-align: middle;
-        }
-
-        /* action group: rapi dan responsif */
+        /* action group styling (tetap) */
         .action-group {
             display: flex;
             gap: .45rem;
@@ -334,76 +373,94 @@
             justify-content: center;
         }
 
-        .action-group .btn {
-            padding: .35rem .6rem;
-            font-size: .88rem;
-            min-width: 44px;
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            border-radius: .35rem;
-        }
-
-        /* sembunyikan teks tombol pada layar sangat kecil, tampilkan hanya icon */
-        .action-group .btn-text {
-            margin-left: .2rem;
-        }
-
-        @media (max-width: 520px) {
-            .action-group .btn-text {
-                display: none;
-            }
-
-            .action-group {
-                gap: .3rem;
+        /* responsive: sembunyikan kolom subject & class di xs */
+        @media (max-width: 768px) {
+            .hide-sm {
+                display: none !important;
             }
         }
 
-        /* sedikit spacing antar elemen form */
-        .card .form-control,
-        .card .form-select {
-            box-shadow: none;
+        /* agar table responsive horizontal */
+        .dt-scroll-wrapper {
+            overflow-x: auto;
         }
     </style>
 @endpush
 
+
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var table = $('#activitiesTable').DataTable({
-                responsive: { details: false },
-                autoWidth: false,
-                lengthChange: true,
-                pageLength: 10,
-                order: [[1, 'asc']],
-                columnDefs: [
-                    { orderable: false, targets: [0, 7] },
-                    { searchable: false, targets: 0 }
-                ],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
-                    lengthMenu: "Tampilkan _MENU_ entri",
-                    paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
-                }
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // DataTable with horizontal scroll and responsive details
+    var table = $('#activitiesTable').DataTable({
+        responsive: {
+            details: {
+                type: 'column',
+                target: -1 // fallback: last column toggles detail
+            }
+        },
+        scrollX: true,
+        autoWidth: false,
+        lengthChange: true,
+        pageLength: 10,
+        order: [[1, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 7] },
+            { searchable: false, targets: 0 },
+            // make the last column (Aksi) not responsive-detail toggler
+            { responsivePriority: 1, targets: 1 }, // Judul paling penting
+            { responsivePriority: 2, targets: 7 }  // Aksi tetap penting
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
+            lengthMenu: "Tampilkan _MENU_ entri",
+            paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
+        },
+        drawCallback: function () {
+            // Aktifkan tooltip untuk semua cell yang punya title
+            var tlist = [].slice.call(document.querySelectorAll('[title]'));
+            tlist.map(function (el) { return new bootstrap.Tooltip(el); });
+        }
+    });
 
-            // isi nomor dinamis
-            table.on('order.dt search.dt draw.dt', function () {
-                table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-                    cell.innerHTML = i + 1;
-                });
-            }).draw();
-
-            // tooltip bootstrap
-            var tlist = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tlist.map(function (el) { return new bootstrap.Tooltip(el) });
+    // nomor dinamis
+    table.on('order.dt search.dt draw.dt', function () {
+        table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+            cell.innerHTML = i + 1;
         });
-    </script>
+    }).draw();
+
+    // optional: tombol Lihat -> modal show detail row
+    // delegasi: ketika tombol lihat diklik ambil data baris dan tampilkan
+    $(document).on('click', '.btn-view-row', function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $tr = $btn.closest('tr');
+        if ($tr.hasClass('child')) { // jika responsive membuat row child, ambil parent
+            $tr = $tr.prev();
+        }
+        var rowData = table.row($tr).data(); // array cells
+        // rowData indeks: 0=No,1=Judul,2=Deadline,3=Adaptive,4=Topik,5=Subject,6=Kelas,7=Aksi
+        var html = '<dl class="row">';
+        html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
+        html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
+        html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
+        html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
+        html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
+        html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';
+        html += '</dl>';
+        $('#rowDetailModal .modal-body').html(html);
+        var modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
+        modal.show();
+    });
+
+});
+</script>
 @endpush

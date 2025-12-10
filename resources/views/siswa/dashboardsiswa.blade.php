@@ -214,7 +214,7 @@
         }
 
         /* jika nav-pills aktif mengubah warna tab (tombol) itu hanya tombol, bukan pane.
-       namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
+                   namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
         .nav-pills .nav-link.active {
             background: #0d6efd;
             /* tetap tombol biru — tidak akan mempengaruhi content */
@@ -245,9 +245,11 @@
                                 <small class="text-muted d-block">{{ $user->email }}</small>
                             </div>
 
+
                             {{-- Right: stats and badge --}}
                             <div class="flex-fill">
                                 <div class="d-flex gap-2 mb-3 flex-wrap">
+
                                     <div class="card p-2 flex-fill shadow-sm border-start-success" style="min-width:120px">
                                         <div class="small text-muted">Jumlah Aktivitas</div>
                                         <div class="fw-bold text-success" style="font-size:1.25rem">{{ $jumlahAktivitas }}
@@ -269,6 +271,13 @@
                                                 -
                                             @endif
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label class="small text-muted mb-1 d-block">Aksi</label>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                            data-bs-target="#modalGabungKelas">
+                                            <i class="bi bi-box-arrow-in-right"></i> Gabung Kelas
+                                        </button>
                                     </div>
                                 </div>
                                 <!-- badge siswa -->
@@ -476,7 +485,33 @@
             </div>
         </div>
     </div>
-
+    <!-- modal gabung kelas -->
+    <div class="modal fade" id="modalGabungKelas" tabindex="-1" aria-labelledby="modalGabungKelasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{{ route('student.gabungKelas') }}">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalGabungKelasLabel">Gabung Kelas dengan Token</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label small">Masukkan Token Kelas</label>
+                            <input type="text" name="token" class="form-control form-control-sm" placeholder="Token kelas"
+                                required>
+                        </div>
+                        <div class="small text-muted">Token biasanya diberikan oleh guru. Pastikan memasukkan token dengan
+                            benar.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Gabung</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     {{-- DataTables --}}
     @push('scripts')
@@ -551,10 +586,10 @@
 
                 if (!block || !block.students || block.students.length === 0) {
                     area.innerHTML = `
-                                                                                                                                    <div class="text-center text-muted py-3">
-                                                                                                                                        Belum ada peringkat untuk kelas ini.
-                                                                                                                                    </div>
-                                                                                                                                `;
+                                                                                                                                                            <div class="text-center text-muted py-3">
+                                                                                                                                                                Belum ada peringkat untuk kelas ini.
+                                                                                                                                                            </div>
+                                                                                                                                                        `;
                     return;
                 }
 
@@ -565,21 +600,21 @@
                     const rank = idx + 1;
 
                     html += `
-                                                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
-                                                                                                                                        style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                                                                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
+                                                                                                                                                                style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
 
-                                                                                                                                        <div class="d-flex align-items-center gap-3">
-                                                                                                                                            <div class="fw-bold text-primary" style="width:28px">${rank}</div>
+                                                                                                                                                                <div class="d-flex align-items-center gap-3">
+                                                                                                                                                                    <div class="fw-bold text-primary" style="width:28px">${rank}</div>
 
-                                                                                                                                            <div class="fw-semibold">${row.name}</div>
-                                                                                                                                        </div>
+                                                                                                                                                                    <div class="fw-semibold">${row.name}</div>
+                                                                                                                                                                </div>
 
-                                                                                                                                        <div class="text-end">
-                                                                                                                                            <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
-                                                                                                                                            <small class="text-muted">poin</small>
-                                                                                                                                        </div>
-                                                                                                                                    </li>
-                                                                                                                                `;
+                                                                                                                                                                <div class="text-end">
+                                                                                                                                                                    <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
+                                                                                                                                                                    <small class="text-muted">poin</small>
+                                                                                                                                                                </div>
+                                                                                                                                                            </li>
+                                                                                                                                                        `;
                 });
 
                 html += '</ul>';
@@ -723,7 +758,7 @@
                                         right.innerHTML = '<span class="claimed-pill">Terklaim</span>';
                                     }
 
-                                    
+
                                 } else {
                                     const msg = (res && (res.message || res.reason)) || 'Gagal klaim';
                                     if (typeof Swal !== 'undefined') Swal.fire('Gagal', msg, 'error');
@@ -762,15 +797,15 @@
                     var safeDesc = $('<div/>').text(badge.description || '').html();
 
                     return `
-                                        <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
-                                            <div class="card h-100 border-0 bg-transparent p-0">
-                                                <div class="d-flex flex-column align-items-center text-center p-2">
-                                                    <img src="${icon}" alt="${safeName}" width="64" height="64"
-                                                        style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
-                                                    <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
-                                                </div>
-                                            </div>
-                                        </div>`;
+                                                                <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
+                                                                    <div class="card h-100 border-0 bg-transparent p-0">
+                                                                        <div class="d-flex flex-column align-items-center text-center p-2">
+                                                                            <img src="${icon}" alt="${safeName}" width="64" height="64"
+                                                                                style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
+                                                                            <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`;
                 }
 
                 // ----- helper: cari / buat container badge profil -----
