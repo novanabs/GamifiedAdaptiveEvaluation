@@ -5,6 +5,7 @@ use App\Http\Controllers\aturAktivitasController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\guruController;
 use App\Http\Controllers\loginController;
+use App\Http\Controllers\registerController;
 use App\Http\Controllers\siswaController;
 use App\Http\Controllers\SoalController;
 use App\Http\Middleware\RoleMiddleware;
@@ -140,9 +141,8 @@ Route::post('/login', [loginController::class, 'login'])->name('login.process');
 Route::post('/logout', [loginController::class, 'logout'])->name('logout');
 
 
-Route::get('/registrasi', function () {
-    return view('home.registrasi');
-});
+Route::get('/register', [registerController::class, 'showForm'])->name('register.form');
+Route::post('/register', [registerController::class, 'register'])->name('register.submit');
 
 Route::get('/tentang', function () {
     return view('home.tentang');

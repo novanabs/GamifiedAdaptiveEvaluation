@@ -120,7 +120,7 @@
 
                         </div>
                         <div class="card-footer text-center small text-muted">
-                            Belum punya akun? <a href="{{ url('/registrasi') }}">Daftar sekarang</a> atau
+                            Belum punya akun? <a href="{{ url('/register') }}">Daftar sekarang</a> atau
                             <a href="{{ url('/') }}">ke beranda</a>
                         </div>
                     </div>
