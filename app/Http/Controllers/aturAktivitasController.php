@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Activity;
 use App\Models\Question;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,17 +13,43 @@ class aturAktivitasController extends Controller
 {
     public function halamanAturSoal($idAktivitas, Request $request)
     {
-        $aktivitas = DB::table('activities')->where('id', $idAktivitas)->first();
+        // ambil aktivitas (Eloquent)
+        $aktivitas = Activity::findOrFail($idAktivitas);
 
-        // 🔥 Ambil id_topic dari URL
-        $idTopic = $request->query('topic');
+        // ambil id_topic dari query (utk safety kita fallback ke aktivitas->id_topic)
+        $idTopic = $request->query('topic') ?? $aktivitas->id_topic;
 
-        // 🔥 Filter soal: dibuat guru ini + sesuai topik
-        $questions = DB::table('question')
-            ->where('created_by', Auth::id())
-            ->where('id_topic', $idTopic)
+        // ambil topic & subject (dengan relasi)
+        $topic = Topic::with('subject')->find($idTopic);
+        if (!$topic) {
+            abort(404, 'Topik tidak ditemukan.');
+        }
+
+        $subject = $topic->subject;
+        if (!$subject) {
+            abort(404, 'Subject untuk topik ini tidak ditemukan.');
+        }
+
+        // pastikan guru tergabung di kelas subject ini
+        $classId = $subject->id_class;
+        $idGuru = Auth::id();
+        $isTeacherInClass = DB::table('teacher_classes')
+            ->where('id_teacher', $idGuru)
+            ->where('id_class', $classId)
+            ->exists();
+
+        if (!$isTeacherInClass) {
+            // Jika bukan anggota kelas -> larang akses
+            abort(403, 'Anda tidak memiliki akses ke kelas/topik ini.');
+        }
+
+        // Ambil semua soal yang punya id_topic = $idTopic (tidak dibatasi created_by)
+        // Karena kamu mau soal walau dibuat guru lain tetap tersedia selama topiknya sama
+        $questions = Question::where('id_topic', $idTopic)
+            ->orderBy('created_at', 'desc')
             ->get();
 
+        // Ambil selected ids dari pivot (activity_question)
         $selectedIds = DB::table('activity_question')
             ->where('id_activity', $idAktivitas)
             ->pluck('id_question')
@@ -34,10 +61,11 @@ class aturAktivitasController extends Controller
             'aktivitas',
             'questions',
             'selectedIds',
-            'selectedQuestions'
+            'selectedQuestions',
+            'topic',
+            'subject'
         ));
     }
-
 
     public function ambilSoalAjax(Request $request, $idAktivitas)
     {
@@ -45,23 +73,38 @@ class aturAktivitasController extends Controller
             'jumlah' => 'required|numeric|min:1'
         ]);
 
-        // Ambil aktivitas beserta topiknya
         $aktivitas = Activity::findOrFail($idAktivitas);
+        $idTopic = $aktivitas->id_topic;
+
+        // pastikan guru tergabung di kelas topik ini (security)
+        $topic = Topic::with('subject')->find($idTopic);
+        if (!$topic || !$topic->subject) {
+            return response()->json(['success' => false, 'message' => 'Topik/subject tidak ditemukan.'], 404);
+        }
+
+        $classId = $topic->subject->id_class;
+        $idGuru = Auth::id();
+        $isTeacherInClass = DB::table('teacher_classes')
+            ->where('id_teacher', $idGuru)
+            ->where('id_class', $classId)
+            ->exists();
+
+        if (!$isTeacherInClass) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses ke kelas/topik ini.'], 403);
+        }
+
         $isAdaptive = ($aktivitas->addaptive === 'yes');
-
-        // 🔥 Filter soal BENAR: guru yg membuat + topik yg sama
-        $baseQuery = Question::where('created_by', Auth::id())
-            ->where('id_topic', $aktivitas->id_topic);
-
         $n = intval($request->jumlah);
 
-        if ($isAdaptive) {
+        // Base query: semua soal yang punya topik sama (tanpa membatasi created_by)
+        $baseQuery = Question::where('id_topic', $idTopic);
 
+        if ($isAdaptive) {
             $easyCount = max(0, $n - 2);
             $hardCount = max(0, $n - 2);
             $mediumCount = max(0, $n);
 
-            // Ambil soal berdasarkan kesulitan
+            // Ambil bagian dari masing-masing difficulty secara acak
             $easyPool = (clone $baseQuery)->where('difficulty', 'mudah')
                 ->inRandomOrder()->take($easyCount)->get();
 
@@ -74,44 +117,50 @@ class aturAktivitasController extends Controller
             $final = $easyPool->merge($mediumPool)->merge($hardPool);
 
             return response()->json([
+                'success' => true,
                 'adaptive' => true,
                 'easy' => $easyCount,
                 'medium' => $mediumCount,
                 'hard' => $hardCount,
                 'total' => $final->count(),
-                'data' => $final->map(fn($q) => [
-                    'id' => $q->id,
-                    'difficulty' => $q->difficulty,
-                    'type' => $q->type,
-                    'text' => json_decode($q->question)->text ?? '-'
-                ])
+                'data' => $final->map(function ($q) {
+                    return [
+                        'id' => $q->id,
+                        'difficulty' => $q->difficulty,
+                        'type' => $q->type,
+                        'text' => optional(json_decode($q->question))->text ?? '-'
+                    ];
+                })->values()
             ]);
         }
 
-        $final = $baseQuery
-            ->inRandomOrder()
-            ->take($n)
-            ->get();
+        // Non-adaptive: ambil n soal acak dari semua soal topik ini
+        $final = $baseQuery->inRandomOrder()->take($n)->get();
 
         return response()->json([
+            'success' => true,
             'adaptive' => false,
             'total' => $final->count(),
-            'data' => $final->map(fn($q) => [
-                'id' => $q->id,
-                'difficulty' => $q->difficulty,
-                'type' => $q->type,
-                'text' => json_decode($q->question)->text ?? '-'
-            ])
+            'data' => $final->map(function ($q) {
+                return [
+                    'id' => $q->id,
+                    'difficulty' => $q->difficulty,
+                    'type' => $q->type,
+                    'text' => optional(json_decode($q->question))->text ?? '-'
+                ];
+            })->values()
         ]);
     }
-
     public function simpanAturSoal(Request $request, $idAktivitas)
     {
         $request->validate([
-            'id_question' => 'nullable|array'
+            'id_question' => 'nullable|array',
+            'id_question.*' => 'integer',
+            'jumlah' => 'nullable|integer|min:0'
         ]);
 
         $ids = $request->input('id_question', []);
+        $jumlah = $request->input('jumlah', null);
 
         DB::beginTransaction();
         try {
@@ -123,6 +172,10 @@ class aturAktivitasController extends Controller
                 $insert = [];
                 $now = now();
                 foreach ($ids as $qid) {
+                    // skip non-int guard
+                    $qid = intval($qid);
+                    if ($qid <= 0)
+                        continue;
                     $insert[] = [
                         'id_activity' => $idAktivitas,
                         'id_question' => $qid,
@@ -130,17 +183,29 @@ class aturAktivitasController extends Controller
                         'updated_at' => $now,
                     ];
                 }
-                DB::table('activity_question')->insert($insert);
+                if (!empty($insert)) {
+                    DB::table('activity_question')->insert($insert);
+                }
+            }
+
+            // Jika dikirim jumlah, update kolom jumlah_soal pada activities
+            if (!is_null($jumlah)) {
+                // pastikan kolom ada — jika tidak ada, query akan gagal -> exception
+                DB::table('activities')->where('id', $idAktivitas)->update([
+                    'jumlah_soal' => intval($jumlah),
+                    'updated_at' => now()
+                ]);
             }
 
             DB::commit();
-            return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Tersimpan', 'jumlah' => $jumlah]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('simpanAturSoal error: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            \Log::error(message: 'simpanAturSoal error: ' . $e->getMessage() . ' -- trace: ' . $e->getTraceAsString());
+            return response()->json(['success' => false, 'message' => 'Server error: ' . $e->getMessage()], 500);
         }
     }
+
     public function tambahSoalManual(Request $req, $idAktivitas)
     {
         DB::table('activity_question')->insert([

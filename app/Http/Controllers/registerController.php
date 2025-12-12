@@ -25,7 +25,7 @@ class registerController extends Controller
                 'password' => ['required', 'min:6'],
                 'role' => ['required', Rule::in(['student', 'teacher', 'murid', 'guru'])],
                 'kodeKelas' => ['nullable', 'string', 'max:50'],
-                'type_id_other' => ['nullable', Rule::in(['NISN', 'NIM', 'NIP', 'NIDN', 'NUPTK'])],
+                'type_id_other' => ['nullable', Rule::in(['NISN', 'NIM', 'NIP', 'NIDN', 'NUPTK','id_lainnya'])],
                 'id_other' => ['nullable', 'string', 'max:255'],
             ]);
 

@@ -115,7 +115,7 @@
 
     </div>
 
-    {{-- MODAL: Daftar Soal (satu kolom scrollable; dengan tombol reset) --}}
+    {{-- MODAL: Daftar Soal (rapi + responsif) --}}
     <div class="modal fade" id="soalModal" tabindex="-1" aria-labelledby="soalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
@@ -125,90 +125,102 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="card p-2 mb-3">
+                    <div class="card border-0 mb-0">
+                        <div class="card-body p-3">
 
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="small text-muted">Daftar Semua Soal</div>
-                            {{-- HAPUS "Pilih Semua" --}}
-                            {{-- HAPUS tombol lama Bersihkan --}}
-                        </div>
+                            {{-- Kontrol atas (kiri: jumlah & tombol, kanan: instruksi singkat) --}}
+                            <div class="d-flex flex-column flex-md-row gap-3 align-items-start mb-3">
+                                <div>
+                                    <h6 class="mb-2 text-muted">Pilih Jumlah Soal</h6>
 
-                        {{-- tabel scrollable --}}
-                        <div style="max-height:560px; overflow-y:auto;">
-                            <table class="table table-sm table-bordered mb-0">
-                                <thead class="table-light text-center">
-                                    <tr>
-                                        <th style="width:80px">Aksi</th>
-                                        <th style="width:60px">No</th>
-                                        <th>Tipe</th>
-                                        <th>Kesulitan</th>
-                                        <th>Pertanyaan</th>
-                                    </tr>
-                                </thead>
+                                    @php $savedJumlah = $aktivitas->jumlah_soal ?? null; @endphp
 
-                                <tbody id="modalQuestionList">
-                                    @foreach ($questions as $q)
-                                        @php $qData = json_decode($q->question); @endphp
-                                        <tr data-qid="{{ $q->id }}" id="modalRow-{{ $q->id }}">
-                                            <td class="text-center">
-                                                <button
-                                                    class="btn btn-sm {{ in_array($q->id, $selectedIds) ? 'btn-danger' : 'btn-success' }}"
-                                                    onclick="modalToggleSelect({{ $q->id }})">
-                                                    <i
-                                                        class="bi {{ in_array($q->id, $selectedIds) ? 'bi-x-circle' : 'bi-plus-circle' }}"></i>
-                                                </button>
-                                            </td>
-                                            <td class="text-center">{{ $loop->iteration }}</td>
-                                            <td>{{ $q->type }}</td>
-                                            <td>{{ $q->difficulty }}</td>
-                                            <td>{{ Str::limit($qData->text ?? '-', 300) }}</td>
+                                    <div class="btn-group btn-group-sm mb-2" role="group" aria-label="jumlah soal">
+                                        @foreach ([5, 10, 15, 20, 25, 30] as $opt)
+                                            <label class="btn btn-outline-primary {{ $savedJumlah == $opt ? 'active' : '' }}">
+                                                <input type="radio" name="modalJumlahRadio" value="{{ $opt }}" class="me-1" {{ $savedJumlah == $opt ? 'checked' : '' }}>
+                                                {{ $opt }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+
+
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="btn btn-primary btn-sm" id="btnAmbilModal">Ambil Soal
+                                            Otomatis</button>
+
+                                        <button class="btn btn-outline-primary btn-sm" id="btnSelectAllModal"
+                                            title="Pilih semua soal pada daftar">
+                                            <i class="bi bi-check2-all me-1"></i> Ambil Semua
+                                        </button>
+
+                                        <button class="btn btn-outline-secondary btn-sm"
+                                            id="btnUnselectAllModal">Bersihkan</button>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <hr class="my-2">
+
+                            {{-- Header daftar soal --}}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0 text-muted">Daftar Semua Soal</h6>
+                                <div class="small text-muted">Total: <span id="modalTotalCount">{{ $questions->count() }}
+                                        Soal</span></div>
+                            </div>
+
+                            {{-- tabel scrollable (table kecil + compact) --}}
+                            <div style="max-height:540px; overflow:auto;">
+                                <table class="table table-sm table-bordered mb-0 align-middle">
+                                    <thead class="table-light text-center sticky-top" style="top:0; z-index:1;">
+                                        <tr>
+                                            <th style="width:84px">Aksi</th>
+                                            <th style="width:56px">No</th>
+                                            <th style="min-width:120px">Tipe</th>
+                                            <th style="min-width:100px">Kesulitan</th>
+                                            <th>Pertanyaan</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
+                                    </thead>
 
-                            </table>
-                        </div>
+                                    <tbody id="modalQuestionList">
+                                        @foreach ($questions as $q)
+                                            @php $qData = json_decode($q->question); @endphp
+                                            <tr data-qid="{{ $q->id }}" id="modalRow-{{ $q->id }}">
+                                                <td class="text-center">
+                                                    <button
+                                                        class="btn btn-sm {{ in_array($q->id, $selectedIds) ? 'btn-danger' : 'btn-success' }}"
+                                                        onclick="modalToggleSelect({{ $q->id }})"
+                                                        aria-label="{{ in_array($q->id, $selectedIds) ? 'Unselect' : 'Select' }}">
+                                                        <i
+                                                            class="bi {{ in_array($q->id, $selectedIds) ? 'bi-x-circle' : 'bi-plus-circle' }}"></i>
+                                                    </button>
+                                                </td>
 
-                        {{-- pilihan jumlah & tombol ambil/reset --}}
-                        <div class="mt-3">
-
-                            <div class="small text-muted mb-1">Pilih Jumlah Soal</div>
-
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                @foreach ([5, 10, 15, 20, 25, 30] as $opt)
-                                    <label class="btn btn-outline-primary d-flex align-items-center">
-                                        <input type="radio" name="modalJumlahRadio" value="{{ $opt }}" class="me-1">
-                                        {{ $opt }}
-                                    </label>
-                                @endforeach
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary" id="btnAmbilModal">Ambil Soal Otomatis</button>
-
-                                {{-- Tombol RESET baru --}}
-                                <button class="btn btn-sm btn-outline-secondary" id="btnUnselectAllModal">Bersihkan</button>
-
-                                <div class="ms-auto text-muted align-self-center">Gunakan Ambil Otomatis setelah memilih
-                                    jumlah.</div>
+                                                <td class="text-center">{{ $loop->iteration }}</td>
+                                                <td>{{ $q->type }}</td>
+                                                <td>{{ $q->difficulty }}</td>
+                                                <td style="white-space:normal;">{{ Str::limit($qData->text ?? '-', 300) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
 
                         </div>
-
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <div class="me-auto text-muted small">
-                        Pilih soal lalu tekan <strong>Terapkan ke Aktivitas</strong>
-                    </div>
+                    <div class="me-auto text-muted small">Pilih soal lalu tekan <strong>Terapkan ke Aktivitas</strong></div>
                     <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
                     <button class="btn btn-primary" id="btnApplyToActivity">Terapkan ke Aktivitas</button>
                 </div>
-
             </div>
         </div>
     </div>
+
 
 
 
@@ -259,9 +271,9 @@
 
             if (!ids || ids.length === 0) {
                 area.innerHTML = `<div id="noSelectedPlaceholder" class="text-center text-muted py-4">
-                                                    <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
-                                                    <div class="mt-2">Belum ada soal.</div>
-                                              </div>`;
+                                                                                                <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
+                                                                                                <div class="mt-2">Belum ada soal.</div>
+                                                                                          </div>`;
                 document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = 0);
                 updateCounter();
                 return;
@@ -274,14 +286,14 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between align-items-start" id="selectedItem-${id}">
-                                        <div>
-                                            <small class="text-muted">${smallText}</small>
-                                            <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
-                                        </div>
-                                        <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
-                                    </div>`;
+                                                                                    <div>
+                                                                                        <small class="text-muted">${smallText}</small>
+                                                                                        <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
+                                                                                    </div>
+                                                                                    <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
+                                                                                        <i class="bi bi-x-circle"></i>
+                                                                                    </button>
+                                                                                </div>`;
             });
             area.innerHTML = html;
             document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = ids.length);
@@ -335,16 +347,16 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-white" id="modalSelectedItem-${id}">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <small class="text-muted">${smallText}</small>
-                                                <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
-                                            </div>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                        </div>
-                                    </div>`;
+                                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                                        <div>
+                                                                                            <small class="text-muted">${smallText}</small>
+                                                                                            <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                        </div>
+                                                                                        <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
+                                                                                            <i class="bi bi-x-circle"></i>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>`;
             });
             wrap.innerHTML = html;
 
@@ -508,7 +520,7 @@
             });
         }
 
-        
+
 
         // Terapkan pilihan di modal -> ke halaman + simpan ke DB (safety: attach only if exists)
         const btnApply = document.getElementById('btnApplyToActivity');
@@ -647,24 +659,104 @@
         }
         // SIMPAN pilihan (pakai window.lastPicked)
         // ------------- CACHE JUMLAH SOAL (selectedN) & RADIO HELPERS -------------
-        let selectedN = null;
+        // ambil nilai dari database (null jika belum ada)
+        let selectedN = @json($aktivitas->jumlah_soal ?? null);
 
+        // baca jumlah radio yang terpilih
         function readCheckedN() {
             const modalRadio = document.querySelector('input[name="modalJumlahRadio"]:checked');
             if (modalRadio) return parseInt(modalRadio.value, 10);
-            const pageRadio = document.querySelector('input[name="jumlahRadio"]:checked');
-            if (pageRadio) return parseInt(pageRadio.value, 10);
-            return null;
+            return selectedN || null;
         }
 
-        function attachRadioHandlers() {
+        // helper: reset semua label radio (hilangkan class active)
+        function clearRadioActiveVisuals() {
             document.querySelectorAll('input[name="modalJumlahRadio"]').forEach(r => {
-                r.addEventListener('change', function () { selectedN = parseInt(this.value, 10); });
-            });
-            document.querySelectorAll('input[name="jumlahRadio"]').forEach(r => {
-                r.addEventListener('change', function () { selectedN = parseInt(this.value, 10); });
+                const lbl = r.closest('label');
+                if (lbl) lbl.classList.remove('active');
+                // juga reset aria-pressed
+                if (lbl) lbl.setAttribute('aria-pressed', 'false');
             });
         }
+
+        // pasang handler change ke semua radio supaya perubahan langsung terlihat
+        function attachRadioHandlers() {
+            document.querySelectorAll('input[name="modalJumlahRadio"]').forEach(r => {
+                r.addEventListener('change', function () {
+                    // set selectedN
+                    selectedN = parseInt(this.value, 10);
+
+                    // visual: hilangkan active dari semua, beri active ke yang sekarang
+                    clearRadioActiveVisuals();
+                    const lbl = this.closest('label');
+                    if (lbl) {
+                        lbl.classList.add('active');
+                        lbl.setAttribute('aria-pressed', 'true');
+                    }
+                });
+
+                // juga support click pada label (beberapa tema/bs versi tidak toggle label.active otomatis)
+                const lbl = r.closest('label');
+                if (lbl) {
+                    lbl.addEventListener('click', function () {
+                        // klik label biasanya akan check radio, tapi kita juga set visual untuk respons cepat
+                        // small delay supaya radio.checked sudah ter-update
+                        setTimeout(() => {
+                            if (r.checked) {
+                                clearRadioActiveVisuals();
+                                lbl.classList.add('active');
+                                lbl.setAttribute('aria-pressed', 'true');
+                                selectedN = parseInt(r.value, 10);
+                            }
+                        }, 1);
+                    });
+                }
+            });
+        }
+
+        // jalankan saat halaman siap
+        document.addEventListener("DOMContentLoaded", () => {
+            // jika DB punya jumlah_soal, aktifkan radio secara visual dan checked
+            if (selectedN) {
+                const savedRadio = document.querySelector(
+                    `input[name="modalJumlahRadio"][value="${selectedN}"]`
+                );
+
+                if (savedRadio) {
+                    // set checked & visual active
+                    savedRadio.checked = true;
+                    clearRadioActiveVisuals();
+                    const lbl = savedRadio.closest("label");
+                    if (lbl) {
+                        lbl.classList.add("active");
+                        lbl.setAttribute('aria-pressed', 'true');
+                    }
+                }
+            }
+
+            // pasang handler setelah DOM siap
+            attachRadioHandlers();
+
+            // fallback: jika user klik label dengan keyboard focus, sync visuals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    // beri sedikit delay, radio state sudah berubah
+                    setTimeout(() => {
+                        const checked = document.querySelector('input[name="modalJumlahRadio"]:checked');
+                        if (checked) {
+                            clearRadioActiveVisuals();
+                            const lbl = checked.closest('label');
+                            if (lbl) {
+                                lbl.classList.add('active');
+                                lbl.setAttribute('aria-pressed', 'true');
+                                selectedN = parseInt(checked.value, 10);
+                            }
+                        }
+                    }, 1);
+                }
+            });
+        });
+
 
         // ------------- AMBIL SOAL OTOMATIS (AMEND) -------------
         const btnAmbil = document.getElementById('btnAmbilModal');
@@ -721,6 +813,47 @@
                     });
             });
         }
+        // ======= Ambil Semua handler =======
+        const btnSelectAll = document.getElementById('btnSelectAllModal');
+        if (btnSelectAll) {
+            btnSelectAll.addEventListener('click', function () {
+                // ambil semua id dari baris table modal
+                const allIds = Array.from(document.querySelectorAll('#modalQuestionList tr'))
+                    .map(tr => parseInt(tr.dataset.qid))
+                    .filter(Boolean);
+
+                if (!allIds.length) {
+                    Swal.fire('Kosong', 'Tidak ada soal pada daftar untuk dipilih.', 'info');
+                    return;
+                }
+
+                // set modalSelected ke seluruh id yang ada
+                modalSelected = allIds.slice();
+
+                // ubah semua tombol baris di modal jadi 'x' (btn-danger)
+                document.querySelectorAll('#modalQuestionList tr').forEach(tr => {
+                    const btn = tr.querySelector('button');
+                    if (!btn) return;
+                    btn.classList.remove('btn-success'); btn.classList.add('btn-danger');
+                    btn.innerHTML = `<i class="bi bi-x-circle"></i>`;
+                });
+
+                // render preview di modal (kita buat questionsMap dari DOM agar cepat)
+                let questionsMap = {};
+                document.querySelectorAll('#modalQuestionList tr').forEach(tr => {
+                    const qid = parseInt(tr.dataset.qid);
+                    const tds = tr.querySelectorAll('td');
+                    const tipe = tds[2] ? tds[2].innerText.trim() : '';
+                    const diff = tds[3] ? tds[3].innerText.trim() : '';
+                    const txt = tds[4] ? tds[4].innerText.trim() : '';
+                    questionsMap[qid] = { id: qid, type: tipe, difficulty: diff, text: txt };
+                });
+                renderModalSelected(questionsMap);
+
+                Swal.fire({ icon: 'success', title: 'Semua soal dipilih' });
+            });
+        }
+
 
         // ------------- SIMPAN PILIHAN (AMEND) -------------
         function simpanPilihan() {
@@ -737,6 +870,7 @@
                     return;
                 }
 
+                // aturan adaptive (minimal)
                 const reqEasy = Math.max(0, n - 2);
                 const reqMedium = Math.max(0, n);
                 const reqHard = Math.max(0, n - 2);
@@ -747,49 +881,48 @@
                 const currentHard = parseInt(document.getElementById('cnt-hard')?.innerText || '0', 10);
                 const currentTotal = (window.lastPicked || []).length;
 
-                if (currentTotal !== totalRequired) {
+                // hitung kekurangan tiap kategori (hanya jika kurang)
+                const lackEasy = Math.max(0, reqEasy - currentEasy);
+                const lackMedium = Math.max(0, reqMedium - currentMedium);
+                const lackHard = Math.max(0, reqHard - currentHard);
+
+                const lackTotal = Math.max(0, totalRequired - currentTotal);
+
+                if (lackEasy > 0 || lackMedium > 0 || lackHard > 0 || lackTotal > 0) {
+                    let parts = [];
+                    if (lackTotal > 0) {
+                        parts.push(`Total soal kurang: <b>${lackTotal}</b> (dibutuhkan minimal ${totalRequired})`);
+                    }
+                    if (lackEasy > 0) parts.push(`Mudah kurang: <b>${lackEasy}</b> (dibutuhkan minimal ${reqEasy})`);
+                    if (lackMedium > 0) parts.push(`Sedang kurang: <b>${lackMedium}</b> (dibutuhkan minimal ${reqMedium})`);
+                    if (lackHard > 0) parts.push(`Sulit kurang: <b>${lackHard}</b> (dibutuhkan minimal ${reqHard})`);
+
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Total soal tidak sesuai',
-                        html: `
-                            Total soal saat ini: <b>${currentTotal}</b><br>
-                            Total soal yang dibutuhkan untuk jumlah soal sebanyak ${n} soal adaptive adalah <b>${totalRequired} soal</b><br>
-                            (Mudah: ${currentEasy} / ${reqEasy})<br>
-                            (Sedang: ${currentMedium} / ${reqMedium})<br>
-                            (Sulit: ${currentHard} / ${reqHard})
-                        `
+                        title: 'Distribusi soal belum memenuhi minimum adaptive',
+                        html: parts.join('<br>')
                     });
                     return;
                 }
-
-                const errors = [];
-                if (currentEasy !== reqEasy) errors.push(`Mudah: ${currentEasy} / ${reqEasy}`);
-                if (currentMedium !== reqMedium) errors.push(`Sedang: ${currentMedium} / ${reqMedium}`);
-                if (currentHard !== reqHard) errors.push(`Sulit: ${currentHard} / ${reqHard}`);
-
-                if (errors.length > 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Distribusi soal tidak sesuai',
-                        html: errors.join('<br>')
-                    });
-                    return;
-                }
+                // jika semua minimal terpenuhi -> lanjut simpan
             }
 
-            // Lakukan simpan
+            // Lakukan simpan (adaptive atau non-adaptive)
+            // Kirim juga 'jumlah' (n) supaya disimpan ke activities.jumlah_soal
             fetch("{{ url('/guru/simpan-atur-soal/' . $aktivitas->id) }}", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": CSRF
                 },
-                body: JSON.stringify({ id_question: window.lastPicked })
+                body: JSON.stringify({ id_question: window.lastPicked, jumlah: n })
             })
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
                         Swal.fire({ icon: 'success', title: 'Berhasil Disimpan' });
+                        // opsional: update UI kalau mau menampilkan jumlah tersimpan:
+                        // document.getElementById('savedJumlah')?.innerText = n;
                     } else {
                         Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: res.message || '' });
                     }
@@ -799,6 +932,7 @@
                     Swal.fire('Error', 'Terjadi kesalahan saat menyimpan.', 'error');
                 });
         }
+
 
 
 

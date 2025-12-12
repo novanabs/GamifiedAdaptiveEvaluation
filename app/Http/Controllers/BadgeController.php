@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Badge;
+use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -121,7 +122,8 @@ class BadgeController extends Controller
 
         // tandai tiap match apakah sudah diklaim untuk kelas tersebut
         $claimedClassIds = array_filter($claimedRows, function ($v) {
-            return $v !== null; });
+            return $v !== null;
+        });
         $claimedClassIds = array_map('intval', $claimedClassIds);
 
         if (isset($res['matches']) && is_array($res['matches'])) {
@@ -156,6 +158,7 @@ class BadgeController extends Controller
                 ->select(
                     'ar.id_activity as activity_id',
                     'ar.waktu_mengerjakan',
+                    'ar.nilai_akhir',
                     'a.durasi_pengerjaan',
                     'a.title as activity_title',
                     's.id as class_id'
@@ -170,9 +173,13 @@ class BadgeController extends Controller
             return ['eligible' => false, 'reason' => 'Tidak ada data pengerjaan aktivitas.', 'matches' => []];
         }
 
+        // ambil KKM dari settings (fallback 0 jika tidak ada)
+        $kkm = (float) (Settings::where('name', 'kkm')->value('value') ?? 0);
+
         $matchesPerClass = []; // keyed by class_id
         $checked = 0;
         $skipped = 0;
+        $skippedForKKM = 0;
 
         foreach ($rows as $r) {
             $durasiRaw = $r->durasi_pengerjaan;
@@ -204,38 +211,53 @@ class BadgeController extends Controller
                 continue;
             }
 
+            // ambil nilai_akhir (bisa null)
+            $nilaiAkhirRaw = $r->nilai_akhir;
+            $nilaiAkhir = is_numeric($nilaiAkhirRaw) ? (float) $nilaiAkhirRaw : null;
+
             $checked++;
 
-            // jika waktu lebih cepat dari batas 40% -> catat match untuk kelas ini
+            // cek apakah waktu melewati threshold 40%
             if ($waktuDetik < $batas40) {
-                $cid = (int) $r->class_id;
-                // simpan best (paling jauh di bawah batas) per class
-                $diff = $batas40 - $waktuDetik;
-                if (!isset($matchesPerClass[$cid]) || $diff > $matchesPerClass[$cid]['diff_detik']) {
-                    $matchesPerClass[$cid] = [
-                        'class_id' => $cid,
-                        'class_name' => DB::table('classes')->where('id', $cid)->value('name') ?? ("ID {$cid}"),
-                        'note' => 'Fastest (under 40% of duration)',
-                        'activity_id' => $r->activity_id,
-                        'activity_title' => $r->activity_title,
-                        'waktu_detik' => $waktuDetik,
-                        'batas_40_detik' => $batas40,
-                        'diff_detik' => $diff
-                    ];
+                // cek nilai akhir memenuhi KKM
+                if ($nilaiAkhir !== null && $nilaiAkhir >= $kkm) {
+                    $cid = (int) $r->class_id;
+                    // simpan best (paling jauh di bawah batas) per class
+                    $diff = $batas40 - $waktuDetik;
+                    if (!isset($matchesPerClass[$cid]) || $diff > $matchesPerClass[$cid]['diff_detik']) {
+                        $matchesPerClass[$cid] = [
+                            'class_id' => $cid,
+                            'class_name' => DB::table('classes')->where('id', $cid)->value('name') ?? ("ID {$cid}"),
+                            'note' => 'Fastest (under 40% of duration) and met KKM',
+                            'activity_id' => $r->activity_id,
+                            'activity_title' => $r->activity_title,
+                            'waktu_detik' => $waktuDetik,
+                            'batas_40_detik' => $batas40,
+                            'diff_detik' => $diff,
+                            'nilai_akhir' => $nilaiAkhir,
+                            'kkm' => $kkm
+                        ];
+                    }
+                } else {
+                    // waktu oke tapi nilai kurang dari KKM (atau nilai_akhir tidak ada)
+                    $skippedForKKM++;
                 }
             }
         }
 
         if (empty($matchesPerClass)) {
+            // coba cari best overall untuk pesan
             $best = null;
-            // optionally keep best overall for message
             foreach ($rows as $r) {
-                // parse waktu minimal sama seperti di atas (sederhana)
                 if (!is_numeric($r->durasi_pengerjaan))
                     continue;
                 $durasiDetik = ((float) $r->durasi_pengerjaan) * 60;
                 $batas40 = $durasiDetik * 0.4;
-                $w = is_numeric($r->waktu_mengerjakan) ? (float) $r->waktu_mengerjakan : null;
+
+                $w = null;
+                if (is_numeric($r->waktu_mengerjakan))
+                    $w = (float) $r->waktu_mengerjakan;
+
                 if ($w === null)
                     continue;
                 $diff = $batas40 - $w;
@@ -244,24 +266,40 @@ class BadgeController extends Controller
                 }
             }
 
-            $msg = $best
-                ? "Contoh memperoleh : Waktu pengerjan Anda: {$best['waktu_detik']} detik, harus < {$best['batas']} detik (40%) dari waktu pengerjaan. untuk eligible"
-                : "Belum eligible. Tidak ditemukan waktu yg valid.";
+            // provide informative reason
+            if (!empty($rows->toArray())) {
+                if ($skippedForKKM > 0) {
+                    $msg = "Anda memiliki waktu yang cepat pada beberapa aktivitas, tetapi nilai akhir belum mencapai KKM ({$kkm}). Untuk eligible, waktu harus < 40% durasi dan nilai akhir >= KKM.";
+                } else {
+                    $msg = $best
+                        ? "Contoh: Waktu pengerjaan Anda: {$best['waktu_detik']} detik; perlu < {$best['batas']} detik (40% dari durasi) dan nilai akhir >= KKM ({$kkm})."
+                        : "Belum eligible. Tidak ditemukan waktu yg valid atau nilai akhir tidak mencukupi.";
+                }
+            } else {
+                $msg = "Belum eligible. Tidak ditemukan data pengerjaan valid.";
+            }
+
             return ['eligible' => false, 'reason' => $msg, 'matches' => []];
         }
 
         // debug jika diperlukan
         $debug = null;
         if (config('app.debug')) {
-            $debug = ['checked_rows' => $checked, 'skipped_rows' => $skipped, 'matches_count' => count($matchesPerClass)];
+            $debug = [
+                'checked_rows' => $checked,
+                'skipped_rows' => $skipped,
+                'skipped_for_kkm' => $skippedForKKM,
+                'matches_count' => count($matchesPerClass)
+            ];
         }
 
         $matches = array_values($matchesPerClass);
-        $resp = ['eligible' => true, 'reason' => 'Ditemukan kelas tempat Anda cepat (<40% durasi).', 'matches' => $matches];
+        $resp = ['eligible' => true, 'reason' => 'Ditemukan kelas tempat Anda cepat (<40% durasi) dan nilai_akhir >= KKM.', 'matches' => $matches];
         if ($debug)
             $resp['debug'] = $debug;
         return $resp;
     }
+
 
     /**
      * Helper: Top3 (per-class)

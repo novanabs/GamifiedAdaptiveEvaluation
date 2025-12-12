@@ -54,6 +54,7 @@ return new class extends Migration {
             $table->enum('type', ['task', 'quiz']);
             $table->integer('durasi_pengerjaan')->nullable();
             $table->dateTime('deadline')->nullable();
+            $table->integer('jumlah_soal')->nullable();
             $table->unsignedBigInteger('id_topic');
             $table->timestamps();
         });
@@ -91,6 +92,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('id_user');
             $table->unsignedBigInteger('id_activity');
+            $table->decimal('nilai_akhir', 5, 2)->nullable();
             $table->enum('result_status', ['Pass', 'Remedial'])->nullable();
             $table->decimal('result', 5, 2)->nullable();
             $table->integer('real_poin')->default(0)->nullable();
@@ -107,6 +109,23 @@ return new class extends Migration {
             $table->string(column: 'name');
             $table->integer(column: 'value');
         });
+        // --- activity_packages
+        Schema::create('activity_packages', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('id_activity')->comment('sumber activity');
+            $table->unsignedBigInteger('created_by')->nullable()->comment('guru yang membuat paket');
+            $table->unsignedBigInteger('id_class')->nullable()->comment('kelas sumber (opsional)');
+            $table->string('title')->nullable();
+            $table->string('filename')->comment('path file JSON di storage');
+            $table->text('notes')->nullable();
+            $table->timestamps();
+
+            // Indexes
+            $table->index('id_activity');
+            $table->index('created_by');
+            $table->index('id_class');
+        });
+
     }
 
     /**
@@ -127,5 +146,8 @@ return new class extends Migration {
         Schema::dropIfExists('badge');
         Schema::dropIfExists('activity_result');
         Schema::dropIfExists('settings');
+        Schema::dropIfExists('activity_packages');
+
+
     }
 };

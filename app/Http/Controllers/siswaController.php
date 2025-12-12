@@ -219,7 +219,8 @@ class siswaController extends Controller
             ->whereIn('classes.id', $kelasIds)
             ->select(
                 'activity_result.id as id_result',
-                'activity_result.result as nilai_akhir',
+                'activity_result.result as result_value',
+                'activity_result.nilai_akhir as nilai_akhir',
                 'activity_result.created_at as result_created_at',
                 'activities.title as aktivitas',
                 'topics.title as topik',

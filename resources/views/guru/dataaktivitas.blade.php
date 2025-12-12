@@ -2,7 +2,7 @@
 @section('dataAktivitas', request()->is('dataaktivitas') ? 'active' : '')
 @section('content')
     <div class="container mt-4">
-        <h3 class="fw-bold mb-4">Data Aktivitas Berdasarkan Topik</h3>
+        <h3 class="fw-bold mb-4">Data Evaluasi Berdasarkan Topik</h3>
 
         @if(session('success'))
             <div class="alert alert-success text-center shadow-sm">{{ session('success') }}</div>
@@ -94,7 +94,7 @@
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="activitiesTable" class="table table-striped table-bordered nowrap" style="width:100%">
+                    <table id="activitiesTable" class="table table-striped table-bordered " style="width:100%">
                         <thead class="table-secondary text-center">
                             <tr>
                                 <th style="width:60px">No</th>
@@ -102,8 +102,9 @@
                                 <th>Deadline</th>
                                 <th>Adaptive</th>
                                 <th>Topik</th>
-                                <th>Subject</th>
+                                <th>Mapel</th>
                                 <th>Kelas</th>
+                                <th>Semester</th>
                                 <th style="width:260px">Aksi</th>
                             </tr>
                         </thead>
@@ -132,51 +133,63 @@
 
                                     <td class="align-middle col-subject hide-sm">
                                         <div class="cell-inner" title="{{ $r->subject_name ?? '-' }}">
-                                            {{ $r->subject_name ?? '-' }}</div>
+                                            {{ $r->subject_name ?? '-' }}
+                                        </div>
                                     </td>
 
                                     <td class="align-middle col-class hide-sm">
                                         <div class="cell-inner" title="{{ $r->class_name ?? '-' }}">{{ $r->class_name ?? '-' }}
                                         </div>
                                     </td>
+                                    <td class="align-middle">
+                                        @if($r->semester === 'odd')
+                                            <span class="badge bg-info text-dark">Ganjil</span>
+                                        @elseif($r->semester === 'even')
+                                            <span class="badge bg-secondary">Genap</span>
+                                        @else
+                                            <span>-</span>
+                                        @endif
+                                    </td>
+
 
                                     <td class="align-middle text-center">
-                                        <div class="action-group">
-                                            {{-- Edit --}}
+                                        <div class="action-group" role="group" aria-label="Aksi aktivitas">
                                             <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modalEdit{{ $r->id }}" data-bs-toggle="tooltip" title="Edit">
+                                                data-bs-target="#modalEdit{{ $r->id }}" title="Edit" aria-label="Edit">
                                                 <i class="bi bi-pencil"></i>
-                                                <span class="btn-text d-none d-sm-inline"> Edit</span>
                                             </button>
 
-                                            {{-- Atur Soal --}}
-                                            <a href="{{ url('/guru/aktivitas/' . $r->id . '/atur-soal?topic=' . $r->topic_id) }}"
-                                                class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Atur Soal">
-                                                <i class="bi bi-gear"></i>
-                                                <span class="btn-text d-none d-sm-inline"> Atur Soal</span>
-                                            </a>
-
-                                            {{-- Lihat --}}
-                                            <button type="button" class="btn btn-info btn-sm text-white" data-bs-toggle="modal"
-                                                data-bs-target="#lihatSoal{{ $r->id }}" data-bs-toggle="tooltip"
-                                                title="Lihat Soal">
-                                                <i class="bi bi-eye"></i>
-                                                <span class="btn-text d-none d-sm-inline"> Lihat</span>
-                                            </button>
-
-                                            {{-- Hapus --}}
-                                            <form action="{{ route('guru.aktivitas.hapus', $r->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus aktivitas ini?')"
-                                                class="d-inline">
+                                            <form action="{{ route('activity.package.create', $r->id) }}" method="POST"
+                                                style="display:inline;">
                                                 @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Hapus">
-                                                    <i class="bi bi-trash"></i>
-                                                    <span class="btn-text d-none d-sm-inline"> Hapus</span>
+                                                <button type="submit" class="btn btn-success btn-sm" title="Buat Paket Soal">
+                                                    <i class="bi bi-archive"></i>
                                                 </button>
                                             </form>
-                                        </div><!-- /.action-group -->
+
+                                            <a href="{{ url('/guru/aktivitas/' . $r->id . '/atur-soal?topic=' . $r->topic_id) }}"
+                                                class="btn btn-warning btn-sm" title="Atur Soal" aria-label="Atur Soal">
+                                                <i class="bi bi-gear"></i>
+                                            </a>
+
+                                            <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal"
+                                                data-bs-target="#lihatSoal{{ $r->id }}" title="Lihat Soal"
+                                                aria-label="Lihat Soal">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <form action="{{ route('guru.aktivitas.hapus', $r->id) }}" method="POST"
+                                                class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn btn-danger btn-sm btn-delete" title="Hapus"
+                                                    aria-label="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+
+                                        </div>
                                     </td>
+
                                 </tr>
 
                                 {{-- Pushing modals supaya tidak berada di dalam DOM table (DataTables safe) --}}
@@ -364,14 +377,24 @@
             white-space: nowrap;
         }
 
-        /* action group styling (tetap) */
+        /* make action buttons stay on one line and allow horizontal scroll if cell too narrow */
         .action-group {
             display: flex;
-            gap: .45rem;
-            flex-wrap: wrap;
+            gap: .35rem;
             align-items: center;
-            justify-content: center;
+            white-space: nowrap;
+            /* prevent icons text wrapping */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: .15rem 0;
         }
+
+        /* small visual tweak: keep consistent button sizing */
+        .action-group .btn {
+            flex: 0 0 auto;
+        }
+
+
 
         /* responsive: sembunyikan kolom subject & class di xs */
         @media (max-width: 768px) {
@@ -389,78 +412,116 @@
 
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // DataTable with horizontal scroll and responsive details
-    var table = $('#activitiesTable').DataTable({
-        responsive: {
-            details: {
-                type: 'column',
-                target: -1 // fallback: last column toggles detail
-            }
-        },
-        scrollX: true,
-        autoWidth: false,
-        lengthChange: true,
-        pageLength: 10,
-        order: [[1, 'asc']],
-        columnDefs: [
-            { orderable: false, targets: [0, 7] },
-            { searchable: false, targets: 0 },
-            // make the last column (Aksi) not responsive-detail toggler
-            { responsivePriority: 1, targets: 1 }, // Judul paling penting
-            { responsivePriority: 2, targets: 7 }  // Aksi tetap penting
-        ],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
-            lengthMenu: "Tampilkan _MENU_ entri",
-            paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
-        },
-        drawCallback: function () {
-            // Aktifkan tooltip untuk semua cell yang punya title
-            var tlist = [].slice.call(document.querySelectorAll('[title]'));
-            tlist.map(function (el) { return new bootstrap.Tooltip(el); });
-        }
-    });
+            // semua tombol delete
+            document.querySelectorAll('.btn-delete').forEach(btn => {
 
-    // nomor dinamis
-    table.on('order.dt search.dt draw.dt', function () {
-        table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-            cell.innerHTML = i + 1;
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    let form = this.closest('form');
+
+                    Swal.fire({
+                        title: 'Yakin hapus aktivitas ini?',
+                        text: "Data yang dihapus tidak bisa dikembalikan!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+
+                });
+
+            });
         });
-    }).draw();
+    </script>
 
-    // optional: tombol Lihat -> modal show detail row
-    // delegasi: ketika tombol lihat diklik ambil data baris dan tampilkan
-    $(document).on('click', '.btn-view-row', function (e) {
-        e.preventDefault();
-        var $btn = $(this);
-        var $tr = $btn.closest('tr');
-        if ($tr.hasClass('child')) { // jika responsive membuat row child, ambil parent
-            $tr = $tr.prev();
-        }
-        var rowData = table.row($tr).data(); // array cells
-        // rowData indeks: 0=No,1=Judul,2=Deadline,3=Adaptive,4=Topik,5=Subject,6=Kelas,7=Aksi
-        var html = '<dl class="row">';
-        html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
-        html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
-        html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
-        html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
-        html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
-        html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';
-        html += '</dl>';
-        $('#rowDetailModal .modal-body').html(html);
-        var modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
-        modal.show();
-    });
 
-});
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // DataTable with horizontal scroll and responsive details
+            var table = $('#activitiesTable').DataTable({
+                responsive: {
+                    details: {
+                        type: 'column',
+                        target: -1 // fallback: last column toggles detail
+                    }
+                },
+                scrollX: true,
+                autoWidth: false,
+                lengthChange: true,
+                pageLength: 10,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [0, 8] },
+                    { searchable: false, targets: 0 },
+                    // make the last column (Aksi) not responsive-detail toggler
+                    { responsivePriority: 1, targets: 1 }, // Judul paling penting
+                    { responsivePriority: 2, targets: 7 }  // Aksi tetap penting
+                ],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
+                    lengthMenu: "Tampilkan _MENU_ entri",
+                    paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
+                },
+                drawCallback: function () {
+                    // Aktifkan tooltip untuk semua cell yang punya title
+                    var tlist = [].slice.call(document.querySelectorAll('[title]'));
+                    tlist.map(function (el) { return new bootstrap.Tooltip(el); });
+                }
+            });
+
+            // nomor dinamis
+            table.on('order.dt search.dt draw.dt', function () {
+                table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+            }).draw();
+
+            // optional: tombol Lihat -> modal show detail row
+            // delegasi: ketika tombol lihat diklik ambil data baris dan tampilkan
+            $(document).on('click', '.btn-view-row', function (e) {
+                e.preventDefault();
+                var $btn = $(this);
+                var $tr = $btn.closest('tr');
+                if ($tr.hasClass('child')) { // jika responsive membuat row child, ambil parent
+                    $tr = $tr.prev();
+                }
+                var rowData = table.row($tr).data(); // array cells
+                // rowData indeks: 0=No,1=Judul,2=Deadline,3=Adaptive,4=Topik,5=Subject,6=Kelas,7=Aksi
+                var html = '<dl class="row">';
+                html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
+                html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
+                html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
+                html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
+                html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
+                html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';
+                html += '</dl>';
+                $('#rowDetailModal .modal-body').html(html);
+                var modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
+                modal.show();
+            });
+
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+        });
+
+    </script>
 @endpush

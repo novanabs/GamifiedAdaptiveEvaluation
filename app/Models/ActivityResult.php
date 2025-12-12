@@ -18,7 +18,8 @@ class ActivityResult extends Model
         'start_time',
         'end_time',
         'total_benar',
-        'status_benar'
+        'status_benar',
+        'nilai_akhir'
 
     ];
     protected $dates = ['start_time', 'end_time'];

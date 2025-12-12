@@ -160,6 +160,8 @@
             text-align: center
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body>
@@ -168,7 +170,15 @@
         <p class="lead">Buat akun baru untuk murid atau guru</p>
 
         <form id="regForm" novalidate>
-            <!-- tambahkan ini sebelum input email -->
+            <div class="field">
+                <label>Daftar sebagai</label>
+                <div class="row">
+                    <label class="inline"><input type="radio" name="role" value="murid" checked /> Murid</label>
+                    <label class="inline"><input type="radio" name="role" value="guru" /> Guru</label>
+                </div>
+                <div class="muted">Pilih peran Anda. Jika murid, Anda boleh memasukkan kode kelas (opsional).</div>
+            </div>
+          
             <div class="field">
                 <label for="name">Nama</label>
                 <input id="name" name="name" type="text" class="input" placeholder="Nama lengkap" required />
@@ -189,14 +199,7 @@
                 </div>
             </div>
 
-            <div class="field">
-                <label>Daftar sebagai</label>
-                <div class="row">
-                    <label class="inline"><input type="radio" name="role" value="murid" checked /> Murid</label>
-                    <label class="inline"><input type="radio" name="role" value="guru" /> Guru</label>
-                </div>
-                <div class="muted">Pilih peran Anda. Jika murid, Anda boleh memasukkan kode kelas (opsional).</div>
-            </div>
+
 
             <div class="field" id="kelasField">
                 <label for="kodeKelas">Kode Kelas (opsional)</label>
@@ -207,7 +210,7 @@
 
             <!-- identity fields -->
             <div class="field">
-                <label for="type_id_other">Jenis ID (opsional)</label>
+                <label for="type_id_other">Jenis ID</label>
                 <select id="type_id_other" name="type_id_other" class="input">
                     <option value="">— Pilih jenis ID —</option>
                     <option value="NISN">NISN</option>
@@ -215,11 +218,12 @@
                     <option value="NIP">NIP</option>
                     <option value="NIDN">NIDN</option>
                     <option value="NUPTK">NUPTK</option>
+                    <option value="id_lainnya">id lainnya</option>
                 </select>
             </div>
 
             <div class="field">
-                <label for="id_other">Nomor ID (opsional)</label>
+                <label for="id_other">Nomor ID </label>
                 <input id="id_other" name="id_other" type="text" class="input"
                     placeholder="Masukkan nomor ID jika ada" />
             </div>
@@ -332,22 +336,41 @@
                 const contentType = res.headers.get('content-type') || '';
 
                 if (!res.ok) {
+                    let message = '';
+
                     try {
                         const json = JSON.parse(text);
-                        errMsg.textContent = json.message || text;
+                        message = json.message || text;
                     } catch (err) {
-                        errMsg.textContent = text || 'Terjadi kesalahan saat registrasi.';
+                        message = text || 'Terjadi kesalahan saat registrasi.';
                     }
-                    errMsg.classList.remove('hidden');
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Registrasi',
+                        text: message,
+                        confirmButtonColor: '#e11d48'
+                    });
+
                     return;
                 }
 
+
                 if (contentType.includes('application/json')) {
                     const json = JSON.parse(text);
-                    alert(json.message || 'Registrasi berhasil.');
-                    window.location.href = '/login';
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registrasi Berhasil',
+                        text: json.message || 'Akun Anda berhasil dibuat!',
+                        confirmButtonColor: '#3b82f6'
+                    }).then(() => {
+                        window.location.href = '/login';
+                    });
+
                     return;
                 }
+
 
                 // fallback: redirect to login
                 window.location.href = '/login';

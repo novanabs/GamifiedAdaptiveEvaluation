@@ -153,25 +153,34 @@ class aktivitasController extends Controller
             'id_activity' => $activity->id,
             'addaptive' => $activity->addaptive,
             'durasi' => $activity->durasi_pengerjaan,
+            'jumlah_soal' => $activity->jumlah_soal,
         ]);
     }
 
     public function start($id)
     {
+        // bersihkan session lama untuk activity ini
         session()->forget("activity.$id");
 
         $activity = Activity::findOrFail($id);
 
+        // total soal yang tersimpan di DB (jumlah baris di pivot activity_question)
         $totalDB = $activity->questions()->count();
-        $adaptive = $activity->addaptive === 'yes';
 
-        $map = [11 => 5, 26 => 10, 41 => 15, 56 => 20, 71 => 25, 86 => 30];
-        if ($adaptive) {
-            $jumlahSoal = $map[$totalDB];
-        } else {
+        // apakah mode adaptive?
+        $adaptive = ($activity->addaptive === 'yes');
+
+        // ambil jumlah soal dari kolom activities.jumlah_soal jika tersedia,
+        // jika null maka fallback ke totalDB
+        $jumlahSoal = $activity->jumlah_soal ?? $totalDB;
+
+        // pastikan jumlahSoal tidak melebihi total soal yang tersedia
+        // (opsional — tapi umumnya aman untuk membatasi)
+        if ($jumlahSoal > $totalDB) {
             $jumlahSoal = $totalDB;
         }
 
+        // inisialisasi session untuk aktivitas ini
         session([
             "activity.$id.current" => 0,
             "activity.$id.streak_correct" => 0,
@@ -182,7 +191,7 @@ class aktivitasController extends Controller
             "activity.$id.total_correct" => 0,
         ]);
 
-        // simpan start_time ke session + DB (sudah saya jelaskan sebelumnya)
+        // simpan start_time ke session + DB
         $startTime = Carbon::now();
         session(["activity.$id.start_time" => $startTime->toDateTimeString()]);
 
@@ -192,7 +201,7 @@ class aktivitasController extends Controller
             ['start_time' => $startTime, 'waktu_mengerjakan' => null, 'end_time' => null, 'total_benar' => null]
         );
 
-        // baca durasi dari activity (dalam menit)
+        // baca durasi dari activity (dalam menit), kirim ke front-end
         $durasiMenit = $activity->durasi_pengerjaan ? (int) $activity->durasi_pengerjaan : null;
 
         return response()->json([
@@ -200,7 +209,7 @@ class aktivitasController extends Controller
             'level' => session("activity.$id.difficulty"),
             'totalQuestions' => $jumlahSoal,
             'started_at' => $startTime->toDateTimeString(),
-            'durasi_pengerjaan' => $durasiMenit // dikirim ke front-end
+            'durasi_pengerjaan' => $durasiMenit
         ]);
     }
 
@@ -431,26 +440,67 @@ class aktivitasController extends Controller
         } else {
             // pastikan integer
             $jumlahSoal = (int) $jumlahSoal;
+            // dan ambil activity juga untuk penggunaan selanjutnya
+            $activity = Activity::find($id);
         }
 
         // tentukan statusBenar: true jika totalCorrect sama persis dengan jumlahSoal
         $statusBenar = ($totalCorrect === $jumlahSoal) ? true : false;
 
+        // =============== HITUNG BEST CASE (REVISI) ===============
+        // ambil poin dari settings (cast ke float supaya aman)
+        $pointEasy = (float) (Settings::where('name', 'soal_mudah')->value('value') ?? 0);
+        $pointMedium = (float) (Settings::where('name', 'soal_sedang')->value('value') ?? 0);
+        $pointHard = (float) (Settings::where('name', 'soal_sulit')->value('value') ?? 0);
+
+        // pastikan $jumlahSoal integer (sudah di-cast di atas)
+        $jumlahSoal = (int) $jumlahSoal;
+
+        if ($activity && $activity->addaptive === 'yes') {
+            // REVISI: best-case adaptive = 2 medium (maks) + sisa = hard
+            $mediumBest = min(2, $jumlahSoal);                // paling banyak 2 medium
+            $hardBest = max(0, $jumlahSoal - $mediumBest);  // sisanya hard
+            $easyBest = 0;
+
+            $bestCase = ($easyBest * $pointEasy) + ($mediumBest * $pointMedium) + ($hardBest * $pointHard);
+        } else {
+            // NON-ADAPTIVE: best-case = komposisi soal yang ada di DB (semua benar)
+            if ($activity) {
+                $easyCount = $activity->questions()->where('difficulty', 'mudah')->count();
+                $mediumCount = $activity->questions()->where('difficulty', 'sedang')->count();
+                $hardCount = $activity->questions()->where('difficulty', 'sulit')->count();
+            } else {
+                $easyCount = $mediumCount = $hardCount = 0;
+            }
+
+            $bestCase = ($easyCount * $pointEasy) + ($mediumCount * $pointMedium) + ($hardCount * $pointHard);
+        }
+
+        // hindari pembagian dengan 0 -> kalau bestCase 0 set 1 supaya nilai_akhir jadi 0 ketika totalReal 0
+        if ($bestCase <= 0) {
+            $bestCase = 1;
+        }
+
+        // nilai akhir = (real_poin / best_case) * 100
+        $nilaiAkhir = round((($totalBase) / $bestCase) * 100, 2);
+
+        // ====================== SIMPAN KE DB ======================
         ActivityResult::updateOrCreate(
             [
                 'id_activity' => $id,
                 'id_user' => $userId,
             ],
             [
-                'result' => $totalBase,
+                'result' => $totalReal,
                 'bonus_poin' => $bonusPoint,
-                'real_poin' => $totalReal,
+                'real_poin' => $totalBase,
                 'result_status' => $status,
                 'waktu_mengerjakan' => $durationSeconds,
                 'total_benar' => $totalCorrect,
                 'start_time' => $start,
                 'end_time' => $end,
                 'status_benar' => $statusBenar,
+                'nilai_akhir' => $nilaiAkhir,
             ]
         );
 
@@ -480,9 +530,11 @@ class aktivitasController extends Controller
                 'start_time' => optional($activityResult->start_time)->toDateTimeString(),
                 'end_time' => optional($activityResult->end_time)->toDateTimeString(),
                 'status_benar' => (bool) $activityResult->status_benar,
+                'nilai_akhir' => $activityResult->nilai_akhir,
             ] : null,
         ]);
     }
+
 
 
 

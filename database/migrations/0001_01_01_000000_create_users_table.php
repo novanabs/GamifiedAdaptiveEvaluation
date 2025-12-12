@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('id_other')->unique();
-            $table->enum('type_id_other', ['NISN', 'NIM', 'NIP', 'NIDN', 'NUPTK']);
+            $table->enum('type_id_other', ['NISN', 'NIM', 'NIP', 'NIDN', 'NUPTK','id_lainnya']);
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');

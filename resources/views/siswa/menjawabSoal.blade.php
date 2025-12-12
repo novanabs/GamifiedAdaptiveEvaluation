@@ -141,11 +141,11 @@
             margin-top: 4px;
             cursor: pointer;
 
-    
+
             border: 2px solid #555 !important;
             box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
 
-          
+
             accent-color: #1cc88a;
         }
 
@@ -189,6 +189,12 @@
 
                     <h5 class="fw-bold mb-3">Keterangan Aktivitas</h5>
 
+                    <div class="mb-2">
+                        <span class="fw-semibold">Jumlah Soal:</span>
+                        <span id="infoJumlahSoal" class="text-success fw-bold">
+                            {{ isset($jumlah_soal) ? $jumlah_soal . ' Soal' : '—' }}
+                        </span>
+                    </div>
 
                     <div class="mb-2">
                         <span class="fw-semibold">Durasi:</span>
@@ -467,38 +473,50 @@
             })
                 .then(r => r.json())
                 .then(res => {
-                    // Jika server balikkan result_db, pakai itu; kalau tidak, fallback ke res
+                    // result_db prioritas utama
                     const db = res.result_db ?? null;
+
+                    // durasi (fallback ke DB jika ada)
                     const sec = res.duration_seconds ?? (db ? db.waktu_mengerjakan : 0);
                     const m = Math.floor(sec / 60);
                     const s = sec % 60;
 
-                    // Ambil nilai tampil: prioritas dari DB
-                    const totalBenar = db ? db.total_benar : (res.total_correct ?? 0);
-                    const jumlahSoal = res.jumlah_soal ?? (db ? (db.total_benar + 0) : 0); // kalau perlu ubah metode ambil
-                    const base = db ? db.result : null;
-                    const bonus = db ? db.bonus_poin : null;
-                    const real = db ? db.real_poin : null;
-                    const statusText = db ? db.result_status : (res.status_benar ? 'Pass' : 'Remedial');
+                    // jumlah soal: prefer res.jumlah_soal, lalu db.jumlah_soal (jika backend mengirimkannya)
+                    const jumlahSoal = (res.jumlah_soal ?? (db ? (db.jumlah_soal ?? null) : null)) ?? '-';
 
-                    // Bangun HTML ringkasan hasil
+                    // total benar: prefer DB, lalu res
+                    const totalBenar = db ? (db.total_benar ?? (res.total_correct ?? 0)) : (res.total_correct ?? 0);
+
+                    // poin / hasil
+                    const base = db ? (db.result ?? null) : (res.result ?? null);
+                    const bonus = db ? (db.bonus_poin ?? null) : (res.bonus_poin ?? null);
+                    const real = db ? (db.real_poin ?? null) : (res.real_poin ?? null);
+
+                    // nilai akhir (normalisasi best-case) — prioritas DB, lalu res
+                    const nilaiAkhir = db ? (db.nilai_akhir ?? (res.nilai_akhir ?? null)) : (res.nilai_akhir ?? null);
+
+                    // status teks (prioritas DB)
+                    const statusText = db ? (db.result_status ?? (res.status_benar ? 'Pass' : 'Remedial')) : (res.status_benar ? 'Pass' : 'Remedial');
+
+                    // helper formatting (tunjukkan '-' jika null)
+                    const fmt = v => (v === null || v === undefined) ? '-' : v;
+
                     const html = `
             <div style="text-align:left">
                 <p><strong>Waktu mengerjakan:</strong> ${m} m ${s} s</p>
-                <p><strong>Jumlah benar:</strong> ${totalBenar} / ${res.jumlah_soal}</p>
-                <p><strong>Nilai dasar:</strong> ${base !== null ? base : '-'}</p>
-                <p><strong>Bonus poin:</strong> ${bonus !== null ? bonus : '-'}</p>
-                <p><strong>Nilai akhir:</strong> ${real !== null ? real : '-'}</p>
-                <p><strong>Status:</strong> ${statusText}</p>
+                <p><strong>Jumlah benar:</strong> ${totalBenar} / ${fmt(jumlahSoal)}</p>
+                <p><strong>Nilai dasar:</strong> ${fmt(real)}</p>
+                <p><strong>Bonus poin:</strong> ${fmt(bonus)}</p>
+                <p><strong>Total poin:</strong> ${fmt(base)}</p>
+                <p><strong>Nilai akhir (0-100):</strong> ${fmt(nilaiAkhir)}</p>
+                <p><strong>Status:</strong> ${fmt(statusText)}</p>
             </div>
         `;
 
-                    // Tampilkan modal Swal dengan detail hasil
                     Swal.fire({
                         title: "Selesai!",
                         html: html,
                         icon: "success",
-                        showCancelButton: true,
                         confirmButtonText: "Kembali ke Aktivitas",
                         reverseButtons: true,
                     }).then(result => {

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\ActivityPackageController;
 use App\Http\Controllers\aktivitasController;
 use App\Http\Controllers\aturAktivitasController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\guruController;
 use App\Http\Controllers\loginController;
+use App\Http\Controllers\nilaicontroller;
 use App\Http\Controllers\registerController;
 use App\Http\Controllers\siswaController;
 use App\Http\Controllers\SoalController;
@@ -22,11 +24,9 @@ Route::post('/activity/saveResult', [aktivitasController::class, 'saveResult'])-
 Route::middleware(['auth', RoleMiddleware::class . ':student'])->group(function () {
 
     Route::get('/dashboardsiswa', [siswaController::class, 'dashboardSiswa'])
-        ->name('dashboard.siswa')
-        ->middleware('auth');
+        ->name('dashboard.siswa');
 
     Route::get('/aktivitassiswa', [aktivitasController::class, 'aktivitasSiswa'])
-        ->middleware('auth')
         ->name('siswa.aktivitas');
 
     Route::get('/activity/{id}', [aktivitasController::class, 'show'])->name('activity.show');
@@ -46,10 +46,12 @@ Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function 
     Route::get('/datasiswa', [guruController::class, 'dataSiswa'])->name('dataSiswa');
     Route::get('/dataSiswa/export', [guruController::class, 'exportSiswa'])->name('dataSiswa.export');
     Route::post('/dataSiswa/update', [GuruController::class, 'updateSiswa'])->name('dataSiswa.update');
+
     //manajemen kelas
     Route::get('/datakelas', [guruController::class, 'kelasGuru'])->name('kelasGuru');
     Route::post('/kelas/tambah', [guruController::class, 'tambahKelas'])->name('kelas.tambah');
     Route::post('/kelas/gabung', [guruController::class, 'gabungKelas'])->name('kelas.gabung');
+
     // Edit / Update / Delete (pastikan berada di group middleware auth)
     Route::put('/kelas/{id}', [guruController::class, 'updateKelas'])->name('kelas.update');
     Route::delete('/kelas/{id}', [guruController::class, 'hapusKelas'])->name('kelas.hapus');
@@ -57,13 +59,15 @@ Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function 
     //manajemen subject
     Route::get('/datamatapelajaran', [guruController::class, 'dataSubject'])->name('guru.dataSubject');
     Route::post('/guru/subject/tambah', [guruController::class, 'tambahSubject'])->name('guru.subject.tambah');
-    Route::post('/guru/subject/update/{id}', [guruController::class, 'updateSubject'])->name('guru.subject.update');
+    Route::put('/guru/subject/update/{id}', [guruController::class, 'updateSubject'])->name('guru.subject.update');
     Route::delete('/guru/subject/hapus/{id}', [guruController::class, 'hapusSubject'])->name('guru.subject.hapus');
+
     // manajemen topik
     Route::get('/datatopik', [guruController::class, 'tampilanTopik'])->name('guru.topik.tampilan');
     Route::post('/simpan-topik', [guruController::class, 'simpanTopik'])->name('guru.topik.simpan');
-    Route::post('/ubah-topik/{id}', [guruController::class, 'ubahTopik'])->name('guru.topik.ubah');
+    Route::put('/ubah-topik/{id}', [guruController::class, 'ubahTopik'])->name('guru.topik.ubah');
     Route::delete('/hapus-topik/{id}', [guruController::class, 'hapusTopik'])->name('guru.topik.hapus');
+
     //manajemen aktivitas
     Route::get('/dataaktivitas', [guruController::class, 'tampilAktivitas'])->name('guru.aktivitas.tampil');
     Route::post('/aktivitas/simpan', [guruController::class, 'simpanAktivitas'])->name('guru.aktivitas.simpan');
@@ -122,16 +126,35 @@ Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function 
     Route::get('/soal/edit/{id}', [guruController::class, 'editSoal'])->name('editSoal');
     Route::post('/soal/update/{id}', [guruController::class, 'updateSoal'])->name('updateSoal');
     Route::delete('/soal/hapus/{id}', [guruController::class, 'hapusSoal'])->name('hapusSoal');
-    Route::post('/edit-topik-soal/{id}', [guruController::class, 'editTopikSoal'])->name('editTopikSoal');
-
+    Route::post('/edit-topik-soal/{id}', [guruController::class, 'editTopikSoal'])->name('guru.soal.editTopik');
 
     //generate soal otomatis
     Route::get('/generate-soal', [SoalController::class, 'showGenerator'])->name('generateSoal');
     Route::post('/generate-soal', [SoalController::class, 'generateAI'])->name('generateSoal.post');
     Route::post('/import-question-json', [SoalController::class, 'importQuestionJson'])->name('importQuestionJson');
 
+    // halaman daftar data nilai (card per kelas)
+    Route::get('/data-nilai', [nilaicontroller::class, 'index'])->name('data.nilai');
 
+    // detail nilai per aktivitas (menampilkan activity_result.nilai_akhir + nama siswa)
+    Route::get('/detail-nilai/{activity}', [nilaicontroller::class, 'showActivity'])->name('detail.nilai');
 
+    //export nilai semua aktivitas semua kelas
+    Route::get('/guru/datanilai/export-xlsx', [nilaicontroller::class, 'exportClassesExcel'])->name('guru.datanilai.export');
+    Route::get('/guru/datanilai/export-class/{classId}', [nilaicontroller::class, 'exportClassExcel'])->name('guru.datanilai.exportClass');
+
+    //paket
+    Route::post('/activity/{id}/package/create', [ActivityPackageController::class, 'store'])
+        ->name('activity.package.create');
+
+    Route::get('/activity-packages', [ActivityPackageController::class, 'index'])
+        ->name('activity.packages.list'); // list available packages (for klaim)
+
+    Route::post('/activity-package/{id}/claim', [ActivityPackageController::class, 'claim'])
+        ->name('activity.package.claim');
+
+    Route::get('/activity-package/{id}/download', [ActivityPackageController::class, 'download'])
+        ->name('activity.package.download');
 });
 
 
