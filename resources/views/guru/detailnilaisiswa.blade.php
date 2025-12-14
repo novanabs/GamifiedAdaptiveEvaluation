@@ -45,7 +45,16 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h4 class="mb-1">{{ $activity->title ?? 'Aktivitas' }}</h4>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h4 class="mb-1">{{ $activity->title ?? 'Aktivitas' }}</h4>
+                            <button type="button"
+                                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoDetailNilai"
+                                title="Informasi Detail Nilai">
+                                <i class="bi bi-info-lg"></i>
+                            </button>
+                        </div>
+
                         <div class="text-muted mb-2">
                             {{-- Subject, Topic, Class (menggunakan relasi yang ada jika tersedia) --}}
                             <span class="me-3"><span class="meta-key">Mata Pelajaran:</span>
@@ -167,8 +176,7 @@
 
                     {{-- tombol export sederhana --}}
                     <div class="mt-3">
-                        <a href="{{ route('detail.nilai', $activity->id) }}?export=xlsx"
-                            class="btn btn-sm btn-outline-success">
+                        <a href="{{ route('detail.nilai', $activity->id) }}?export=xlsx" class="btn btn-sm btn-outline-success">
                             <i class="fas fa-file-excel me-1"></i> Export Excel (XLSX)
                         </a>
 
@@ -177,6 +185,93 @@
             </div>
         </div>
     </div>
+    {{-- MODAL INFO DETAIL NILAI --}}
+    <div class="modal fade" id="modalInfoDetailNilai" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informasi Detail Nilai Aktivitas
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p class="mb-3">
+                        Halaman ini menampilkan <strong>hasil nilai siswa</strong> untuk satu
+                        <strong>aktivitas evaluasi</strong> tertentu. Data digunakan untuk
+                        memantau pencapaian siswa dan melakukan tindak lanjut pembelajaran.
+                    </p>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-layout-text-sidebar me-1"></i>
+                        Informasi Aktivitas
+                    </h6>
+                    <ul>
+                        <li><strong>Mata Pelajaran</strong> → mapel tempat aktivitas dibuat.</li>
+                        <li><strong>Topik</strong> → topik pembelajaran aktivitas.</li>
+                        <li><strong>Kelas</strong> → kelas yang mengerjakan aktivitas.</li>
+                        <li><strong>Deadline</strong> → batas waktu pengerjaan siswa.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-success mb-2">
+                        <i class="bi bi-people me-1"></i>
+                        Ringkasan Nilai
+                    </h6>
+                    <ul>
+                        <li><strong>Siswa</strong> → jumlah total siswa di kelas.</li>
+                        <li><strong>Tercatat Nilai</strong> → siswa yang sudah mengerjakan.</li>
+                        <li><strong>Rata-rata</strong> → nilai rata-rata siswa yang mengerjakan.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-warning mb-2">
+                        <i class="bi bi-table me-1"></i>
+                        Tabel Nilai
+                    </h6>
+                    <ul>
+                        <li><strong>Nilai Akhir</strong> → skor akhir siswa.</li>
+                        <li>
+                            <strong>Status</strong>:
+                            <ul>
+                                <li><span class="badge bg-success">Lulus</span> → nilai memenuhi KKM.</li>
+                                <li><span class="badge bg-warning text-dark">Remedial</span> → perlu perbaikan.</li>
+                                <li><span class="badge bg-secondary">Belum Mengerjakan</span> → belum submit.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-info mb-2">
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Export Data
+                    </h6>
+                    <ul>
+                        <li>Gunakan tombol <strong>Export Excel (XLSX)</strong> untuk mengunduh nilai siswa.</li>
+                        <li>File dapat digunakan untuk laporan, arsip, atau pengolahan lanjutan.</li>
+                    </ul>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('scripts')

@@ -2,7 +2,16 @@
 @section('dataAktivitas', request()->is('dataaktivitas') ? 'active' : '')
 @section('content')
     <div class="container mt-4">
-        <h3 class="fw-bold mb-4">Data Evaluasi Berdasarkan Topik</h3>
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <h3 class="fw-bold mb-0">Data Evaluasi Berdasarkan Topik</h3>
+
+            <button type="button"
+                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoAktivitas"
+                title="Informasi Aktivitas">
+                <i class="bi bi-info-lg"></i>
+            </button>
+        </div>
 
         @if(session('success'))
             <div class="alert alert-success text-center shadow-sm">{{ session('success') }}</div>
@@ -159,13 +168,12 @@
                                                 <i class="bi bi-pencil"></i>
                                             </button>
 
-                                            <form action="{{ route('activity.package.create', $r->id) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success btn-sm" title="Buat Paket Soal">
-                                                    <i class="bi bi-archive"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-success btn-sm btn-create-package"
+                                                data-url="{{ route('activity.package.create', $r->id) }}"
+                                                title="Buat Paket Soal">
+                                                <i class="bi bi-archive"></i>
+                                            </button>
+
 
                                             <a href="{{ url('/guru/aktivitas/' . $r->id . '/atur-soal?topic=' . $r->topic_id) }}"
                                                 class="btn btn-warning btn-sm" title="Atur Soal" aria-label="Atur Soal">
@@ -317,211 +325,362 @@
                         </tbody>
                     </table>
                 </div>
+                {{-- MODAL INFO AKTIVITAS --}}
+                <div class="modal fade" id="modalInfoAktivitas" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content shadow rounded-4">
 
-                {{-- render semua modal yang di-push --}}
-                @stack('modals')
-            </div>
-        </div>
-    </div>
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-info-circle me-2"></i>Informasi Data Evaluasi
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+
+                                <p>
+                                    Halaman <strong>Data Evaluasi Berdasarkan Topik</strong> digunakan untuk
+                                    membuat, mengelola, dan mendistribusikan aktivitas evaluasi (kuis/tes)
+                                    kepada siswa berdasarkan topik pembelajaran.
+                                </p>
+
+                                <hr>
+
+                                <h6 class="fw-bold text-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> Tambah Aktivitas
+                                </h6>
+                                <ul>
+                                    <li>Digunakan untuk membuat evaluasi baru.</li>
+                                    <li>Guru wajib mengisi:
+                                        <ul>
+                                            <li>Judul aktivitas</li>
+                                            <li>Topik</li>
+                                            <li>Deadline (opsional)</li>
+                                            <li>Durasi pengerjaan</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="fw-bold text-success">
+                                    <i class="bi bi-shuffle me-1"></i> Adaptive
+                                </h6>
+                                <ul>
+                                    <li>Jika diaktifkan, soal dapat menyesuaikan tingkat kesulitan siswa.</li>
+                                    <li>Jika tidak diaktifkan, soal ditampilkan secara statis.</li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="fw-bold text-warning">
+                                    <i class="bi bi-gear me-1"></i> Aksi Aktivitas
+                                </h6>
+                                <ul>
+                                    <li>
+                                        <i class="bi bi-pencil text-primary"></i>
+                                        <strong>Edit</strong> – Mengubah data aktivitas.
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-archive text-success"></i>
+                                        <strong>Buat Paket Soal</strong> – Mengemas seluruh soal dalam topik menjadi paket.
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-gear text-warning"></i>
+                                        <strong>Atur Soal</strong> – Menentukan soal mana saja yang digunakan.
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-eye text-info"></i>
+                                        <strong>Lihat Soal</strong> – Melihat daftar soal dalam aktivitas.
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-trash text-danger"></i>
+                                        <strong>Hapus</strong> – Menghapus aktivitas secara permanen.
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="fw-bold text-secondary">
+                                    <i class="bi bi-calendar-event me-1"></i> Informasi Tambahan
+                                </h6>
+                                <ul>
+                                    <li>Kolom <strong>Semester</strong> menunjukkan periode pembelajaran.</li>
+                                    <li>Kolom <strong>Kelas</strong> menunjukkan target siswa.</li>
+                                    <li>Kolom <strong>Mapel</strong> menunjukkan mata pelajaran terkait.</li>
+                                </ul>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    Tutup
+                                </button>
+                            </div>
+
+
+                            {{-- render semua modal yang di-push --}}
+                            @stack('modals')
+                        </div>
+                    </div>
+                </div>
 @endsection
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+            @push('styles')
+                <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+                <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
-    <style>
-        /* truncate dengan ellipsis */
-        .text-ellipsis {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            /* ubah ke normal untuk wrap */
-        }
+                <style>
+                    /* truncate dengan ellipsis */
+                    .text-ellipsis {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        /* ubah ke normal untuk wrap */
+                    }
 
-        /* bila ingin boleh wrap (multi-line) gunakan kelas ini */
-        .text-wrap {
-            white-space: normal;
-            word-wrap: break-word;
-        }
+                    /* bila ingin boleh wrap (multi-line) gunakan kelas ini */
+                    .text-wrap {
+                        white-space: normal;
+                        word-wrap: break-word;
+                    }
 
-        /* batas lebar kolom agar tidak memanjangkan layout */
-        td.col-title {
-            max-width: 220px;
-        }
+                    /* batas lebar kolom agar tidak memanjangkan layout */
+                    td.col-title {
+                        max-width: 220px;
+                    }
 
-        /* Judul */
-        td.col-topic {
-            max-width: 180px;
-        }
+                    /* Judul */
+                    td.col-topic {
+                        max-width: 180px;
+                    }
 
-        /* Topik */
-        td.col-subject {
-            max-width: 140px;
-        }
+                    /* Topik */
+                    td.col-subject {
+                        max-width: 140px;
+                    }
 
-        /* Subject */
-        td.col-class {
-            max-width: 120px;
-        }
+                    /* Subject */
+                    td.col-class {
+                        max-width: 120px;
+                    }
 
-        /* Kelas */
+                    /* Kelas */
 
-        /* buat cell truncate (multi size) */
-        td.col-title>.cell-inner,
-        td.col-topic>.cell-inner,
-        td.col-subject>.cell-inner,
-        td.col-class>.cell-inner {
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+                    /* buat cell truncate (multi size) */
+                    td.col-title>.cell-inner,
+                    td.col-topic>.cell-inner,
+                    td.col-subject>.cell-inner,
+                    td.col-class>.cell-inner {
+                        display: block;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
 
-        /* make action buttons stay on one line and allow horizontal scroll if cell too narrow */
-        .action-group {
-            display: flex;
-            gap: .35rem;
-            align-items: center;
-            white-space: nowrap;
-            /* prevent icons text wrapping */
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: .15rem 0;
-        }
+                    /* make action buttons stay on one line and allow horizontal scroll if cell too narrow */
+                    .action-group {
+                        display: flex;
+                        gap: .35rem;
+                        align-items: center;
+                        white-space: nowrap;
+                        /* prevent icons text wrapping */
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        padding: .15rem 0;
+                    }
 
-        /* small visual tweak: keep consistent button sizing */
-        .action-group .btn {
-            flex: 0 0 auto;
-        }
-
-
-
-        /* responsive: sembunyikan kolom subject & class di xs */
-        @media (max-width: 768px) {
-            .hide-sm {
-                display: none !important;
-            }
-        }
-
-        /* agar table responsive horizontal */
-        .dt-scroll-wrapper {
-            overflow-x: auto;
-        }
-    </style>
-@endpush
+                    /* small visual tweak: keep consistent button sizing */
+                    .action-group .btn {
+                        flex: 0 0 auto;
+                    }
 
 
-@push('scripts')
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
 
-            // semua tombol delete
-            document.querySelectorAll('.btn-delete').forEach(btn => {
-
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-
-                    let form = this.closest('form');
-
-                    Swal.fire({
-                        title: 'Yakin hapus aktivitas ini?',
-                        text: "Data yang dihapus tidak bisa dikembalikan!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
+                    /* responsive: sembunyikan kolom subject & class di xs */
+                    @media (max-width: 768px) {
+                        .hide-sm {
+                            display: none !important;
                         }
+                    }
+
+                    /* agar table responsive horizontal */
+                    .dt-scroll-wrapper {
+                        overflow-x: auto;
+                    }
+                </style>
+            @endpush
+
+
+            @push('scripts')
+                <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+                <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+                <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+
+                        // semua tombol delete
+                        document.querySelectorAll('.btn-delete').forEach(btn => {
+
+                            btn.addEventListener('click', function (e) {
+                                e.preventDefault();
+
+                                let form = this.closest('form');
+
+                                Swal.fire({
+                                    title: 'Yakin hapus aktivitas ini?',
+                                    text: "Data yang dihapus tidak bisa dikembalikan!",
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#d33',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: 'Ya, hapus!',
+                                    cancelButtonText: 'Batal'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        form.submit();
+                                    }
+                                });
+
+                            });
+
+                        });
+                    });
+                </script>
+
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        // DataTable with horizontal scroll and responsive details
+                        var table = $('#activitiesTable').DataTable({
+                            responsive: {
+                                details: {
+                                    type: 'column',
+                                    target: -1 // fallback: last column toggles detail
+                                }
+                            },
+                            scrollX: true,
+                            autoWidth: false,
+                            lengthChange: true,
+                            pageLength: 10,
+                            order: [[1, 'asc']],
+                            columnDefs: [
+                                { orderable: false, targets: [0, 8] },
+                                { searchable: false, targets: 0 },
+                                // make the last column (Aksi) not responsive-detail toggler
+                                { responsivePriority: 1, targets: 1 }, // Judul paling penting
+                                { responsivePriority: 2, targets: 7 }  // Aksi tetap penting
+                            ],
+                            language: {
+                                search: "_INPUT_",
+                                searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
+                                lengthMenu: "Tampilkan _MENU_ entri",
+                                paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
+                            },
+                            drawCallback: function () {
+                                // Aktifkan tooltip untuk semua cell yang punya title
+                                var tlist = [].slice.call(document.querySelectorAll('[title]'));
+                                tlist.map(function (el) { return new bootstrap.Tooltip(el); });
+                            }
+                        });
+
+                        // nomor dinamis
+                        table.on('order.dt search.dt draw.dt', function () {
+                            table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+                                cell.innerHTML = i + 1;
+                            });
+                        }).draw();
+
+                        // optional: tombol Lihat -> modal show detail row
+                        // delegasi: ketika tombol lihat diklik ambil data baris dan tampilkan
+                        $(document).on('click', '.btn-view-row', function (e) {
+                            e.preventDefault();
+                            var $btn = $(this);
+                            var $tr = $btn.closest('tr');
+                            if ($tr.hasClass('child')) { // jika responsive membuat row child, ambil parent
+                                $tr = $tr.prev();
+                            }
+                            var rowData = table.row($tr).data(); // array cells
+                            // rowData indeks: 0=No,1=Judul,2=Deadline,3=Adaptive,4=Topik,5=Subject,6=Kelas,7=Aksi
+                            var html = '<dl class="row">';
+                            html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';
+                            html += '</dl>';
+                            $('#rowDetailModal .modal-body').html(html);
+                            var modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
+                            modal.show();
+                        });
+
+                    });
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
                     });
 
-                });
+                </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
 
-            });
-        });
-    </script>
+                        document.querySelectorAll('.btn-create-package').forEach(btn => {
+                            btn.addEventListener('click', function () {
 
+                                let url = this.dataset.url;
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // DataTable with horizontal scroll and responsive details
-            var table = $('#activitiesTable').DataTable({
-                responsive: {
-                    details: {
-                        type: 'column',
-                        target: -1 // fallback: last column toggles detail
-                    }
-                },
-                scrollX: true,
-                autoWidth: false,
-                lengthChange: true,
-                pageLength: 10,
-                order: [[1, 'asc']],
-                columnDefs: [
-                    { orderable: false, targets: [0, 8] },
-                    { searchable: false, targets: 0 },
-                    // make the last column (Aksi) not responsive-detail toggler
-                    { responsivePriority: 1, targets: 1 }, // Judul paling penting
-                    { responsivePriority: 2, targets: 7 }  // Aksi tetap penting
-                ],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Cari aktivitas, topik, subject, atau kelas...",
-                    lengthMenu: "Tampilkan _MENU_ entri",
-                    paginate: { previous: "Sebelumnya", next: "Selanjutnya" }
-                },
-                drawCallback: function () {
-                    // Aktifkan tooltip untuk semua cell yang punya title
-                    var tlist = [].slice.call(document.querySelectorAll('[title]'));
-                    tlist.map(function (el) { return new bootstrap.Tooltip(el); });
-                }
-            });
+                                Swal.fire({
+                                    title: 'Buat paket soal?',
+                                    text: 'Paket akan berisi semua soal dalam topik.',
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Ya, buat',
+                                    cancelButtonText: 'Batal'
+                                }).then((result) => {
 
-            // nomor dinamis
-            table.on('order.dt search.dt draw.dt', function () {
-                table.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-                    cell.innerHTML = i + 1;
-                });
-            }).draw();
+                                    if (!result.isConfirmed) return;
 
-            // optional: tombol Lihat -> modal show detail row
-            // delegasi: ketika tombol lihat diklik ambil data baris dan tampilkan
-            $(document).on('click', '.btn-view-row', function (e) {
-                e.preventDefault();
-                var $btn = $(this);
-                var $tr = $btn.closest('tr');
-                if ($tr.hasClass('child')) { // jika responsive membuat row child, ambil parent
-                    $tr = $tr.prev();
-                }
-                var rowData = table.row($tr).data(); // array cells
-                // rowData indeks: 0=No,1=Judul,2=Deadline,3=Adaptive,4=Topik,5=Subject,6=Kelas,7=Aksi
-                var html = '<dl class="row">';
-                html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
-                html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
-                html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
-                html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
-                html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
-                html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';
-                html += '</dl>';
-                $('#rowDetailModal .modal-body').html(html);
-                var modal = new bootstrap.Modal(document.getElementById('rowDetailModal'));
-                modal.show();
-            });
+                                    Swal.fire({
+                                        title: 'Memproses...',
+                                        text: 'Sedang membuat paket soal',
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading()
+                                    });
 
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-            tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
-        });
+                                    fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                            'Accept': 'application/json'
+                                        }
+                                    })
+                                        .then(res => res.json())
+                                        .then(res => {
 
-    </script>
-@endpush
+                                            if (!res.success) {
+                                                throw new Error(res.message ?? 'Gagal membuat paket');
+                                            }
+
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Berhasil',
+                                                text: 'Paket soal berhasil dibuat',
+                                            });
+
+                                        })
+                                        .catch(err => {
+                                            Swal.fire('Error', err.message, 'error');
+                                        });
+
+                                });
+                            });
+                        });
+
+                    });
+                </script>
+            @endpush

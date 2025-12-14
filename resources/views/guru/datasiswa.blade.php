@@ -4,9 +4,17 @@
 
 @section('content')
     <div class="container py-4">
-        <h2 class="fw-bold mb-3 text-primary">
-            Data Siswa per Kelas
-        </h2>
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h2 class="fw-bold mb-0 text-black">Data Siswa per Kelas</h2>
+
+            <button type="button"
+                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoDataSiswa"
+                title="Informasi Data Siswa">
+                <i class="bi bi-info-lg"></i>
+            </button>
+        </div>
+
 
         <!-- Filter Kelas -->
         <form action="{{ route('dataSiswa') }}" method="GET" class="mb-4">
@@ -127,6 +135,86 @@
             </div>
         </div>
     </div>
+    {{-- MODAL INFO DATA SISWA --}}
+    <div class="modal fade" id="modalInfoDataSiswa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informasi Data Siswa
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p>
+                        Halaman <strong>Data Siswa per Kelas</strong> digunakan untuk mengelola
+                        daftar siswa yang tergabung dalam setiap kelas.
+                    </p>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-primary">
+                        <i class="bi bi-diagram-3 me-1"></i>
+                        Filter Kelas
+                    </h6>
+                    <ul>
+                        <li>Pilih kelas untuk menampilkan siswa berdasarkan kelas tersebut.</li>
+                        <li>Jika tidak memilih kelas, sistem akan menampilkan seluruh siswa.</li>
+                        <li>Perubahan pilihan kelas akan langsung memuat ulang data.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-success">
+                        <i class="bi bi-table me-1"></i>
+                        Tabel Data Siswa
+                    </h6>
+                    <ul>
+                        <li>Menampilkan nama siswa, email, dan kelas.</li>
+                        <li>Dilengkapi fitur pencarian, pagination, dan responsive.</li>
+                        <li>Nomor baris akan menyesuaikan jumlah data yang tampil.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Edit Data Siswa
+                    </h6>
+                    <ul>
+                        <li>Gunakan tombol <strong>Edit</strong> untuk memperbarui data siswa.</li>
+                        <li>Password bersifat opsional dan dapat dikosongkan jika tidak ingin diubah.</li>
+                        <li>Perubahan akan langsung tersimpan ke database.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-info">
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Export Data Siswa
+                    </h6>
+                    <ul>
+                        <li>Export dapat dilakukan untuk seluruh siswa.</li>
+                        <li>Jika kelas dipilih, export hanya berisi siswa dari kelas tersebut.</li>
+                        <li>File hasil export menggunakan format Excel.</li>
+                    </ul>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     <!-- JS -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>

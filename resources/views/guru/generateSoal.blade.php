@@ -2,7 +2,17 @@
 @section('dataSoal', request()->is('generate-soal') ? 'active' : '')
 @section('content')
     <div class="container py-4">
-        <h3 class="fw-bold mb-3">Generator Soal Otomatis</h3>
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h3 class="fw-bold mb-0">Generator Soal Otomatis</h3>
+
+            <button type="button"
+                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoGenerateSoal"
+                title="Informasi Generator Soal">
+                <i class="bi bi-info-lg"></i>
+            </button>
+        </div>
+
 
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-body">
@@ -150,4 +160,90 @@
         </div>
 
     </div>
+    {{-- MODAL INFO GENERATOR SOAL --}}
+    <div class="modal fade" id="modalInfoGenerateSoal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Panduan Generator Soal Otomatis
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p>
+                        Halaman <strong>Generator Soal Otomatis</strong> digunakan untuk membantu guru
+                        menghasilkan soal secara cepat menggunakan bantuan AI dan mengimpor soal dalam format JSON.
+                    </p>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-primary">
+                        <i class="bi bi-lightbulb me-1"></i>
+                        Generator Prompt AI
+                    </h6>
+                    <ul>
+                        <li>Pilih <strong>Topik Soal</strong> yang ingin dibuatkan pertanyaan.</li>
+                        <li>Tentukan <strong>Jenjang Pendidikan</strong> agar tingkat bahasa dan kompleksitas sesuai.</li>
+                        <li>Masukkan <strong>Jumlah Soal</strong> yang diinginkan.</li>
+                        <li>Sistem akan menghasilkan <b>prompt AI</b> yang siap digunakan.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-success">
+                        <i class="bi bi-robot me-1"></i>
+                        Prompt AI
+                    </h6>
+                    <ul>
+                        <li>Prompt yang dihasilkan dapat langsung disalin.</li>
+                        <li>Gunakan prompt tersebut pada AI (misalnya ChatGPT) untuk menghasilkan soal.</li>
+                        <li>Hasil AI diharapkan berbentuk <b>JSON</b> sesuai struktur sistem.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-braces me-1"></i>
+                        Import Soal dari JSON
+                    </h6>
+                    <ul>
+                        <li>Soal hasil AI dapat dimasukkan ke sistem menggunakan format JSON.</li>
+                        <li>Tersedia dua metode impor:
+                            <ul>
+                                <li><b>Tempel JSON</b> langsung ke textarea</li>
+                                <li><b>Upload file JSON</b> dari perangkat</li>
+                            </ul>
+                        </li>
+                        <li>JSON yang valid akan otomatis disimpan ke bank soal.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-info">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Validasi & Keamanan Data
+                    </h6>
+                    <ul>
+                        <li>Sistem akan memeriksa struktur JSON sebelum menyimpan.</li>
+                        <li>Jika format tidak sesuai, proses impor akan dibatalkan.</li>
+                        <li>Soal yang berhasil diimpor dapat langsung digunakan dalam aktivitas.</li>
+                    </ul>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 @endsection

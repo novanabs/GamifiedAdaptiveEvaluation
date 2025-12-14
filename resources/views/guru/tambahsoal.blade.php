@@ -5,9 +5,19 @@
     <div class="container py-4">
         <div class="card shadow-lg border-0 rounded-4">
             <div class="card-body p-4">
-                <h3 class="fw-bold text-primary mb-4">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Soal
-                </h3>
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <h3 class="fw-bold text-primary mb-0">
+                        <i class="bi bi-plus-circle me-2"></i> Tambah Soal
+                    </h3>
+
+                    <button type="button"
+                        class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                        style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoTambahSoal"
+                        title="Informasi Tambah Soal">
+                        <i class="bi bi-info-lg"></i>
+                    </button>
+                </div>
+
 
                 {{-- FORM START --}}
                 <form id="soalForm" action="{{ route('simpanSoal') }}" method="POST" enctype="multipart/form-data">
@@ -79,7 +89,7 @@
                             </h5>
 
                             <div class="row">
-                                @foreach(['a','b','c','d','e'] as $i => $opt)
+                                @foreach(['a', 'b', 'c', 'd', 'e'] as $i => $opt)
                                     <div class="col-md-4 mb-3">
                                         <div class="card shadow-sm border-0 h-100">
                                             <div class="card-body">
@@ -109,7 +119,7 @@
                                             <label class="form-label fw-semibold">Jawaban Benar</label>
                                             <select name="mc_answer" id="mc_answer" class="form-select">
                                                 <option value="">-- Pilih Jawaban --</option>
-                                                @foreach(['a','b','c','d','e'] as $opt)
+                                                @foreach(['a', 'b', 'c', 'd', 'e'] as $opt)
                                                     <option value="{{ $opt }}">{{ strtoupper($opt) }}</option>
                                                 @endforeach
                                             </select>
@@ -149,6 +159,122 @@
             </div>
         </div>
     </div>
+    {{-- MODAL INFO TAMBAH SOAL --}}
+    <div class="modal fade" id="modalInfoTambahSoal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4 shadow">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Panduan Menambah Soal
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p>
+                        Halaman <strong>Tambah Soal</strong> digunakan untuk membuat soal baru
+                        yang akan disimpan ke bank soal dan dapat digunakan dalam berbagai aktivitas.
+                    </p>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-primary">
+                        <i class="bi bi-ui-checks me-1"></i>
+                        Tipe & Kesulitan Soal
+                    </h6>
+                    <ul>
+                        <li><strong>Tipe Soal</strong> menentukan bentuk soal:
+                            <ul>
+                                <li><b>Pilihan Ganda</b>: memiliki opsi A–E dan satu jawaban benar</li>
+                                <li><b>Isian Singkat</b>: memiliki satu atau lebih jawaban benar</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tingkat Kesulitan</strong> digunakan untuk pengelompokan dan sistem adaptive.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-secondary">
+                        <i class="bi bi-tags me-1"></i>
+                        Topik Soal
+                    </h6>
+                    <ul>
+                        <li>Topik bersifat <b>opsional</b>.</li>
+                        <li>Topik yang muncul hanya berasal dari mata pelajaran dan kelas yang Anda ajar.</li>
+                        <li>Topik memudahkan pengelompokan soal dan pemilihan otomatis.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-success">
+                        <i class="bi bi-question-circle me-1"></i>
+                        Teks & Gambar Pertanyaan
+                    </h6>
+                    <ul>
+                        <li>Teks pertanyaan wajib diisi.</li>
+                        <li>Gambar soal bersifat opsional dan dapat diisi dengan:
+                            <ul>
+                                <li>Upload file gambar</li>
+                                <li>Atau menggunakan URL gambar</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-list-check me-1"></i>
+                        Pilihan Jawaban (Pilihan Ganda)
+                    </h6>
+                    <ul>
+                        <li>Semua opsi A–E harus diisi.</li>
+                        <li>Setiap opsi dapat memiliki:
+                            <ul>
+                                <li>Teks jawaban</li>
+                                <li>Gambar atau URL gambar (opsional)</li>
+                            </ul>
+                        </li>
+                        <li>Jawaban benar wajib dipilih.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-info">
+                        <i class="bi bi-pencil-square me-1"></i>
+                        Jawaban Isian Singkat
+                    </h6>
+                    <ul>
+                        <li>Minimal satu jawaban harus diisi.</li>
+                        <li>Gunakan tombol <b>Tambah Jawaban</b> untuk menambahkan variasi jawaban benar.</li>
+                        <li>Jawaban digunakan untuk mencocokkan input siswa.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold text-danger">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Validasi Form
+                    </h6>
+                    <ul>
+                        <li>Sistem akan memeriksa kelengkapan data sebelum soal disimpan.</li>
+                        <li>Jika ada data yang belum valid, proses penyimpanan akan dibatalkan.</li>
+                    </ul>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

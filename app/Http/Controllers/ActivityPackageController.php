@@ -32,15 +32,19 @@ class ActivityPackageController extends Controller
     public function store(Request $req, $id)
     {
         $activity = DB::table('activities')->where('id', $id)->first();
-        if (!$activity)
+        if (!$activity) {
             return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+        }
 
-        $qids = DB::table('activity_question')->where('id_activity', $id)->pluck('id_question')->toArray();
-        $questions = DB::table('question')->whereIn('id', $qids)->get();
-
+        // ambil topic, subject, class
         $topic = DB::table('topics')->where('id', $activity->id_topic)->first();
         $subject = $topic ? DB::table('subject')->where('id', $topic->id_subject)->first() : null;
         $class = $subject ? DB::table('classes')->where('id', $subject->id_class)->first() : null;
+
+        // 🔥 AMBIL SEMUA SOAL DALAM TOPIC (BUKAN HANYA YANG DIPAKAI ACTIVITY)
+        $questions = DB::table('question')
+            ->where('id_topic', $activity->id_topic)
+            ->get();
 
         $payload = [
             'meta' => [
@@ -53,25 +57,33 @@ class ActivityPackageController extends Controller
             ],
             'questions' => $questions->map(function ($q) {
                 $q = (array) $q;
-                if (is_string($q['question']))
+
+                if (is_string($q['question'])) {
                     $q['question'] = json_decode($q['question'], true);
-                if (!empty($q['MC_option']) && is_string($q['MC_option']))
+                }
+                if (!empty($q['MC_option']) && is_string($q['MC_option'])) {
                     $q['MC_option'] = json_decode($q['MC_option'], true);
-                if (!empty($q['SA_answer']) && is_string($q['SA_answer']))
+                }
+                if (!empty($q['SA_answer']) && is_string($q['SA_answer'])) {
                     $q['SA_answer'] = json_decode($q['SA_answer'], true);
+                }
+
                 return $q;
             })->toArray()
         ];
 
         $filename = 'package_activity_' . $id . '_' . Str::slug($activity->title ?? 'activity') . '_' . time() . '.json';
         $path = 'activity_packages/' . $filename;
-        Storage::disk('local')->put($path, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
+        Storage::disk('local')->put(
+            $path,
+            json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
 
         $pkgId = DB::table('activity_packages')->insertGetId([
             'id_activity' => $id,
             'created_by' => Auth::id(),
-            'id_class' => $activity->class_id ?? null,
+            'id_class' => $class->id ?? null,
             'title' => $req->input('title') ?? ('Paket: ' . ($activity->title ?? 'Activity')),
             'filename' => $path,
             'notes' => $req->input('notes') ?? null,
@@ -79,7 +91,11 @@ class ActivityPackageController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['success' => true, 'id' => $pkgId, 'download_url' => route('activity.package.download', $pkgId)]);
+        return response()->json([
+            'success' => true,
+            'id' => $pkgId,
+            'download_url' => route('activity.package.download', $pkgId)
+        ]);
     }
 
     // download raw package file
@@ -115,7 +131,6 @@ class ActivityPackageController extends Controller
             return response()->json(['success' => false, 'message' => 'Target class required'], 422);
         }
 
-        // verifikasi kelas target ada di tabel classes
         $targetClass = DB::table('classes')->where('id', $targetClassId)->first();
         if (!$targetClass) {
             return response()->json(['success' => false, 'message' => 'Target class not found'], 404);
@@ -127,16 +142,16 @@ class ActivityPackageController extends Controller
         try {
             $act = $json['meta']['activity'];
 
-            //
-            // 0) COPY SUBJECT: jangan update subject lama, tapi coba reuse by (name + id_class target),
-            //    jika tidak ada -> create new subject with id_class = targetClass
-            //    Result: $finalSubjectId
-            //
+            /*
+            |--------------------------------------------------------------------------
+            | 1. SUBJECT (reuse by name + class OR create new)
+            |--------------------------------------------------------------------------
+            */
             $finalSubjectId = null;
+
             if (isset($json['meta']['subject'])) {
                 $metaSub = $json['meta']['subject'];
 
-                // Prefer reuse: find subject with same name under target class
                 if (!empty($metaSub['name'])) {
                     $foundSub = DB::table('subject')
                         ->where('name', $metaSub['name'])
@@ -148,33 +163,27 @@ class ActivityPackageController extends Controller
                     }
                 }
 
-                // If not found, create new subject in target class (copy metadata where sensible)
                 if (!$finalSubjectId) {
-                    $newSubId = DB::table('subject')->insertGetId([
-                        'name' => $metaSub['name'] ?? ('Subject for ' . ($json['meta']['activity']['title'] ?? 'Imported')),
+                    $finalSubjectId = DB::table('subject')->insertGetId([
+                        'name' => $metaSub['name'] ?? 'Imported Subject',
                         'id_class' => $targetClass->id,
-                        'created_by' => $metaSub['created_by'] ?? Auth::id(),
+                        'created_by' => Auth::id(),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    $finalSubjectId = $newSubId;
                 }
-
-                // sync in-memory meta (optional)
-                $json['meta']['subject']['id'] = $finalSubjectId;
-                $json['meta']['subject']['id_class'] = $targetClass->id;
             }
 
-            //
-            // 1) COPY TOPIC: jangan update topic lama. Try reuse by (title + finalSubjectId),
-            //    if not found -> create new topic under finalSubjectId
-            //    Result: $finalTopicId
-            //
-            $finalTopicId = $req->input('topic_id') ?? null;
+            /*
+            |--------------------------------------------------------------------------
+            | 2. TOPIC (reuse by title + subject OR create new)
+            |--------------------------------------------------------------------------
+            */
+            $finalTopicId = null;
+
             if (isset($json['meta']['topic'])) {
                 $metaTopic = $json['meta']['topic'];
 
-                // try reuse: find topic by title under the subject we will use
                 if (!empty($metaTopic['title']) && $finalSubjectId) {
                     $foundTopic = DB::table('topics')
                         ->where('title', $metaTopic['title'])
@@ -186,54 +195,51 @@ class ActivityPackageController extends Controller
                     }
                 }
 
-                // if still null -> create new topic under finalSubjectId (copy metadata)
                 if (!$finalTopicId) {
-                    $newTopicId = DB::table('topics')->insertGetId([
-                        'title' => $metaTopic['title'] ?? ('Topic for ' . ($json['meta']['activity']['title'] ?? 'Imported')),
+                    $finalTopicId = DB::table('topics')->insertGetId([
+                        'title' => $metaTopic['title'] ?? 'Imported Topic',
                         'description' => $metaTopic['description'] ?? null,
-                        'id_subject' => $finalSubjectId ?? null,
-                        'created_by' => $metaTopic['created_by'] ?? Auth::id(),
+                        'id_subject' => $finalSubjectId,
+                        'created_by' => Auth::id(),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    $finalTopicId = $newTopicId;
                 }
-
-                // sync in-memory meta (optional)
-                $json['meta']['topic']['id'] = $finalTopicId;
-                $json['meta']['topic']['id_subject'] = $finalSubjectId;
             }
 
-            // keep request-provided topic_id if still no finalTopicId
-            if (!$finalTopicId && $req->filled('topic_id')) {
-                $finalTopicId = $req->input('topic_id');
+            // 🔐 HARD GUARD — wajib ada topic baru
+            if (!$finalTopicId) {
+                throw new \Exception('Final topic could not be resolved.');
             }
 
-            //
-            // 2) create activity -> set id_topic = $finalTopicId so activity is tied to copied topic/subject/class relation
-            //
-            $activityPayload = [
-                'title' => $req->input('title') ?? ($pkg->title ?? ($act['title'] ?? 'Imported Activity')),
+            /*
+            |--------------------------------------------------------------------------
+            | 3. ACTIVITY (PASTI pakai topic BARU)
+            |--------------------------------------------------------------------------
+            */
+            $newActivityId = DB::table('activities')->insertGetId([
+                'title' => $req->input('title') ?? ($pkg->title ?? $act['title'] ?? 'Imported Activity'),
                 'addaptive' => $act['addaptive'] ?? 'no',
                 'status' => $act['status'] ?? 'basic',
                 'type' => $act['type'] ?? 'quiz',
                 'durasi_pengerjaan' => $act['durasi_pengerjaan'] ?? null,
                 'deadline' => $act['deadline'] ?? null,
                 'jumlah_soal' => $act['jumlah_soal'] ?? null,
-                'id_topic' => $finalTopicId ?? ($req->input('topic_id') ?? ($act['id_topic'] ?? null)),
+                'id_topic' => $finalTopicId,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ];
+            ]);
 
-            $newActivityId = DB::table('activities')->insertGetId($activityPayload);
+            /*
+            |--------------------------------------------------------------------------
+            | 4. QUESTIONS (SEMUA id_topic = TOPIC BARU)
+            |--------------------------------------------------------------------------
+            */
+            foreach ($json['questions'] ?? [] as $q) {
 
-            //
-            // 3) proses soal: link atau duplicate; jika insert soal baru -> gunakan id_topic = $finalTopicId
-            //
-            $questions = $json['questions'] ?? [];
-            foreach ($questions as $q) {
                 $useQuestionId = null;
 
+                // reuse question jika TIDAK duplicate
                 if (!$duplicate && isset($q['id'])) {
                     $exists = DB::table('question')->where('id', $q['id'])->first();
                     if ($exists) {
@@ -242,33 +248,18 @@ class ActivityPackageController extends Controller
                 }
 
                 if (!$useQuestionId) {
-                    $qText = is_array($q['question']) ? ($q['question']['text'] ?? null) : null;
-                    if ($qText) {
-                        $found = DB::table('question')
-                            ->where('type', $q['type'])
-                            ->where('question', 'like', '%' . substr($qText, 0, 40) . '%')
-                            ->first();
-                        if ($found) {
-                            $useQuestionId = $found->id;
-                        }
-                    }
-                }
-
-                if (!$useQuestionId) {
-                    $insert = [
+                    $useQuestionId = DB::table('question')->insertGetId([
                         'type' => $q['type'] ?? 'MultipleChoice',
                         'question' => json_encode($q['question'] ?? []),
                         'MC_option' => isset($q['MC_option']) ? json_encode($q['MC_option']) : null,
                         'SA_answer' => isset($q['SA_answer']) ? json_encode($q['SA_answer']) : null,
                         'MC_answer' => $q['MC_answer'] ?? null,
                         'difficulty' => $q['difficulty'] ?? 'mudah',
-                        'id_topic' => $finalTopicId ?? ($req->input('topic_id') ?? ($q['id_topic'] ?? null)),
+                        'id_topic' => $finalTopicId,
                         'created_by' => Auth::id(),
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ];
-
-                    $useQuestionId = DB::table('question')->insertGetId($insert);
+                    ]);
                 }
 
                 DB::table('activity_question')->insert([
@@ -279,19 +270,19 @@ class ActivityPackageController extends Controller
                 ]);
             }
 
-            // intentionally: do NOT rewrite JSON file, do NOT update activity_packages.id_class, do NOT update original subject/topic rows
-
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'new_activity_id' => $newActivityId,
-                'assigned_class_id' => $targetClass->id,
                 'subject_id' => $finalSubjectId,
                 'topic_id' => $finalTopicId,
+                'assigned_class' => $targetClass->id,
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Server error',

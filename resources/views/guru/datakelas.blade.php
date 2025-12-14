@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="container py-4">
-        {{-- PENTING: pastikan di layouts.main ada: 
-            <meta name="csrf-token" content="{{ csrf_token() }}">
+        {{-- PENTING: pastikan di layouts.main ada:
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         --}}
         {{-- Flash messages --}}
         @if(session('success'))
@@ -19,9 +19,15 @@
         @endif
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
-            <div>
-                <h2 class="fw-bold mb-1">Daftar Kelas Anda</h2>
+            <div class="d-flex align-items-center gap-2">
+                <h2 class="fw-bold mb-0">Daftar Kelas Anda</h2>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:32px;height:32px"
+                    data-bs-toggle="modal" data-bs-target="#modalInfoKelas" title="Informasi Pengelolaan Kelas">
+                    <i class="bi bi-info-lg"></i>
+                </button>
             </div>
+
 
             <div class="d-flex gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
@@ -262,7 +268,73 @@
                             </form>
                         </div>
                     </div>
+                    <!-- modal info -->
+                    <div class="modal fade" id="modalInfoKelas" tabindex="-1">
+                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div class="modal-content rounded-4">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Panduan Pengelolaan Kelas
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
 
+                                <div class="modal-body">
+
+                                    <!-- Tambah Kelas -->
+                                    <section class="mb-4">
+                                        <h6 class="fw-semibold text-primary">
+                                            <i class="bi bi-plus-circle me-1"></i> Menambah Kelas
+                                        </h6>
+                                        <ol class="small text-muted">
+                                            <li>Klik tombol <strong>Tambah Kelas</strong></li>
+                                            <li>Isi nama kelas, jenjang, grade, dan semester</li>
+                                            <li>Klik <strong>Simpan</strong></li>
+                                            <li>Kelas akan muncul di daftar kelas Anda</li>
+                                        </ol>
+                                        <img src="{{ asset('img/info/tambah-kelas.png') }}" class="img-fluid rounded border"
+                                            alt="Tambah Kelas">
+                                    </section>
+
+                                    <!-- Gabung Kelas -->
+                                    <section class="mb-4">
+                                        <h6 class="fw-semibold text-success">
+                                            <i class="bi bi-link-45deg me-1"></i> Gabung Kelas
+                                        </h6>
+                                        <ol class="small text-muted">
+                                            <li>Klik tombol <strong>Gabung Kelas</strong></li>
+                                            <li>Masukkan <strong>Token Kelas</strong> dari guru</li>
+                                            <li>Klik <strong>Gabung</strong></li>
+                                            <li>Anda akan otomatis terdaftar di kelas tersebut</li>
+                                        </ol>
+                                        <img src="{{ asset('img/info/gabung-kelas.png') }}" class="img-fluid rounded border"
+                                            alt="Gabung Kelas">
+                                    </section>
+
+                                    <!-- Edit Kelas -->
+                                    <section>
+                                        <h6 class="fw-semibold text-warning">
+                                            <i class="bi bi-pencil-square me-1"></i> Mengedit Kelas
+                                        </h6>
+                                        <ol class="small text-muted">
+                                            <li>Klik ikon <strong>⋮</strong> pada kartu kelas</li>
+                                            <li>Pilih <strong>Edit Kelas</strong></li>
+                                            <li>Ubah data yang diperlukan</li>
+                                            <li>Klik <strong>Simpan Perubahan</strong></li>
+                                        </ol>
+                                        <img src="{{ asset('img/info/edit-kelas.png') }}" class="img-fluid rounded border"
+                                            alt="Edit Kelas">
+                                    </section>
+
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
             </div>
         @endif
@@ -415,212 +487,212 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
-        (function () {
-            'use strict';
+            (function () {
+                'use strict';
 
-            function getCsrfToken() {
-                const meta = document.querySelector('meta[name="csrf-token"]');
-                if (meta && meta.content) return meta.content;
-                const cookieVal = getCookie('XSRF-TOKEN');
-                if (cookieVal) {
-                    try { return decodeURIComponent(cookieVal); } catch (e) { return cookieVal; }
-                }
-                return null;
-            }
-
-            function getCookie(name) {
-                const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-                return v ? v.pop() : null;
-            }
-
-            async function csrfFetch(url, opts = {}) {
-                const csrf = getCsrfToken();
-                const defaultHeaders = { 'X-Requested-With': 'XMLHttpRequest' };
-
-                if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
-                    defaultHeaders['Content-Type'] = 'application/json';
-                    opts.body = JSON.stringify(opts.body);
-                }
-
-                if (csrf) defaultHeaders['X-CSRF-TOKEN'] = csrf;
-                opts.headers = Object.assign({}, defaultHeaders, opts.headers || {});
-                opts.credentials = opts.credentials || 'same-origin';
-
-                const res = await fetch(url, opts);
-                const contentType = res.headers.get('content-type') || '';
-                if (contentType.includes('application/json')) {
-                    const json = await res.json();
-                    if (!res.ok) {
-                        const err = new Error('HTTP Error: ' + res.status);
-                        err.response = res;
-                        err.data = json;
-                        throw err;
+                function getCsrfToken() {
+                    const meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta && meta.content) return meta.content;
+                    const cookieVal = getCookie('XSRF-TOKEN');
+                    if (cookieVal) {
+                        try { return decodeURIComponent(cookieVal); } catch (e) { return cookieVal; }
                     }
-                    return json;
-                } else {
-                    if (!res.ok) throw new Error('HTTP Error: ' + res.status);
-                    return res;
+                    return null;
                 }
-            }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                // Buat paket (export)
-                document.querySelectorAll('.btn-create-package').forEach(btn => {
-                    btn.addEventListener('click', async function (e) {
-                        e.preventDefault();
-                        const activityId = this.dataset.activityId;
-                        const title = this.dataset.title || '';
+                function getCookie(name) {
+                    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                    return v ? v.pop() : null;
+                }
 
-                        const result = await Swal.fire({
-                            title: 'Buat paket aktivitas?',
-                            text: 'Paket akan berisi aktivitas & soal terkait.',
-                            icon: 'question',
+                async function csrfFetch(url, opts = {}) {
+                    const csrf = getCsrfToken();
+                    const defaultHeaders = { 'X-Requested-With': 'XMLHttpRequest' };
+
+                    if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+                        defaultHeaders['Content-Type'] = 'application/json';
+                        opts.body = JSON.stringify(opts.body);
+                    }
+
+                    if (csrf) defaultHeaders['X-CSRF-TOKEN'] = csrf;
+                    opts.headers = Object.assign({}, defaultHeaders, opts.headers || {});
+                    opts.credentials = opts.credentials || 'same-origin';
+
+                    const res = await fetch(url, opts);
+                    const contentType = res.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        const json = await res.json();
+                        if (!res.ok) {
+                            const err = new Error('HTTP Error: ' + res.status);
+                            err.response = res;
+                            err.data = json;
+                            throw err;
+                        }
+                        return json;
+                    } else {
+                        if (!res.ok) throw new Error('HTTP Error: ' + res.status);
+                        return res;
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Buat paket (export)
+                    document.querySelectorAll('.btn-create-package').forEach(btn => {
+                        btn.addEventListener('click', async function (e) {
+                            e.preventDefault();
+                            const activityId = this.dataset.activityId;
+                            const title = this.dataset.title || '';
+
+                            const result = await Swal.fire({
+                                title: 'Buat paket aktivitas?',
+                                text: 'Paket akan berisi aktivitas & soal terkait.',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: 'Buat Paket',
+                                showLoaderOnConfirm: true,
+                                preConfirm: async () => {
+                                    try {
+                                        return await csrfFetch(`/activity/${activityId}/package/create`, {
+                                            method: 'POST',
+                                            body: { title }
+                                        });
+                                    } catch (err) {
+                                        throw err.data ?? err.message ?? err;
+                                    }
+                                }
+                            });
+
+                            if (result.isConfirmed) {
+                                const data = result.value;
+                                if (data && data.success) {
+                                    Swal.fire('Sukses', 'Paket dibuat. Anda dapat mengunduh atau klaim paket.', 'success');
+                                } else {
+                                    Swal.fire('Gagal', (data && data.message) ? data.message : 'Gagal membuat paket', 'error');
+                                }
+                            }
+                        });
+                    });
+
+                    // open claim modal for a class
+                    document.querySelectorAll('.btn-open-claim-modal').forEach(btn => {
+                        btn.addEventListener('click', async function (e) {
+                            const classId = this.dataset.classId;
+                            const className = this.dataset.className;
+                            document.getElementById('claimClassName').textContent = className;
+                            var modal = new bootstrap.Modal(document.getElementById('modalClaimPackage'));
+                            modal.show();
+
+                            const listEl = document.getElementById('packagesList');
+                            listEl.innerHTML = `<div class="text-center py-4 text-muted">Memuat paket...</div>`;
+
+                            try {
+                                const json = await csrfFetch(`/activity-packages`, { method: 'GET' });
+                                const data = json.data || json;
+                                if (!data || data.length === 0) {
+                                    listEl.innerHTML = `<div class="text-center py-4 text-muted">Tidak ada paket.</div>`;
+                                    return;
+                                }
+
+                                const frag = document.createDocumentFragment();
+                                data.forEach(p => {
+                                    const item = document.createElement('div');
+                                    item.className = 'list-group-item d-flex justify-content-between align-items-start';
+                                    item.innerHTML = `
+                                                    <div>
+                                                        <div class="fw-semibold">${escapeHtml(p.title)}</div>
+                                                        <div class="small text-muted">Sumber activity: ${escapeHtml(p.activity_title ?? '-')} — Kelas: ${escapeHtml(p.class_name ?? '-')}</div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <a href="/activity-package/${p.id}/download" class="btn btn-sm btn-outline-secondary mb-1" target="_blank">Download</a>
+                                                        <div>
+                                                            <button class="btn btn-sm btn-primary btn-claim-package" data-pkg-id="${p.id}" data-class-id="${classId}">Klaim</button>
+                                                        </div>
+                                                    </div>`;
+                                    frag.appendChild(item);
+                                });
+                                listEl.innerHTML = '';
+                                listEl.appendChild(frag);
+                            } catch (err) {
+                                console.error(err);
+                                listEl.innerHTML = `<div class="text-center py-4 text-danger">Gagal memuat paket.</div>`;
+                            }
+                        });
+                    });
+
+                    // delegate claim button
+                    document.getElementById('packagesList').addEventListener('click', function (e) {
+                        const btn = e.target.closest('.btn-claim-package');
+                        if (!btn) return;
+                        const pkgId = btn.dataset.pkgId;
+                        const targetClassId = btn.dataset.classId;
+
+                        Swal.fire({
+                            title: 'Klaim paket ke kelas ini?',
+                            html: `<div class="form-check text-start">
+                                                <input class="form-check-input" type="checkbox" id="duplicateCheck">
+                                                <label class="form-check-label" for="duplicateCheck">Duplicate soal jika belum ada (create new questions)</label>
+                                           </div>`,
                             showCancelButton: true,
-                            confirmButtonText: 'Buat Paket',
-                            showLoaderOnConfirm: true,
+                            confirmButtonText: 'Klaim',
                             preConfirm: async () => {
+                                const duplicate = document.getElementById('duplicateCheck').checked;
                                 try {
-                                    return await csrfFetch(`/activity/${activityId}/package/create`, {
+                                    return await csrfFetch(`/activity-package/${pkgId}/claim`, {
                                         method: 'POST',
-                                        body: { title }
+                                        body: { target_class_id: targetClassId, duplicate: duplicate }
                                     });
                                 } catch (err) {
                                     throw err.data ?? err.message ?? err;
                                 }
                             }
+                        }).then(result => {
+                            if (result.isConfirmed) {
+                                const resp = result.value;
+                                if (resp && resp.success) {
+                                    Swal.fire('Berhasil', 'Paket berhasil diklaim; aktivitas baru dibuat.', 'success')
+                                        .then(() => { location.reload(); });
+                                } else {
+                                    Swal.fire('Gagal', (resp && resp.message) ? resp.message : 'Gagal klaim paket', 'error');
+                                }
+                            }
                         });
+                    });
 
-                        if (result.isConfirmed) {
-                            const data = result.value;
-                            if (data && data.success) {
-                                Swal.fire('Sukses', 'Paket dibuat. Anda dapat mengunduh atau klaim paket.', 'success');
+                    // Tooltips bootstrap
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    tooltipTriggerList.map(function (el) {
+                        return new bootstrap.Tooltip(el)
+                    });
+
+                    // copy token
+                    window.copyToken = function (elementId) {
+                        const el = document.getElementById(elementId);
+                        if (!el) return;
+                        navigator.clipboard.writeText(el.textContent.trim()).then(function () {
+                            const btn = event?.target;
+                            if (btn) {
+                                btn.setAttribute('data-bs-original-title', 'Tersalin!');
+                                var t = bootstrap.Tooltip.getInstance(btn);
+                                if (t) { t.show(); setTimeout(() => t.hide(), 900); }
                             } else {
-                                Swal.fire('Gagal', (data && data.message) ? data.message : 'Gagal membuat paket', 'error');
+                                alert('Token disalin: ' + el.textContent.trim());
                             }
-                        }
-                    });
+                        }).catch(function () {
+                            alert('Gagal menyalin token. Silakan salin manual.');
+                        });
+                    };
+
+                    function escapeHtml(unsafe) {
+                        if (unsafe === null || unsafe === undefined) return '';
+                        return String(unsafe)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                    }
                 });
-
-                // open claim modal for a class
-                document.querySelectorAll('.btn-open-claim-modal').forEach(btn => {
-                    btn.addEventListener('click', async function (e) {
-                        const classId = this.dataset.classId;
-                        const className = this.dataset.className;
-                        document.getElementById('claimClassName').textContent = className;
-                        var modal = new bootstrap.Modal(document.getElementById('modalClaimPackage'));
-                        modal.show();
-
-                        const listEl = document.getElementById('packagesList');
-                        listEl.innerHTML = `<div class="text-center py-4 text-muted">Memuat paket...</div>`;
-
-                        try {
-                            const json = await csrfFetch(`/activity-packages`, { method: 'GET' });
-                            const data = json.data || json;
-                            if (!data || data.length === 0) {
-                                listEl.innerHTML = `<div class="text-center py-4 text-muted">Tidak ada paket.</div>`;
-                                return;
-                            }
-
-                            const frag = document.createDocumentFragment();
-                            data.forEach(p => {
-                                const item = document.createElement('div');
-                                item.className = 'list-group-item d-flex justify-content-between align-items-start';
-                                item.innerHTML = `
-                                    <div>
-                                        <div class="fw-semibold">${escapeHtml(p.title)}</div>
-                                        <div class="small text-muted">Sumber activity: ${escapeHtml(p.activity_title ?? '-')} — Kelas: ${escapeHtml(p.class_name ?? '-')}</div>
-                                    </div>
-                                    <div class="text-end">
-                                        <a href="/activity-package/${p.id}/download" class="btn btn-sm btn-outline-secondary mb-1" target="_blank">Download</a>
-                                        <div>
-                                            <button class="btn btn-sm btn-primary btn-claim-package" data-pkg-id="${p.id}" data-class-id="${classId}">Klaim</button>
-                                        </div>
-                                    </div>`;
-                                frag.appendChild(item);
-                            });
-                            listEl.innerHTML = '';
-                            listEl.appendChild(frag);
-                        } catch (err) {
-                            console.error(err);
-                            listEl.innerHTML = `<div class="text-center py-4 text-danger">Gagal memuat paket.</div>`;
-                        }
-                    });
-                });
-
-                // delegate claim button
-                document.getElementById('packagesList').addEventListener('click', function (e) {
-                    const btn = e.target.closest('.btn-claim-package');
-                    if (!btn) return;
-                    const pkgId = btn.dataset.pkgId;
-                    const targetClassId = btn.dataset.classId;
-
-                    Swal.fire({
-                        title: 'Klaim paket ke kelas ini?',
-                        html: `<div class="form-check text-start">
-                                <input class="form-check-input" type="checkbox" id="duplicateCheck">
-                                <label class="form-check-label" for="duplicateCheck">Duplicate soal jika belum ada (create new questions)</label>
-                           </div>`,
-                        showCancelButton: true,
-                        confirmButtonText: 'Klaim',
-                        preConfirm: async () => {
-                            const duplicate = document.getElementById('duplicateCheck').checked;
-                            try {
-                                return await csrfFetch(`/activity-package/${pkgId}/claim`, {
-                                    method: 'POST',
-                                    body: { target_class_id: targetClassId, duplicate: duplicate }
-                                });
-                            } catch (err) {
-                                throw err.data ?? err.message ?? err;
-                            }
-                        }
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            const resp = result.value;
-                            if (resp && resp.success) {
-                                Swal.fire('Berhasil', 'Paket berhasil diklaim; aktivitas baru dibuat.', 'success')
-                                    .then(() => { location.reload(); });
-                            } else {
-                                Swal.fire('Gagal', (resp && resp.message) ? resp.message : 'Gagal klaim paket', 'error');
-                            }
-                        }
-                    });
-                });
-
-                // Tooltips bootstrap
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-                tooltipTriggerList.map(function (el) {
-                    return new bootstrap.Tooltip(el)
-                });
-
-                // copy token
-                window.copyToken = function (elementId) {
-                    const el = document.getElementById(elementId);
-                    if (!el) return;
-                    navigator.clipboard.writeText(el.textContent.trim()).then(function () {
-                        const btn = event?.target;
-                        if (btn) {
-                            btn.setAttribute('data-bs-original-title', 'Tersalin!');
-                            var t = bootstrap.Tooltip.getInstance(btn);
-                            if (t) { t.show(); setTimeout(() => t.hide(), 900); }
-                        } else {
-                            alert('Token disalin: ' + el.textContent.trim());
-                        }
-                    }).catch(function () {
-                        alert('Gagal menyalin token. Silakan salin manual.');
-                    });
-                };
-
-                function escapeHtml(unsafe) {
-                    if (unsafe === null || unsafe === undefined) return '';
-                    return String(unsafe)
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#039;');
-                }
-            });
-        })();
+            })();
         </script>
     @endpush
 @endsection

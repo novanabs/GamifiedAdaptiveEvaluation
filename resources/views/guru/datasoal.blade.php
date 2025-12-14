@@ -44,9 +44,16 @@
 
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0 text-primary">
-                <i class="bi bi-journal-check me-2"></i>Daftar Soal
-            </h3>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="fw-bold mb-0 text-black">
+                    Daftar Soal
+                </h3>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:32px;height:32px"
+                    data-bs-toggle="modal" data-bs-target="#modalInfoSoal" title="Informasi Daftar Soal">
+                    <i class="bi bi-info-lg"></i>
+                </button>
+            </div>
 
             <div>
                 <a href="{{ route('tambahSoal') }}" class="btn btn-primary me-2 shadow-sm">
@@ -110,10 +117,11 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge
-                                                                        @if($item->difficulty == 'mudah') bg-success
-                                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
-                                                                        @else bg-danger @endif">
+                                    <span
+                                        class="badge
+                                                                                                                                @if($item->difficulty == 'mudah') bg-success
+                                                                                                                                @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                                                                                                @else bg-danger @endif">
                                         {{ ucfirst($item->difficulty) }}
                                     </span>
                                 </td>
@@ -133,13 +141,15 @@
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 
-                                        <form action="{{ route('hapusSoal', $item->id) }}" method="POST" class="d-inline">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                onclick="return confirm('Yakin ingin menghapus soal ini?')">
+                                        <form action="{{ route('hapusSoal', $item->id) }}" method="POST"
+                                            class="d-inline form-delete-soal">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-soal">
                                                 <i class="bi bi-trash-fill"></i>
                                             </button>
                                         </form>
+
                                     </div>
                                 </td>
                             </tr>
@@ -220,6 +230,114 @@
                 </div>
             </div>
         </div>
+        {{-- MODAL INFO DAFTAR SOAL --}}
+        {{-- MODAL INFO DAFTAR SOAL --}}
+        <div class="modal fade" id="modalInfoSoal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content shadow rounded-4">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-info-circle me-2"></i>Informasi Daftar Soal
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <p>
+                            Halaman <strong>Daftar Soal</strong> digunakan untuk mengelola seluruh soal yang dimiliki guru,
+                            baik soal pilihan ganda maupun isian singkat, yang terhubung dengan topik dan mata pelajaran.
+                        </p>
+
+                        <hr>
+
+                        <h6 class="fw-bold text-primary">
+                            <i class="bi bi-funnel me-1"></i> Filter Topik
+                        </h6>
+                        <ul>
+                            <li>Digunakan untuk menampilkan soal berdasarkan topik tertentu.</li>
+                            <li>Pilih <em>Semua Topik</em> untuk menampilkan seluruh soal.</li>
+                            <li>Tombol <strong>Reset</strong> akan mengembalikan tampilan ke kondisi awal.</li>
+                        </ul>
+
+                        <hr>
+
+                        <h6 class="fw-bold text-success">
+                            <i class="bi bi-plus-circle me-1"></i> Tambah Soal Manual
+                        </h6>
+                        <ul>
+                            <li>Digunakan untuk membuat soal secara manual.</li>
+                            <li>Guru dapat menentukan:
+                                <ul>
+                                    <li>Tipe soal (Pilihan Ganda / Isian Singkat)</li>
+                                    <li>Pertanyaan</li>
+                                    <li>Jawaban benar</li>
+                                    <li>Tingkat kesulitan</li>
+                                    <li>Topik & mata pelajaran</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <hr>
+
+                        <h6 class="fw-bold text-success">
+                            <i class="bi bi-lightbulb me-1"></i> Buat Soal Otomatis
+                        </h6>
+                        <ul>
+                            <li>Digunakan untuk menghasilkan soal secara otomatis.</li>
+                            <li>Soal dibuat berdasarkan:
+                                <ul>
+                                    <li>Topik yang dipilih</li>
+                                    <li>Mata pelajaran</li>
+                                    <li>Jumlah soal yang diinginkan</li>
+                                </ul>
+                            </li>
+                            <li>Cocok untuk mempercepat pembuatan bank soal.</li>
+                        </ul>
+
+                        <hr>
+
+                        <h6 class="fw-bold text-warning">
+                            <i class="bi bi-gear me-1"></i> Aksi Soal
+                        </h6>
+                        <ul>
+                            <li>
+                                <i class="bi bi-eye text-primary"></i>
+                                <strong>Lihat</strong> – Melihat detail soal.
+                            </li>
+                            <li>
+                                <i class="bi bi-pencil-square text-warning"></i>
+                                <strong>Edit</strong> – Mengubah isi soal.
+                            </li>
+                            <li>
+                                <i class="bi bi-trash text-danger"></i>
+                                <strong>Hapus</strong> – Menghapus soal secara permanen.
+                            </li>
+                        </ul>
+
+                        <hr>
+
+                        <h6 class="fw-bold text-secondary">
+                            <i class="bi bi-bar-chart me-1"></i> Kesulitan Soal
+                        </h6>
+                        <ul>
+                            <li><span class="badge bg-success">Mudah</span> – Untuk pemahaman dasar.</li>
+                            <li><span class="badge bg-warning text-dark">Sedang</span> – Untuk pemahaman menengah.</li>
+                            <li><span class="badge bg-danger">Sulit</span> – Untuk pemahaman tingkat lanjut.</li>
+                        </ul>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
     </div>
 
@@ -234,6 +352,7 @@
     <!-- Jangan muat jQuery di sini — layout sudah memuat jQuery -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -337,11 +456,11 @@
                         var label = Object.keys(o)[0];
                         var d = o[label];
                         pilihan.append(`
-                                        <div class="border p-2 mb-2 rounded">
-                                            <strong>${label.toUpperCase()}.</strong> ${d.teks}
-                                            ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
-                                        </div>
-                                    `);
+                                                                    <div class="border p-2 mb-2 rounded">
+                                                                        <strong>${label.toUpperCase()}.</strong> ${d.teks}
+                                                                        ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
+                                                                    </div>
+                                                                `);
                     });
                 } else {
                     pilihan.html("<em>Tidak ada pilihan jawaban.</em>");
@@ -434,4 +553,59 @@
 
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.querySelectorAll('.btn-delete-soal').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const form = this.closest('form');
+                    const row = this.closest('tr');
+
+                    // ambil teks soal (aman, ringkas)
+                    let soalText = row?.querySelector('td:nth-child(3)')?.innerText ?? 'soal ini';
+                    soalText = soalText.length > 120 ? soalText.substring(0, 120) + '…' : soalText;
+
+                    Swal.fire({
+                        title: 'Hapus Soal?',
+                        html: `
+                        <div class="text-start">
+                            <p class="mb-2">
+                                Anda akan menghapus:
+                            </p>
+                            <blockquote class="small border-start ps-2 text-muted">
+                                ${soalText}
+                            </blockquote>
+                            <small class="text-danger">
+                                ⚠️ Soal yang dihapus tidak dapat dikembalikan.
+                            </small>
+                        </div>
+                    `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, hapus',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+
+                            Swal.fire({
+                                title: 'Menghapus...',
+                                text: 'Mohon tunggu',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+        });
+    </script>
+
 @endpush

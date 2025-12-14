@@ -3,7 +3,14 @@
 @section('dataSubject', request()->is('datamatapelajaran') ? 'active' : '')
 @section('content')
     <div class="container mt-4">
-        <h3 class="fw-bold mb-3">Data Mata Pelajaran Berdasarkan Kelas</h3>
+        <div class="d-flex align-items-center gap-2">
+            <h3 class="fw-bold mb-0">Data Mata Pelajaran Berdasarkan Kelas</h3>
+
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:32px;height:32px"
+                data-bs-toggle="modal" data-bs-target="#modalInfoSubject" title="Informasi Mata Pelajaran">
+                <i class="bi bi-info-lg"></i>
+            </button>
+        </div>
 
         {{-- Pesan sukses --}}
         @if(session('success'))
@@ -14,7 +21,7 @@
         @endif
 
         {{-- Form tambah subject --}}
-        <div class="card mb-4">
+        <div class="card mb-4 mt-3">
             <div class="card-header bg-primary text-white fw-semibold">Tambah Mata Pelajaran</div>
             <div class="card-body">
                 <form action="{{ route('guru.subject.tambah') }}" method="POST" class="row g-2">
@@ -45,7 +52,7 @@
                         <tr>
                             <th style="width:12px !important">No</th>
                             <th style="width:140px !important">Kelas</th>
-                            <th style="width:80px !important">Semester</th> 
+                            <th style="width:80px !important">Semester</th>
                             <th style="width:150px !important">Mata Pelajaran</th>
                             <th style="width:120px !important">Dibuat Oleh</th>
                             <th style="width:180px !important">Aksi</th>
@@ -59,7 +66,9 @@
                                     data-subject-class="{{ $item->kelas->id }}">
                                     <td class="align-middle text-center"></td>
                                     <td class="align-middle">{{ $item->kelas->name }}</td>
-                                    <td class="align-middle">{{ $item->kelas->semester_human ?? ($item->kelas->semester === 'odd' ? 'Ganjil' : 'Genap') }}</td> <!-- new -->
+                                    <td class="align-middle">
+                                        {{ $item->kelas->semester_human ?? ($item->kelas->semester === 'odd' ? 'Ganjil' : 'Genap') }}
+                                    </td> <!-- new -->
                                     <td class="align-middle">
                                         <span class="subject-name-{{ $subject->id }}">{{ $subject->name }}</span>
                                     </td>
@@ -75,11 +84,14 @@
 
                                             {{-- Form hapus --}}
                                             <form action="{{ route('guru.subject.hapus', $subject->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin hapus subject ini?')" class="d-inline">
+                                                class="d-inline form-delete-subject">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-danger btn-sm">Hapus</button>
+                                                <button type="button" class="btn btn-danger btn-sm btn-delete-subject">
+                                                    Hapus
+                                                </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -128,6 +140,84 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalInfoSubject" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Panduan Data Mata Pelajaran
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    {{-- Tambah Mata Pelajaran --}}
+                    <section class="mb-4">
+                        <h6 class="fw-semibold text-primary">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Menambah Mata Pelajaran
+                        </h6>
+                        <ol class="small text-muted">
+                            <li>Isi <strong>Nama Mata Pelajaran</strong></li>
+                            <li>Pilih <strong>Kelas</strong> yang akan menggunakan mata pelajaran tersebut</li>
+                            <li>Klik tombol <strong>Tambah</strong></li>
+                            <li>Mata pelajaran akan langsung muncul di tabel</li>
+                        </ol>
+                    </section>
+
+                    {{-- Edit Mata Pelajaran --}}
+                    <section class="mb-4">
+                        <h6 class="fw-semibold text-success">
+                            <i class="bi bi-pencil-square me-1"></i>
+                            Mengedit Mata Pelajaran
+                        </h6>
+                        <ol class="small text-muted">
+                            <li>Klik tombol <strong>Edit</strong> pada kolom Aksi</li>
+                            <li>Ubah nama mata pelajaran atau kelas</li>
+                            <li>Klik <strong>Simpan</strong> untuk menyimpan perubahan</li>
+                        </ol>
+                    </section>
+
+                    {{-- Hapus Mata Pelajaran --}}
+                    <section class="mb-4">
+                        <h6 class="fw-semibold text-danger">
+                            <i class="bi bi-trash me-1"></i>
+                            Menghapus Mata Pelajaran
+                        </h6>
+                        <ol class="small text-muted">
+                            <li>Klik tombol <strong>Hapus</strong></li>
+                            <li>Konfirmasi penghapusan</li>
+                            <li>
+                                <strong>Perhatian:</strong> Data yang dihapus tidak dapat dikembalikan
+                            </li>
+                        </ol>
+                    </section>
+
+                    {{-- Info Tambahan --}}
+                    <section>
+                        <h6 class="fw-semibold text-secondary">
+                            <i class="bi bi-diagram-3 me-1"></i>
+                            Catatan Penting
+                        </h6>
+                        <ul class="small text-muted">
+                            <li>Satu kelas dapat memiliki banyak mata pelajaran</li>
+                            <li>Mata pelajaran terkait langsung dengan <strong>Topik</strong> dan <strong>Soal</strong></li>
+                            <li>Gunakan fitur pencarian untuk menemukan data lebih cepat</li>
+                        </ul>
+                    </section>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 @endsection
 
 @push('styles')
@@ -146,6 +236,9 @@
 @push('scripts')
     {{-- jQuery (DataTables dependency) --}}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- sweatalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     {{-- DataTables JS --}}
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -244,4 +337,57 @@
             // di layout atau letakkan versi yang valid.
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Delegasi klik tombol hapus
+            document.querySelectorAll('.btn-delete-subject').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const form = this.closest('form');
+                    const subjectName = this.closest('tr')
+                        ?.querySelector('[class^="subject-name-"]')
+                        ?.innerText ?? 'mata pelajaran ini';
+
+                    Swal.fire({
+                        title: 'Yakin ingin menghapus?',
+                        html: `
+                            <div class="text-start">
+                                <p>
+                                    Mata pelajaran <strong>${subjectName}</strong> akan dihapus.
+                                </p>
+                                <small class="text-danger">
+                                    Data terkait (topik & soal) bisa ikut terdampak.
+                                </small>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, hapus',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // loading state
+                            Swal.fire({
+                                title: 'Menghapus...',
+                                text: 'Mohon tunggu',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+        });
+    </script>
+
 @endpush

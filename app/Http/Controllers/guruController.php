@@ -425,12 +425,22 @@ class guruController extends Controller
     // 🟦 Tampilkan semua topik berdasarkan subject
     public function tampilanTopik()
     {
-        $data = Subject::with('classes', 'topics')
-            ->where('created_by', Auth::id())
+        $idGuru = Auth::id();
+
+        // 1. Ambil ID kelas yang diikuti guru
+        $kelasIds = DB::table('teacher_classes')
+            ->where('id_teacher', $idGuru)
+            ->pluck('id_class');
+
+        // 2. Ambil subject di kelas-kelas tersebut + topics + kelas
+        $data = Subject::with(['classes', 'topics'])
+            ->whereIn('id_class', $kelasIds)
+            ->orderBy('name', 'asc')
             ->get();
 
         return view('guru.datatopic', compact('data'));
     }
+
 
     // 🟩 Simpan topik baru
     public function simpanTopik(Request $request)
