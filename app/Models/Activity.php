@@ -18,7 +18,8 @@ class Activity extends Model
         'id_topic',
         'addaptive',
         'durasi_pengerjaan',
-        'jumlah_soal'
+        'jumlah_soal',
+        'kkm'
     ];
 
     protected $casts = [

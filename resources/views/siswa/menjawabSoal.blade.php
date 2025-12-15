@@ -427,17 +427,47 @@
             })
                 .then(r => r.json())
                 .then(res => {
-                    // Tampilkan combo & fire berdasarkan streak backend
+
+                    showAnswerFeedback(res); // 👈 tampilkan alert
+
                     updateComboUI(res.correct ? res.streak_correct : 0);
+
+                    setTimeout(() => {
+                        if (currentIndex < totalQuestions - 1) {
+                            currentIndex++;
+                            loadQuestion();
+                        } else {
+                            showResult();
+                        }
+                    }, 1200);
                 });
 
-            if (currentIndex < totalQuestions - 1) {
-                currentIndex++;
-                loadQuestion();
-            } else {
-                showResult();
-            }
+
         }
+
+        function showAnswerFeedback(res) {
+
+            const isCorrect = res.correct === true;
+
+            Swal.fire({
+                icon: isCorrect ? 'success' : 'error',
+                title: isCorrect ? 'Jawaban Benar 🎉' : 'Jawaban Salah ❌',
+                html: `
+            <div style="text-align:center">
+                ${isCorrect
+                        ? `<p class="mb-0">Mantap! Jawaban kamu sudah benar 👏</p>`
+                        : `<p class="mb-0 text-muted">Yuk coba fokus di soal berikutnya 💪</p>`
+                    }
+            </div>
+        `,
+                timer: 1100,
+                showConfirmButton: false,
+                timerProgressBar: true,
+                allowOutsideClick: false
+            });
+        }
+
+
 
         // 🔥 COMBO & ON-FIRE EFFECT
         function updateComboUI(streak) {

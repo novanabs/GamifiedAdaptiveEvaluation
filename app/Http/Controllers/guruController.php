@@ -598,7 +598,8 @@ class guruController extends Controller
             'deadline' => 'nullable|date',
             'id_topic' => 'required|exists:topics,id',
             'addaptive' => 'required|in:yes,no',
-            'durasi_pengerjaan' => 'nullable|integer|min:1' // menit
+            'durasi_pengerjaan' => 'nullable|integer|min:1',
+            'kkm' => 'required|integer|min:0|max:100'
         ]);
 
         Activity::create([
@@ -606,12 +607,14 @@ class guruController extends Controller
             'deadline' => $request->deadline,
             'id_topic' => $request->id_topic,
             'addaptive' => $request->addaptive,
-            'durasi_pengerjaan' => $request->durasi_pengerjaan ?? null,
+            'durasi_pengerjaan' => $request->durasi_pengerjaan,
+            'kkm' => $request->kkm,
         ]);
 
         return redirect()->route('guru.aktivitas.tampil')
             ->with('success', 'Aktivitas berhasil ditambahkan.');
     }
+
 
     /**
      * Mengubah data aktivitas.
@@ -622,7 +625,8 @@ class guruController extends Controller
             'title' => 'required|string|max:255',
             'deadline' => 'nullable|date',
             'addaptive' => 'required|in:yes,no',
-            'durasi_pengerjaan' => 'nullable|integer|min:1'
+            'durasi_pengerjaan' => 'nullable|integer|min:1',
+            'kkm' => 'required|integer|min:0|max:100'
         ]);
 
         $aktivitas = Activity::findOrFail($id);
@@ -631,6 +635,7 @@ class guruController extends Controller
             'title' => $request->title,
             'deadline' => $request->deadline,
             'addaptive' => $request->addaptive,
+            'kkm' => $request->kkm,
             'durasi_pengerjaan' => $request->durasi_pengerjaan ?? null,
         ]);
 

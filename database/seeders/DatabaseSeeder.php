@@ -83,11 +83,15 @@ class DatabaseSeeder extends Seeder
         $badges = [$badgeA->id, $badgeB->id, $badgeC->id];
 
         foreach ([$siswa1, $siswa2] as $siswa) {
-            UserBadge::create([
-                'id_student' => $siswa->id,
-                'id_badge' => $badges[array_rand($badges)],
-            ]);
+            foreach ($badges as $badgeId) {
+                UserBadge::create([
+                    'id_student' => $siswa->id,
+                    'id_badge' => $badgeId,
+                    'id_class' => 1
+                ]);
+            }
         }
+
 
 
         // === 4️⃣ Kelas ===
@@ -163,7 +167,8 @@ class DatabaseSeeder extends Seeder
                 'jumlah_soal' => 5,
                 'durasi_pengerjaan' => 5,
                 'id_topic' => $topicInformatika->id,
-                'addaptive' => 'yes'
+                'addaptive' => 'yes',
+                'kkm'=>70,
             ]);
         }
 
@@ -177,7 +182,8 @@ class DatabaseSeeder extends Seeder
                 'jumlah_soal' => 5,
                 'durasi_pengerjaan' => 5,
                 'id_topic' => $topicIPA->id,
-                'addaptive' => 'yes'
+                'addaptive' => 'yes',
+                'kkm'=>70,
             ]);
         }
 
@@ -524,19 +530,37 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+        foreach ($activitiesIPA as $activity) {
+            foreach ($ipaQuestions as $question) {
+                ActivityQuestion::create([
+                    'id_activity' => $activity->id,
+                    'id_question' => $question->id,
+                ]);
+            }
+        }
         // === 🔟 Nilai Siswa ===
         $allStudents = [$siswa1, $siswa2];
         $allActivities = Activity::all();
 
         foreach ($allStudents as $student) {
             foreach ($allActivities as $activity) {
+
+                // nilai mentah (misal dari pengerjaan)
                 $result = rand(40, 100);
-                $status = $result < 70 ? 'Remedial' : 'Pass';
-                $realPoin = $result < 60 ? 10 : 20;
+
+                // nilai akhir (yang jadi acuan kelulusan)
+                $nilaiAkhir = rand(50, 100);
+
+                // status HARUS berdasarkan nilai_akhir
+                $status = $nilaiAkhir < 70 ? 'Remedial' : 'Pass';
+
+                // poin juga logis mengikuti nilai akhir
+                $realPoin = $nilaiAkhir < 60 ? 10 : 20;
 
                 ActivityResult::create([
                     'id_user' => $student->id,
                     'id_activity' => $activity->id,
+                    'nilai_akhir' => $nilaiAkhir,
                     'result_status' => $status,
                     'result' => $result,
                     'real_poin' => $realPoin,
@@ -544,6 +568,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+
         Settings::create([
             'name' => 'soal_mudah',
             'value' => 10
@@ -556,9 +581,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'soal_sulit',
             'value' => 30
         ]);
-        Settings::create([
-            'name' => 'kkm',
-            'value' => 70
-        ]);
+
     }
 }

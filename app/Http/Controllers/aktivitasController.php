@@ -58,7 +58,7 @@ class aktivitasController extends Controller
                 'activities.created_at',
                 // 🔹 pastikan kolom deadline ini ada, kalau beda nama ganti di sini
                 'activities.deadline',
-                DB::raw('COALESCE(activity_result.result, "-") as result'),
+                DB::raw('COALESCE(activity_result.nilai_akhir, "-") as result'),
                 DB::raw('COALESCE(activity_result.result_status, "Belum Dikerjakan") as result_status')
             )
             ->get();
@@ -190,7 +190,7 @@ class aktivitasController extends Controller
             "activity.$id.used_questions" => [],
             "activity.$id.total_correct" => 0,
             "activity.$id.total_base_point" => 0,
-            "activity.$id.total_real_point"=> 0
+            "activity.$id.total_real_point" => 0
         ]);
 
         // simpan start_time ke session + DB
@@ -392,11 +392,28 @@ class aktivitasController extends Controller
         session(["activity.$id.total_real_point" => $prevReal + ($basePoint + $bonus)]);
 
 
+        $saOptions = [];
+
+        if ($question->type === 'ShortAnswer') {
+            $saOptions = is_array($question->SA_answer)
+                ? $question->SA_answer
+                : json_decode($question->SA_answer, true);
+
+            if (!is_array($saOptions)) {
+                $saOptions = [];
+            }
+        }
+
         return response()->json([
             'correct' => $correct,
+            'correct_answer' => $question->type === 'MultipleChoice'
+                ? strtoupper($question->MC_answer)
+                : implode(', ', $saOptions),
+            'explanation' => $question->explanation ?? null,
             'new_level' => session("activity.$id.difficulty"),
             'streak_correct' => session("activity.$id.streak_correct")
         ]);
+
 
     }
 
@@ -410,8 +427,9 @@ class aktivitasController extends Controller
         // Bonus = totalReal - totalBase
         $bonusPoint = $totalReal - $totalBase;
 
-        // Status kelulusan (angka)
-        $status = $totalReal >= 70 ? 'Pass' : 'Remedial';
+        $activity = Activity::findOrFail($id);
+
+
 
         // Ambil start_time dari DB jika ada, kalau tidak ambil dari session
         $activityResult = ActivityResult::where('id_activity', $id)
@@ -485,7 +503,8 @@ class aktivitasController extends Controller
 
         // nilai akhir = (real_poin / best_case) * 100
         $nilaiAkhir = round((($totalBase) / $bestCase) * 100, 2);
-
+        // Status kelulusan (angka)
+        $status = $nilaiAkhir >= $activity->kkm ?? 70 ? 'Pass' : 'Remedial';
         // ====================== SIMPAN KE DB ======================
         ActivityResult::updateOrCreate(
             [

@@ -55,6 +55,7 @@ return new class extends Migration {
             $table->integer('durasi_pengerjaan')->nullable();
             $table->dateTime('deadline')->nullable();
             $table->integer('jumlah_soal')->nullable();
+            $table->integer('kkm')->nullable();
             $table->unsignedBigInteger('id_topic');
             $table->timestamps();
         });

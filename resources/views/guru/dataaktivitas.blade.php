@@ -72,7 +72,12 @@
                                         <label class="form-check-label" for="adaptiveToggle">Aktifkan</label>
                                     </div>
                                 </div>
-
+                                <!-- kkm -->
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold">KKM</label>
+                                    <input type="number" name="kkm" class="form-control shadow-sm" min="0" max="100"
+                                        placeholder="70" required>
+                                </div>
                                 {{-- Row 2: (kosong / spacing) --}}
                                 <div class="col-6">
                                     {{-- could put an extra small field / info if needed; left intentionally blank for
@@ -229,6 +234,11 @@
                                                             <label class="form-label">Durasi (menit)</label>
                                                             <input type="number" name="durasi_pengerjaan" class="form-control"
                                                                 value="{{ $r->durasi_pengerjaan ?? '' }}" min="1" placeholder="30">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">KKM</label>
+                                                            <input type="number" name="kkm" class="form-control"
+                                                                value="{{ $r->kkm ?? 70 }}" min="0" max="100" required>
                                                         </div>
 
                                                         <div class="mb-3">

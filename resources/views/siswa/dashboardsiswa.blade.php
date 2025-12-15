@@ -470,20 +470,12 @@
 
                                                 <!-- JS akan memasukkan daftar kelas eligible di sini -->
                                                 <div class="badge-matches-wrapper"></div>
-
-                                                <div class="mt-3 text-end">
-                                                    @if($isClaimed)
-                                                        <span class="claimed-pill">Terklaim</span>
-                                                    @endif
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-
-
                     @endif
                 </div>
 

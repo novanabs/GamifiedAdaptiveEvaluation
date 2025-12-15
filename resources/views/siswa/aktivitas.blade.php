@@ -120,10 +120,7 @@
                 <p class="text-muted mb-0">Lihat dan kerjakan aktivitas pembelajaranmu di sini.</p>
             </div>
 
-            <div class="d-none d-md-block">
-                <a href="#" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel-fill me-1"></i> Filter</a>
-                <a href="#" class="btn btn-outline-primary btn-sm ms-2"><i class="bi bi-plus-lg me-1"></i> Baru</a>
-            </div>
+
         </div>
 
         {{-- BELUM DIKERJAKAN --}}
@@ -138,7 +135,7 @@
                     @foreach ($belumDikerjakan as $sub)
                         @php
                             // nilai & status
-                            $nilai = $sub->result ?? null;
+                            $nilai = $sub->nilai_akhir ?? null;
                             $status = $sub->result_status ?? '-';
 
                             // color untuk status
