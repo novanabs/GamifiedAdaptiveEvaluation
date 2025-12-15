@@ -177,7 +177,7 @@
                     <a href="{{ route('generateSoal') }}" class="text-decoration-none text-dark">
                         <div class="quick-btn shadow-sm h-100">
                             <i class="bi bi-lightbulb text-success fs-3 mb-2"></i>
-                            <div class="fw-semibold">Generate Soal Otomatis</div>
+                            <div class="fw-semibold">Buat Soal Semi-Otomatis</div>
                             <small class="text-muted">Cepat & efisien</small>
                         </div>
                     </a>

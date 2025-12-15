@@ -119,9 +119,9 @@
                                 <td>
                                     <span
                                         class="badge
-                                                                                                                                @if($item->difficulty == 'mudah') bg-success
-                                                                                                                                @elseif($item->difficulty == 'sedang') bg-warning text-dark
-                                                                                                                                @else bg-danger @endif">
+                                                                                                                                        @if($item->difficulty == 'mudah') bg-success
+                                                                                                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                                                                                                        @else bg-danger @endif">
                                         {{ ucfirst($item->difficulty) }}
                                     </span>
                                 </td>
@@ -230,7 +230,6 @@
                 </div>
             </div>
         </div>
-        {{-- MODAL INFO DAFTAR SOAL --}}
         {{-- MODAL INFO DAFTAR SOAL --}}
         <div class="modal fade" id="modalInfoSoal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -366,25 +365,30 @@
                 responsive: true,
                 autoWidth: false,
                 pageLength: 10,
-                order: [[1, 'asc']],
-                autoWidth: false,
+                order: [[1, 'asc']], // sorting berdasarkan kolom Tipe
                 columnDefs: [
                     {
-                        targets: 0,
-                        searchable: false,
+                        targets: 0,          // kolom No
                         orderable: false,
-                        className: 'text-center fw-bold',
-                        render: function (data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        }
+                        searchable: false,
+                        className: 'text-center fw-bold'
                     },
                     {
-                        targets: 5,
+                        targets: 5,          // kolom Aksi
                         orderable: false,
                         searchable: false
                     }
-                ]
+                ],
+                drawCallback: function () {
+                    var api = this.api();
+                    var startIndex = api.page.info().start;
+
+                    api.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                        cell.innerHTML = startIndex + i + 1;
+                    });
+                }
             });
+
 
             // fungsi bantu untuk meng-update elemen total berdasarkan baris yg terlihat
             function updateTotalLabel() {
@@ -429,10 +433,7 @@
 
             // update numbering & total saat table di-redraw (draw event)
             dt.on('draw.dt', function () {
-                // numbering sudah di-handle oleh render kolom, tapi tetap aman
-                dt.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
-                    cell.innerHTML = i + 1;
-                });
+
 
                 // update total setiap kali draw (filter berubah / paging / search)
                 updateTotalLabel();
@@ -456,11 +457,11 @@
                         var label = Object.keys(o)[0];
                         var d = o[label];
                         pilihan.append(`
-                                                                    <div class="border p-2 mb-2 rounded">
-                                                                        <strong>${label.toUpperCase()}.</strong> ${d.teks}
-                                                                        ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
-                                                                    </div>
-                                                                `);
+                                                                        <div class="border p-2 mb-2 rounded">
+                                                                            <strong>${label.toUpperCase()}.</strong> ${d.teks}
+                                                                            ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
+                                                                        </div>
+                                                                    `);
                     });
                 } else {
                     pilihan.html("<em>Tidak ada pilihan jawaban.</em>");
@@ -570,18 +571,18 @@
                     Swal.fire({
                         title: 'Hapus Soal?',
                         html: `
-                        <div class="text-start">
-                            <p class="mb-2">
-                                Anda akan menghapus:
-                            </p>
-                            <blockquote class="small border-start ps-2 text-muted">
-                                ${soalText}
-                            </blockquote>
-                            <small class="text-danger">
-                                ⚠️ Soal yang dihapus tidak dapat dikembalikan.
-                            </small>
-                        </div>
-                    `,
+                            <div class="text-start">
+                                <p class="mb-2">
+                                    Anda akan menghapus:
+                                </p>
+                                <blockquote class="small border-start ps-2 text-muted">
+                                    ${soalText}
+                                </blockquote>
+                                <small class="text-danger">
+                                    ⚠️ Soal yang dihapus tidak dapat dikembalikan.
+                                </small>
+                            </div>
+                        `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',
