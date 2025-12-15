@@ -428,7 +428,7 @@
                                         <td>{{ $n->mapel ?? '-' }}</td>
                                         <td>{{ $n->topik ?? $n->aktivitas ?? '-' }}</td>
                                         <td>
-                                            {{ is_null($n->nilai_akhir) || $n->nilai_akhir === '-' ? '-' : $n->nilai_akhir }}
+                                            {{ is_null($n->nilai_akhir) || $n->nilai_akhir === '-' ? 'Belum Mengerjakan' : $n->nilai_akhir }}
                                         </td>
                                     </tr>
                                 @endforeach

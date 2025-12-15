@@ -521,6 +521,7 @@ class guruController extends Controller
                     'id' => $a->id,
                     'title' => $a->title,
                     'deadline' => $a->deadline,
+                    'kkm' => $a->kkm,
                     'addaptive' => $a->addaptive,
                     'topic_id' => $topic->id,
                     'topic_title' => $topic->title,

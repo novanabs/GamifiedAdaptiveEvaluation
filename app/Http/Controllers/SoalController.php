@@ -11,11 +11,33 @@ class SoalController extends Controller
 {
   public function showGenerator()
   {
-    $topics = Topic::where('created_by', Auth::id())
-      ->orderBy('title', 'asc')
+    $guruId = Auth::id();
+
+    // 🔹 Ambil TOPIC + LEVEL (jenjang) via JOIN
+    $topics = DB::table('topics')
+      ->join('subject', 'topics.id_subject', '=', 'subject.id')
+      ->join('classes', 'subject.id_class', '=', 'classes.id')
+      ->join('teacher_classes', 'classes.id', '=', 'teacher_classes.id_class')
+      ->where('teacher_classes.id_teacher', $guruId)
+      ->where('topics.created_by', $guruId)
+      ->select(
+        'topics.id',
+        'topics.title',
+        'classes.level as jenjang'
+      )
+      ->orderBy('topics.title')
       ->get();
 
-    return view('guru.generateSoal', compact('topics'));
+    // 🔹 Ambil daftar jenjang dari kelas guru
+    $jenjangList = DB::table('classes')
+      ->join('teacher_classes', 'classes.id', '=', 'teacher_classes.id_class')
+      ->where('teacher_classes.id_teacher', $guruId)
+      ->select('classes.level')
+      ->distinct()
+      ->orderBy('classes.level')
+      ->pluck('classes.level');
+
+    return view('guru.generateSoal', compact('topics', 'jenjangList'));
   }
 
   public function generateAI(Request $request)
@@ -31,12 +53,14 @@ class SoalController extends Controller
     // 🔹 Ambil data topic berdasarkan ID
     $topic = Topic::findOrFail($request->topic);
 
-    $jenjang = $request->jenjang;
+    $jenjangList = [$request->jenjang];
+    $selectedJenjang = $request->jenjang;
+
     $jumlah = (int) $request->jumlah;
 
     // prompt sesuai instruksi kamu
     $prompt = <<<PROMPT
-Tolong buatkan soal dan jawaban untuk topik {$topic->title} jenjang {$jenjang} dengan catatan:
+Tolong buatkan soal dan jawaban untuk topik {$topic->title} jenjang {$selectedJenjang} dengan catatan:
 - format JSON
 - Total ada {$jumlah} soal setiap tingkat kesulitan mudah, sedang, dan sulit., 
 - format pertanyaan terdiri dari URL (gambar) dan teks. Pertanyaan tanpa gambar dapat mengisi URL dengan null.
@@ -199,6 +223,7 @@ PROMPT;
       'prompt' => $prompt,
       'selectedTopic' => $request->topic,
       'selectedJenjang' => $request->jenjang,
+      'jenjangList' => $jenjangList,
       'jumlahInput' => $request->jumlah,
     ]);
 

@@ -36,10 +36,14 @@
 
         /* content wrapper must be shifted to the right of sidebar */
         #content-wrapper {
-            margin-left: 250px;
-            transition: margin-left .2s ease;
+            padding-left: 220px;
+            /* GANTI dari margin */
+            margin-left: 0;
+            /* PASTIKAN nol */
+            transition: padding-left .2s ease;
             min-height: 100vh;
         }
+
 
         /* topbar sticky */
         .topbar {
@@ -47,6 +51,7 @@
             top: 0;
             z-index: 1020;
         }
+
 
         /* smaller screens: collapse sidebar by default */
         @media (max-width: 991.98px) {
@@ -107,7 +112,6 @@
 
 <body id="page-top">
     <div id="wrapper">
-
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->

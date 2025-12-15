@@ -37,13 +37,14 @@
                         <select name="jenjang" class="form-select" required>
                             <option value="">-- Pilih Jenjang --</option>
 
-                            @foreach(['SD', 'MI', 'SMP', 'MTS', 'SMA', 'SMK', 'MA', 'PT'] as $j)
-                                <option value="{{ $j }}" {{ isset($selectedJenjang) && $selectedJenjang == $j ? 'selected' : '' }}>{{ $j }}
+                            @foreach($jenjangList as $j)
+                                <option value="{{ $j }}" {{ (old('jenjang') ?? ($selectedJenjang ?? null)) == $j ? 'selected' : '' }}>
+                                    {{ strtoupper($j) }}
                                 </option>
                             @endforeach
                         </select>
-
                     </div>
+
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Jumlah Soal</label>
@@ -63,7 +64,7 @@
         @isset($prompt)
             <div class="mt-4">
                 <h5 class="fw-bold mb-2 text-primary">Prompt AI yang Dihasilkan:</h5>
-                <textarea class="form-control bg-light p-3" rows="12" readonly>{{ $prompt }}</textarea>
+                <textarea class="form-control bg-light p-3" rows="12">{{ $prompt }}</textarea>
                 <div class="text-end mt-2">
                     <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText(`{{ trim($prompt) }}`)">
                         Salin Prompt

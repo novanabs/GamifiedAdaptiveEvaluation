@@ -64,7 +64,7 @@
                                 </div>
 
                                 <div class="col-6 d-flex flex-column">
-                                    <label class="form-label fw-semibold">Adaptive</label>
+                                    <label class="form-label fw-semibold">adaptif</label>
                                     <div class="form-check mt-1">
                                         <input type="hidden" name="addaptive" value="no">
                                         <input class="form-check-input" type="checkbox" name="addaptive" value="yes"
@@ -114,7 +114,7 @@
                                 <th style="width:60px">No</th>
                                 <th>Judul</th>
                                 <th>Deadline</th>
-                                <th>Adaptive</th>
+                                <th>adaptif</th>
                                 <th>Topik</th>
                                 <th>Mapel</th>
                                 <th>Kelas</th>
@@ -238,7 +238,7 @@
                                                         <div class="mb-3">
                                                             <label class="form-label">KKM</label>
                                                             <input type="number" name="kkm" class="form-control"
-                                                                value="{{ $r->kkm ?? 70 }}" min="0" max="100" required>
+                                                                value="{{ $r->kkm }}" min="0" max="100" required>
                                                         </div>
 
                                                         <div class="mb-3">
@@ -257,7 +257,7 @@
                                                             <input type="hidden" name="addaptive" value="no">
                                                             <input class="form-check-input" type="checkbox" name="addaptive"
                                                                 value="yes" {{ $r->addaptive === 'yes' ? 'checked' : '' }}>
-                                                            <label class="form-check-label">Adaptive</label>
+                                                            <label class="form-check-label">adaptif</label>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -375,12 +375,38 @@
                                 <hr>
 
                                 <h6 class="fw-bold text-success">
-                                    <i class="bi bi-shuffle me-1"></i> Adaptive
+                                    <i class="bi bi-shuffle me-1"></i> Adaptif
                                 </h6>
                                 <ul>
-                                    <li>Jika diaktifkan, soal dapat menyesuaikan tingkat kesulitan siswa.</li>
-                                    <li>Jika tidak diaktifkan, soal ditampilkan secara statis.</li>
+                                    <li>
+                                        Jika <b>diaktifkan</b>, sistem akan <b>menyesuaikan tingkat kesulitan soal</b>
+                                        berdasarkan performa siswa.
+                                    </li>
+                                    <li>
+                                        Siswa selalu <b>memulai dari soal tingkat sedang</b>.
+                                    </li>
+                                    <li>
+                                        Jika siswa menjawab <b>benar berturut-turut</b>, soal berikutnya akan <b>lebih
+                                            sulit</b>.
+                                    </li>
+                                    <li>
+                                        Jika siswa menjawab <b>salah berturut-turut</b>, soal berikutnya akan <b>lebih
+                                            mudah</b>.
+                                    </li>
+                                    <li>
+                                        <b>Contoh (5 soal):</b>
+                                        <ul class="mt-1">
+                                            <li>Soal Sedang: <b>5 soal</b> (dasar utama)</li>
+                                            <li>Soal Sulit: <b>3 soal</b> (5 − 2)</li>
+                                            <li>Soal Mudah: <b>3 soal</b> (5 − 2)</li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        Jika <b>tidak diaktifkan</b>, semua siswa mengerjakan <b>soal yang sama secara
+                                            statis</b>.
+                                    </li>
                                 </ul>
+
 
                                 <hr>
 
@@ -615,7 +641,7 @@
                             var html = '<dl class="row">';
                             html += '<dt class="col-sm-3">Judul</dt><dd class="col-sm-9">' + $('<div>').text(rowData[1]).html() + '</dd>';
                             html += '<dt class="col-sm-3">Deadline</dt><dd class="col-sm-9">' + $('<div>').text(rowData[2]).html() + '</dd>';
-                            html += '<dt class="col-sm-3">Adaptive</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
+                            html += '<dt class="col-sm-3">Adaptif</dt><dd class="col-sm-9">' + $('<div>').text(rowData[3]).html() + '</dd>';
                             html += '<dt class="col-sm-3">Topik</dt><dd class="col-sm-9">' + $('<div>').text(rowData[4]).html() + '</dd>';
                             html += '<dt class="col-sm-3">Subject</dt><dd class="col-sm-9">' + $('<div>').text(rowData[5]).html() + '</dd>';
                             html += '<dt class="col-sm-3">Kelas</dt><dd class="col-sm-9">' + $('<div>').text(rowData[6]).html() + '</dd>';

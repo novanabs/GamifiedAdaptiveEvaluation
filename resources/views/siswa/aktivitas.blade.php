@@ -7,11 +7,16 @@
 @section('content')
     <style>
         /* ---------- overall ---------- */
-        .page-title { margin-bottom: 1rem; }
-        .section-title { margin-bottom: 0.75rem; }
+        .page-title {
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            margin-bottom: 0.75rem;
+        }
 
         /* ========== GRID / EQUAL HEIGHT SETUP ========== */
-        .row.gx-4.gy-4 > .col {
+        .row.gx-4.gy-4>.col {
             display: flex;
             align-items: stretch;
         }
@@ -27,24 +32,25 @@
             flex: 1 1 auto;
             min-height: 340px;
         }
+
         .activity-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 18px 40px rgba(13,110,253,0.08);
+            box-shadow: 0 18px 40px rgba(13, 110, 253, 0.08);
         }
 
         /* image fixed height */
         .activity-card .card-img-top {
             height: 150px;
             object-fit: cover;
-            display:block;
-            width:100%;
+            display: block;
+            width: 100%;
             flex: 0 0 150px;
         }
 
         /* card body flexible */
         .activity-card .card-body {
             padding: 1rem;
-            display:flex;
+            display: flex;
             flex-direction: column;
             gap: .5rem;
             min-height: 0;
@@ -71,52 +77,93 @@
             align-items: center;
             overflow: hidden;
         }
+
         .badges .badge {
             max-width: 120px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            display:inline-block;
+            display: inline-block;
             padding: .35rem .6rem;
             line-height: 1;
         }
 
         /* meta */
-        .meta-line { font-size: .92rem; color:#6c757d; overflow:hidden; text-overflow:ellipsis; }
-        .meta-strong { font-weight:600; color:#212529; }
+        .meta-line {
+            font-size: .92rem;
+            color: #6c757d;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .meta-strong {
+            font-weight: 600;
+            color: #212529;
+        }
 
         /* action */
-        .action-btn { border-radius: 8px; padding:.52rem .8rem; }
+        .action-btn {
+            border-radius: 8px;
+            padding: .52rem .8rem;
+        }
 
         /* class header */
         .class-header {
-            display:inline-block;
-            background: linear-gradient(90deg,#f8fafc,#ffffff);
-            border:1px solid rgba(0,0,0,0.04);
-            padding:.55rem .8rem;
-            border-radius:10px;
-            box-shadow: 0 6px 18px rgba(2,6,23,0.03);
+            display: inline-block;
+            background: linear-gradient(90deg, #f8fafc, #ffffff);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            padding: .55rem .8rem;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(2, 6, 23, 0.03);
         }
-        .class-header h6 { margin:0; font-size:1rem; font-weight:700; color:#0d6efd; }
-        .class-sub { font-size:.86rem; color:#6c757d; }
+
+        .class-header h6 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+        .class-sub {
+            font-size: .86rem;
+            color: #6c757d;
+        }
 
         /* keep button stuck to bottom */
-        .card .mt-auto { margin-top: auto; }
+        .card .mt-auto {
+            margin-top: auto;
+        }
 
         /* responsive */
         @media (max-width: 576px) {
-            .activity-card { min-height: 260px; }
-            .activity-card .card-img-top { height:120px; flex: 0 0 120px; }
-            .badges .badge { max-width:90px; font-size:.82rem; }
+            .activity-card {
+                min-height: 260px;
+            }
+
+            .activity-card .card-img-top {
+                height: 120px;
+                flex: 0 0 120px;
+            }
+
+            .badges .badge {
+                max-width: 90px;
+                font-size: .82rem;
+            }
         }
     </style>
 
     <div class="container-fluid px-4 py-4">
         <div class="d-flex align-items-start justify-content-between mb-4 page-title">
             <div>
-                <h1 class="h3 fw-bold text-primary mb-1">
-                    <i class="bi bi-journal-check me-2"></i> Aktivitas Kamu
+                <h1 class="h3 fw-bold text-primary mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-check"></i> Evaluasi Kamu
+
+                    <button class="btn btn-sm btn-outline-primary rounded-circle" data-bs-toggle="modal"
+                        data-bs-target="#modalInfoAktivitas" title="Informasi Evaluasi">
+                        <i class="bi bi-info"></i>
+                    </button>
                 </h1>
+
                 <p class="text-muted mb-0">Lihat dan kerjakan aktivitas pembelajaranmu di sini.</p>
             </div>
 
@@ -160,15 +207,20 @@
 
                         <div class="col">
                             <article class="card activity-card">
-                                <img class="card-img-top" src="https://picsum.photos/800/400?random=belum{{ $loop->iteration }}" alt="Gambar Aktivitas">
+                                <img class="card-img-top" src="https://picsum.photos/800/400?random=belum{{ $loop->iteration }}"
+                                    alt="Gambar Aktivitas">
                                 <div class="card-body">
                                     <h5 class="mb-1 text-primary fw-bold" title="{{ $sub->aktivitas }}">{{ $sub->aktivitas }}</h5>
 
                                     <div class="badges">
-                                        <span class="badge bg-primary text-white" title="{{ $sub->mapel ?? '' }}">{{ $sub->mapel ?? '-' }}</span>
-                                        <span class="badge bg-info text-white" title="{{ $sub->topik ?? '' }}">{{ $sub->topik ?? '-' }}</span>
-                                        <span class="badge bg-warning text-dark" title="Kelas {{ $sub->nama_kelas ?? '' }}">Kls {{ $sub->nama_kelas ?? '-' }}</span>
-                                        <span class="badge bg-secondary text-white" title="{{ ucfirst($status) }}">{{ ucfirst($status) }}</span>
+                                        <span class="badge bg-primary text-white"
+                                            title="{{ $sub->mapel ?? '' }}">{{ $sub->mapel ?? '-' }}</span>
+                                        <span class="badge bg-info text-white"
+                                            title="{{ $sub->topik ?? '' }}">{{ $sub->topik ?? '-' }}</span>
+                                        <span class="badge bg-warning text-dark" title="Kelas {{ $sub->nama_kelas ?? '' }}">Kls
+                                            {{ $sub->nama_kelas ?? '-' }}</span>
+                                        <span class="badge bg-secondary text-white"
+                                            title="{{ ucfirst($status) }}">{{ ucfirst($status) }}</span>
                                     </div>
 
                                     <div class="meta-line">
@@ -197,7 +249,8 @@
 
                                             <div class="ms-auto d-flex align-items-center gap-2">
                                                 @if($isPastDeadline)
-                                                    <span class="badge bg-danger text-white py-2 px-3" title="Deadline sudah lewat">Deadline Lewat</span>
+                                                    <span class="badge bg-danger text-white py-2 px-3"
+                                                        title="Deadline sudah lewat">Deadline Lewat</span>
                                                 @endif
                                                 <span class="badge bg-{{ $cls }} text-white py-2 px-3">{{ ucfirst($status) }}</span>
                                             </div>
@@ -206,7 +259,8 @@
                                         <div class="meta-line">
                                             {{-- tambahan ringkasan waktu --}}
                                             <small class="text-muted">
-                                                Dibuat: {{ $sub->created_at ? \Carbon\Carbon::parse($sub->created_at)->format('d M Y') : '-' }}
+                                                Dibuat:
+                                                {{ $sub->created_at ? \Carbon\Carbon::parse($sub->created_at)->format('d M Y') : '-' }}
                                             </small>
                                         </div>
                                     </div>
@@ -214,13 +268,13 @@
                                     <div class="mt-auto">
                                         @if($cannotStart)
                                             <button class="btn btn-secondary w-100 action-btn" disabled
-                                                    title="{{ $isAlreadyGraded ? 'Sudah dinilai' : ($isPastDeadline ? 'Deadline sudah lewat' : '') }}">
+                                                title="{{ $isAlreadyGraded ? 'Sudah dinilai' : ($isPastDeadline ? 'Deadline sudah lewat' : '') }}">
                                                 <i class="bi bi-x-circle me-1"></i>
                                                 {{ $isAlreadyGraded ? 'Sudah Dinilai' : 'Tidak Bisa Dikerjakan' }}
                                             </button>
                                         @else
                                             <button class="btn btn-success w-100 action-btn"
-                                                    onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
+                                                onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
                                                 <i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang
                                             </button>
                                         @endif
@@ -265,15 +319,21 @@
 
                         <div class="col">
                             <article class="card activity-card">
-                                <img class="card-img-top" src="https://picsum.photos/800/400?random={{ $kelas->id_class }}{{ $loop->iteration }}" alt="Gambar Aktivitas">
+                                <img class="card-img-top"
+                                    src="https://picsum.photos/800/400?random={{ $kelas->id_class }}{{ $loop->iteration }}"
+                                    alt="Gambar Aktivitas">
                                 <div class="card-body">
                                     <h5 class="mb-1 text-primary fw-bold" title="{{ $sub->aktivitas }}">{{ $sub->aktivitas }}</h5>
 
                                     <div class="badges">
-                                        <span class="badge bg-primary text-white" title="{{ $sub->mapel ?? '' }}">{{ $sub->mapel ?? '-' }}</span>
-                                        <span class="badge bg-info text-white" title="{{ $sub->topik ?? '' }}">{{ $sub->topik ?? '-' }}</span>
-                                        <span class="badge bg-warning text-dark" title="Kelas {{ $kelas->nama_kelas ?? '' }}">Kls {{ $kelas->nama_kelas ?? '-' }}</span>
-                                        <span class="badge bg-secondary text-white" title="{{ ucfirst($status) }}">{{ ucfirst($status) }}</span>
+                                        <span class="badge bg-primary text-white"
+                                            title="{{ $sub->mapel ?? '' }}">{{ $sub->mapel ?? '-' }}</span>
+                                        <span class="badge bg-info text-white"
+                                            title="{{ $sub->topik ?? '' }}">{{ $sub->topik ?? '-' }}</span>
+                                        <span class="badge bg-warning text-dark" title="Kelas {{ $kelas->nama_kelas ?? '' }}">Kls
+                                            {{ $kelas->nama_kelas ?? '-' }}</span>
+                                        <span class="badge bg-secondary text-white"
+                                            title="{{ ucfirst($status) }}">{{ ucfirst($status) }}</span>
                                     </div>
 
                                     <div class="meta-line">
@@ -301,7 +361,8 @@
 
                                             <div class="ms-auto d-flex align-items-center gap-2">
                                                 @if($isPastDeadline)
-                                                    <span class="badge bg-danger text-white py-2 px-3" title="Deadline sudah lewat">Deadline Lewat</span>
+                                                    <span class="badge bg-danger text-white py-2 px-3"
+                                                        title="Deadline sudah lewat">Deadline Lewat</span>
                                                 @endif
                                                 <span class="badge bg-{{ $cls }} text-white py-2 px-3">{{ ucfirst($status) }}</span>
                                             </div>
@@ -311,13 +372,13 @@
                                     <div class="mt-auto">
                                         @if($cannotStart)
                                             <button class="btn btn-secondary w-100 action-btn" disabled
-                                                    title="{{ $isAlreadyGraded ? 'Sudah dinilai' : ($isPastDeadline ? 'Deadline sudah lewat' : '') }}">
+                                                title="{{ $isAlreadyGraded ? 'Sudah dinilai' : ($isPastDeadline ? 'Deadline sudah lewat' : '') }}">
                                                 <i class="bi bi-x-circle me-1"></i>
                                                 {{ $isAlreadyGraded ? 'Sudah Dinilai' : 'Tidak Bisa Dikerjakan' }}
                                             </button>
                                         @else
                                             <button class="btn btn-success w-100 action-btn"
-                                                    onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
+                                                onclick="mulaiAktivitas('{{ $sub->id_activity }}')">
                                                 <i class="bi bi-play-fill me-1"></i> Kerjakan Sekarang
                                             </button>
                                         @endif
@@ -335,6 +396,119 @@
             </div>
         @endforelse
     </div>
+
+    <!-- Modal Informasi Aktivitas -->
+    <div class="modal fade" id="modalInfoAktivitas" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        Informasi Aktivitas
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- APA ITU AKTIVITAS -->
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Apa itu Evaluasi?</h6>
+                        <p class="text-muted mb-0">
+                            Evaluasi merupakan tugas atau kuis pembelajaran yang diberikan oleh guru
+                            untuk mengukur pemahaman siswa terhadap suatu topik tertentu.
+                            Evaluasi dapat berupa soal pilihan ganda maupun isian singkat.
+                        </p>
+                    </section>
+
+                    <!-- SISTEM ADAPTIF -->
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Sistem Soal Adaptif</h6>
+                        <p class="text-muted mb-2">
+                            Pada aktivitas <strong>adaptif</strong>, tingkat kesulitan soal akan
+                            menyesuaikan dengan performa siswa selama pengerjaan.
+                        </p>
+                        <ul class="text-muted mb-0">
+                            <li>Jika menjawab benar secara berturut-turut, tingkat soal akan meningkat.</li>
+                            <li>Jika menjawab salah secara berturut-turut, tingkat soal akan menurun.</li>
+                            <li>Penyesuaian dilakukan berdasarkan pola benar dan salah.</li>
+                        </ul>
+                    </section>
+
+                    <!-- PEROLEHAN POIN -->
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Perolehan Poin</h6>
+                        <p class="text-muted mb-2">
+                            Setiap jawaban benar akan menghasilkan <strong>poin dasar</strong>
+                            sesuai dengan tingkat kesulitan soal.
+                            Seluruh poin akan <strong>dicatat dan diperingkatkan</strong>
+                            pada sistem <strong>Leaderboard</strong>.
+                        </p>
+
+                        <ul class="text-muted mb-2">
+                            <li>Soal mudah: <strong>10 poin</strong></li>
+                            <li>Soal sedang: <strong>20 poin</strong></li>
+                            <li>Soal sulit: <strong>30 poin</strong></li>
+                        </ul>
+
+                        <p class="text-muted mb-0">
+                            Jika jawaban salah, maka poin dasar untuk soal tersebut adalah <strong>0</strong>.
+                        </p>
+                    </section>
+
+                    <!-- BONUS POIN -->
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Bonus Poin (Streak)</h6>
+                        <p class="text-muted mb-2">
+                            Pada aktivitas adaptif, siswa dapat memperoleh <strong>bonus poin</strong>
+                            berdasarkan jumlah jawaban benar berturut-turut.
+                        </p>
+
+                        <ul class="text-muted mb-0">
+                            <li>2 jawaban benar berturut-turut: <strong>+5 poin</strong></li>
+                            <li>3 jawaban benar berturut-turut: <strong>+10 poin</strong></li>
+                            <li>4 jawaban benar atau lebih: <strong>+15 poin</strong></li>
+                        </ul>
+
+                        <p class="text-muted mt-2 mb-0">
+                            Jika jawaban salah, maka bonus tidak diberikan dan perhitungan streak direset.
+                        </p>
+                    </section>
+
+                    <!-- PENILAIAN -->
+                    <section class="mb-2">
+                        <h6 class="fw-bold text-primary">Penilaian (Nilai Akhir)</h6>
+                        <p class="text-muted mb-2">
+                            Nilai akhir dihitung berdasarkan perbandingan poin yang diperoleh
+                            dengan <strong>poin maksimum (best case)</strong>.
+                        </p>
+
+                        <p class="text-muted mb-1">
+                            Contoh best case:
+                        </p>
+
+                        <ul class="text-muted mb-2">
+                            <li>2 soal sedang × 20 poin = 40 poin</li>
+                            <li>3 soal sulit × 30 poin = 90 poin</li>
+                            <li><strong>Total poin maksimum = 130 poin</strong></li>
+                        </ul>
+
+                        <p class="text-muted mb-0">
+                            Rumus nilai akhir:
+                            <br>
+                            <strong>(Total poin diperoleh ÷ Total poin maksimum) × 100</strong>
+                        </p>
+                    </section>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 @endsection
 
 @push('scripts')
