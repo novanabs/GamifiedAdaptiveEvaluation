@@ -6,16 +6,39 @@
         <div class="card shadow-lg border-0 rounded-4">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-2 mb-4">
-                    <h3 class="fw-bold text-primary mb-0">
-                        <i class="bi bi-plus-circle me-2"></i> Tambah Soal
-                    </h3>
+                    <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap">
+                        <div>
+                            <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+                                <h3 class="fw-bold text-primary mb-1 d-flex align-items-center gap-2">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Tambah Soal
+                                </h3>
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width:32px;height:32px" data-bs-toggle="modal"
+                                    data-bs-target="#modalInfoTambahSoal" title="Informasi Tambah Soal">
+                                    <i class="bi bi-info-lg"></i>
+                                </button>
+                            </div>
 
-                    <button type="button"
-                        class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                        style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoTambahSoal"
-                        title="Informasi Tambah Soal">
-                        <i class="bi bi-info-lg"></i>
-                    </button>
+
+                            {{-- Info kelas --}}
+                            @if($kelasGuru->count())
+                                <div class="d-flex align-items-center flex-wrap gap-2 mt-1">
+                                    @foreach($kelasGuru as $k)
+
+                                        <span class="text-muted"> Nama Kelas : {{ $k->name }}</span>
+
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-danger small mt-1">
+                                    Anda belum tergabung pada kelas manapun.
+                                </div>
+                            @endif
+                        </div>
+
+                    </div>
                 </div>
 
 

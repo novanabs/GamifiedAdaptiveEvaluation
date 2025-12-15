@@ -790,29 +790,47 @@ class guruController extends Controller
     {
         $guruId = Auth::id();
 
-        // ambil kelas yang diajar
-        $kelasIds = DB::table('teacher_classes')
-            ->where('id_teacher', $guruId)
-            ->pluck('id_class')
-            ->toArray();
+        // 🔹 ambil kelas yang diajar guru
+        $kelasGuru = DB::table('classes')
+            ->join('teacher_classes', 'classes.id', '=', 'teacher_classes.id_class')
+            ->where('teacher_classes.id_teacher', $guruId)
+            ->select(
+                'classes.id',
+                'classes.level',
+                'classes.grade',
+                'classes.name'
+            )
+            ->orderBy('classes.level')
+            ->orderBy('classes.grade')
+            ->get();
 
-        // ambil subject dalam kelas tersebut
+        // 🔹 ambil class ID
+        $kelasIds = $kelasGuru->pluck('id')->toArray();
+
+        // 🔹 ambil subject dalam kelas tersebut
         $subjectIds = DB::table('subject')
             ->whereIn('id_class', $kelasIds)
             ->pluck('id')
             ->toArray();
 
-        // ambil topics untuk subject di atas
+        // 🔹 ambil topics
         $topics = DB::table('topics')
             ->whereIn('id_subject', $subjectIds)
             ->select('id', 'title', 'id_subject')
             ->orderBy('title')
             ->get();
 
-        // juga kalau mau bisa kirim subjects (opsional)
-        $subjects = DB::table('subject')->whereIn('id', $subjectIds)->select('id', 'name', 'id_class')->get();
+        // 🔹 ambil subjects (opsional, kamu memang pakai)
+        $subjects = DB::table('subject')
+            ->whereIn('id', $subjectIds)
+            ->select('id', 'name', 'id_class')
+            ->get();
 
-        return view('guru.tambahsoal', compact('topics', 'subjects'));
+        return view('guru.tambahsoal', compact(
+            'topics',
+            'subjects',
+            'kelasGuru'
+        ));
     }
 
     // simpan soal baru
@@ -899,8 +917,20 @@ class guruController extends Controller
         $topics = Topic::whereIn('id_subject', $subjectIds)
             ->orderBy('title')
             ->get();
+        $kelasGuru = DB::table('classes')
+            ->join('teacher_classes', 'classes.id', '=', 'teacher_classes.id_class')
+            ->where('teacher_classes.id_teacher', $teacherId)
+            ->select(
+                'classes.id',
+                'classes.level',
+                'classes.grade',
+                'classes.name'
+            )
+            ->orderBy('classes.level')
+            ->orderBy('classes.grade')
+            ->get();
 
-        return view('guru.editsoal', compact('data', 'topics'));
+        return view('guru.editsoal', compact('data', 'topics','kelasGuru'));
     }
 
     /**

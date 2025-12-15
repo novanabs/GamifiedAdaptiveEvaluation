@@ -6,9 +6,42 @@
         <div class="card shadow-lg border-0 rounded-4">
             <div class="card-body p-4">
 
-                <h3 class="fw-bold text-primary mb-4">
-                    <i class="bi bi-pencil-square me-2"></i> Edit Soal
-                </h3>
+                <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+
+                    {{-- KIRI: Judul & Info Kelas --}}
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h3 class="fw-bold text-primary mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-pencil-square"></i>
+                                Edit Soal
+                            </h3>
+
+                            <button type="button"
+                                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                style="width:32px;height:32px" data-bs-toggle="modal" data-bs-target="#modalInfoEditSoal"
+                                title="Informasi Edit Soal">
+                                <i class="bi bi-info-lg"></i>
+                            </button>
+                        </div>
+
+                        {{-- Info kelas --}}
+                        @if($kelasGuru->count())
+                            <div class="d-flex align-items-center flex-wrap gap-2 mt-1">
+                                @foreach($kelasGuru as $k)
+
+                                    <span class="text-muted"> Nama Kelas : {{ $k->name }}</span>
+
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-danger small mt-1">
+                                Anda belum tergabung pada kelas manapun.
+                            </div>
+                        @endif
+                    </div>
+
+                </div>
+
 
                 <form id="editSoalForm" action="{{ route('updateSoal', $data->id) }}" method="POST"
                     enctype="multipart/form-data">
@@ -45,7 +78,7 @@
                         </div>
                         {{-- contoh: letakkan tepat di bawah textarea question_text --}}
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Topik (opsional)</label>
+                            <label class="form-label fw-semibold">Topik</label>
                             <select name="id_topic" class="form-select">
                                 <option value="">-- Pilih Topik --</option>
                                 @foreach($topics as $t)
@@ -179,7 +212,8 @@
                                             <option value="">-- Pilih Jawaban --</option>
                                             @foreach(['a', 'b', 'c', 'd', 'e'] as $opt)
                                                 <option value="{{ $opt }}" {{ $data->MC_answer == $opt ? 'selected' : '' }}>
-                                                    {{ strtoupper($opt) }}</option>
+                                                    {{ strtoupper($opt) }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -227,6 +261,65 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modalInfoEditSoal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow rounded-4">
+
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        Informasi Edit Soal
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Tujuan Halaman</h6>
+                        <p class="text-muted mb-0">
+                            Halaman <strong>Edit Soal</strong> digunakan untuk memperbarui isi soal yang sudah dibuat,
+                            seperti teks pertanyaan, tingkat kesulitan, topik, serta jawaban.
+                        </p>
+                    </section>
+
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Ketentuan Edit</h6>
+                        <ul class="text-muted mb-0">
+                            <li>Tipe soal <strong>tidak dapat diubah</strong> setelah soal dibuat.</li>
+                            <li>Anda dapat mengubah tingkat kesulitan dan topik soal.</li>
+                            <li>Perubahan akan langsung memengaruhi aktivitas yang menggunakan soal ini.</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-4">
+                        <h6 class="fw-bold text-primary">Keterkaitan Kelas</h6>
+                        <ul class="text-muted mb-0">
+                            <li>Soal hanya dapat dikaitkan dengan topik dari kelas yang Anda ampu.</li>
+                            <li>Pastikan topik sesuai dengan kelas dan mata pelajaran.</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-2">
+                        <h6 class="fw-bold text-primary">Tips</h6>
+                        <ul class="text-muted mb-0">
+                            <li>Gunakan bahasa yang jelas dan tidak ambigu.</li>
+                            <li>Pastikan jawaban benar sudah sesuai sebelum menyimpan.</li>
+                            <li>Gunakan gambar hanya jika benar-benar mendukung soal.</li>
+                        </ul>
+                    </section>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -273,8 +366,8 @@
                 });
             @endif
 
-        // VALIDASI CLIENT-SIDE sebelum submit (sama aturan seperti halaman tambah)
-        const form = document.getElementById('editSoalForm');
+                    // VALIDASI CLIENT-SIDE sebelum submit (sama aturan seperti halaman tambah)
+                    const form = document.getElementById('editSoalForm');
             const submitBtn = document.getElementById('submitBtn');
 
             form?.addEventListener('submit', function (e) {
