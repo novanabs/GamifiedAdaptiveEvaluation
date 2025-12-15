@@ -189,6 +189,8 @@ class aktivitasController extends Controller
             "activity.$id.totalQuestions" => $jumlahSoal,
             "activity.$id.used_questions" => [],
             "activity.$id.total_correct" => 0,
+            "activity.$id.total_base_point" => 0,
+            "activity.$id.total_real_point"=> 0
         ]);
 
         // simpan start_time ke session + DB

@@ -41,7 +41,7 @@ return new class extends Migration {
         Schema::create('topics', function (Blueprint $table) {
             $table->id();
             $table->string(column: 'title');
-            $table->string(column: 'description');
+            $table->string(column: 'description')->nullable();
             $table->unsignedBigInteger('id_subject');
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
