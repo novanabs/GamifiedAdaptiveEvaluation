@@ -391,6 +391,33 @@
         });
     </script>
     <script>
+        $(document).ready(function () {
+
+            $('#topicsTable').on('click', '.btn-edit-topic', function () {
+
+                const row = $(this).closest('tr');
+
+                const topicId = row.data('topic-id');
+                const topicTitle = row.data('topic-title');
+                const topicDesc = row.data('topic-desc');
+
+                $('#modalTopicId').val(topicId);
+                $('#modalTopicTitle').val(topicTitle);
+                $('#modalTopicDesc').val(topicDesc ?? '');
+
+                $('#editTopicForm').attr(
+                    'action',
+                    "{{ route('guru.topik.ubah', ':id') }}".replace(':id', topicId)
+                );
+
+                const modal = new bootstrap.Modal(document.getElementById('editTopicModal'));
+                modal.show();
+            });
+
+        });
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
 
             document.querySelectorAll('.btn-delete-topic').forEach(btn => {
@@ -405,16 +432,16 @@
                     Swal.fire({
                         title: 'Hapus Topik?',
                         html: `
-                        <div class="text-start">
-                            <p>
-                                Topik <strong>${topicTitle}</strong> akan dihapus.
-                            </p>
-                            <small class="text-danger">
-                                ⚠️ Topik yang dihapus tidak dapat dikembalikan
-                                dan dapat memengaruhi aktivitas & soal terkait.
-                            </small>
-                        </div>
-                    `,
+                            <div class="text-start">
+                                <p>
+                                    Topik <strong>${topicTitle}</strong> akan dihapus.
+                                </p>
+                                <small class="text-danger">
+                                    ⚠️ Topik yang dihapus tidak dapat dikembalikan
+                                    dan dapat memengaruhi aktivitas & soal terkait.
+                                </small>
+                            </div>
+                        `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',
