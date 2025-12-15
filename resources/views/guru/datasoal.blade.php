@@ -60,7 +60,7 @@
                     <i class="bi bi-plus-circle"></i> Tambah Soal Manual
                 </a>
                 <a href="{{ route('generateSoal') }}" class="btn btn-success shadow-sm">
-                    <i class="bi bi-lightbulb"></i> Buat Soal Otomatis
+                    <i class="bi bi-lightbulb"></i> Buat soal lebih cepat
                 </a>
             </div>
         </div>

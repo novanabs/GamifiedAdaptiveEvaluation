@@ -3,7 +3,7 @@
 @section('content')
     <div class="container py-4">
         <div class="d-flex align-items-center gap-2 mb-3">
-            <h3 class="fw-bold mb-0">Generator Soal Otomatis</h3>
+            <h3 class="fw-bold mb-0">Generator Soal</h3>
 
             <button type="button"
                 class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
