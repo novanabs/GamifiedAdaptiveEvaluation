@@ -125,9 +125,9 @@
                                 <td>
                                     <span
                                         class="badge
-                                                                                                                                                                        @if($item->difficulty == 'mudah') bg-success
-                                                                                                                                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
-                                                                                                                                                                        @else bg-danger @endif">
+                                                                                                                                                                                                                @if($item->difficulty == 'mudah') bg-success
+                                                                                                                                                                                                                @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                                                                                                                                                                                @else bg-danger @endif">
                                         {{ ucfirst($item->difficulty) }}
                                     </span>
                                 </td>
@@ -173,15 +173,16 @@
                     $topicTitle = $topicObj ? $topicObj->title : '-';
                 @endphp
 
-                <div class="card shadow-sm mb-3">
+                <div class="card shadow-sm mb-3 soal-card" data-id_topic="{{ $item->id_topic ?? '' }}">
+
                     <div class="card-body">
 
                         <div class="d-flex justify-content-between mb-2">
                             <span class="badge bg-secondary">{{ $item->type }}</span>
                             <span class="badge
-                                                        @if($item->difficulty == 'mudah') bg-success
-                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
-                                                        @else bg-danger @endif">
+                                                                                                @if($item->difficulty == 'mudah') bg-success
+                                                                                                @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                                                                @else bg-danger @endif">
                                 {{ ucfirst($item->difficulty) }}
                             </span>
                         </div>
@@ -309,6 +310,67 @@
                             Halaman <strong>Daftar Soal</strong> digunakan untuk mengelola seluruh soal yang dimiliki guru,
                             baik soal pilihan ganda maupun isian singkat, yang terhubung dengan topik dan mata pelajaran.
                         </p>
+                        <hr>
+
+                        <!-- TIPE SOAL -->
+                        <h6 class="fw-bold text-dark">
+                            <i class="bi bi-ui-checks me-1"></i>
+                            Jenis / Tipe Soal
+                        </h6>
+
+                        <ul>
+                            <li>
+                                <strong>Multiple Choice (Pilihan Ganda)</strong>
+                                <ul>
+                                    <li>Soal dengan beberapa pilihan jawaban (A, B, C, D, E).</li>
+                                    <li>Siswa memilih <strong>satu jawaban yang paling benar</strong>.</li>
+                                    <li>Penilaian dilakukan otomatis berdasarkan jawaban yang ditentukan guru.</li>
+                                </ul>
+
+                                <div class="bg-light rounded p-3 mt-2 mb-3">
+                                    <div class="fw-semibold mb-1">Contoh Soal Pilihan Ganda</div>
+                                    <p class="mb-1">
+                                        Fungsi utama aplikasi spreadsheet adalah...
+                                    </p>
+                                    <ul class="mb-0">
+                                        <li>A. Mengedit video</li>
+                                        <li>B. Mengolah data dalam bentuk tabel</li>
+                                        <li>C. Menggambar ilustrasi</li>
+                                        <li>D. Membuat animasi</li>
+                                    </ul>
+                                    <div class="text-muted small mt-1">
+                                        Jawaban benar: B
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li>
+                                <strong>Short Answer (Isian Singkat)</strong>
+                                <ul>
+                                    <li>Soal berupa isian singkat tanpa pilihan jawaban.</li>
+                                    <li>Siswa menuliskan jawaban sendiri dalam bentuk teks.</li>
+                                    <li>Penilaian dilakukan berdasarkan <strong>kata kunci jawaban</strong>
+                                        yang sudah ditentukan oleh guru.</li>
+                                    <li>Satu soal dapat memiliki beberapa kata kunci jawaban yang dianggap benar.</li>
+                                </ul>
+
+                                <div class="bg-light rounded p-3 mt-2">
+                                    <div class="fw-semibold mb-1">Contoh Soal Isian Singkat</div>
+                                    <p class="mb-1">
+                                        Sebutkan fungsi untuk menghitung rata-rata pada spreadsheet.
+                                    </p>
+                                    <div class="text-muted small">
+                                        Kata kunci jawaban:
+                                        <ul class="mb-0">
+                                            <li>AVERAGE</li>
+                                            <li>Average</li>
+                                            <li>Rata-rata</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
 
                         <hr>
 
@@ -465,6 +527,27 @@
             // panggil sekali untuk set awal (jika server already rendered total, ini sinkronisasi)
             updateTotalLabel();
 
+            function filterMobileCards(topicId) {
+                let visibleCount = 0;
+
+                document.querySelectorAll('.soal-card').forEach(card => {
+                    const cardTopic = card.getAttribute('data-id_topic') || '';
+
+                    if (!topicId || String(cardTopic) === String(topicId)) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                const totalEl = document.getElementById('totalSoal');
+                if (totalEl) {
+                    totalEl.textContent = 'Total: ' + visibleCount + ' soal';
+                }
+            }
+
+
             // custom filter by topic id (ext.search)
             var currentTopicFilter = '';
             $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
@@ -478,20 +561,28 @@
             // saat select berubah -> set filter dan redraw
             $('#filterTopik').on('change', function () {
                 currentTopicFilter = $(this).val() || '';
-                dt.draw();
+
+                dt.draw(); // desktop
+                filterMobileCards(currentTopicFilter); // mobile
             });
 
             // tombol reset filter: kosongkan select dan redraw
             $('#resetFilterBtn').on('click', function () {
-                $('#filterTopik').val('');      // set ke option kosong
+                $('#filterTopik').val('');
                 currentTopicFilter = '';
-                dt.search('');                  // bersihkan search global
-                dt.order([[1, 'asc']]);         // optional: reset ordering ke default kolom tipe
-                dt.page.len(10);                // optional: reset pageLength bila pernah diubah
+
+                // desktop
+                dt.search('');
+                dt.order([[1, 'asc']]);
+                dt.page.len(10);
                 dt.draw();
-                // fokus UI kecil
+
+                // mobile
+                filterMobileCards('');
+
                 $('#filterTopik').focus();
             });
+
 
             // update numbering & total saat table di-redraw (draw event)
             dt.on('draw.dt', function () {
@@ -522,11 +613,11 @@
                         var label = Object.keys(o)[0];
                         var d = o[label];
                         pilihan.append(`
-                                                                                        <div class="border p-2 mb-2 rounded">
-                                                                                            <strong>${label.toUpperCase()}.</strong> ${d.teks}
-                                                                                            ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
-                                                                                        </div>
-                                                                                    `);
+                                                                                                            <div class="border p-2 mb-2 rounded">
+                                                                                                                <strong>${label.toUpperCase()}.</strong> ${d.teks}
+                                                                                                                ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
+                                                                                                            </div>
+                                                                                                        `);
                     });
                 } else {
                     pilihan.html("<em>Tidak ada pilihan jawaban.</em>");
@@ -636,18 +727,18 @@
                     Swal.fire({
                         title: 'Hapus Soal?',
                         html: `
-                                            <div class="text-start">
-                                                <p class="mb-2">
-                                                    Anda akan menghapus:
-                                                </p>
-                                                <blockquote class="small border-start ps-2 text-muted">
-                                                    ${soalText}
-                                                </blockquote>
-                                                <small class="text-danger">
-                                                    ⚠️ Soal yang dihapus tidak dapat dikembalikan.
-                                                </small>
-                                            </div>
-                                        `,
+                                                                <div class="text-start">
+                                                                    <p class="mb-2">
+                                                                        Anda akan menghapus:
+                                                                    </p>
+                                                                    <blockquote class="small border-start ps-2 text-muted">
+                                                                        ${soalText}
+                                                                    </blockquote>
+                                                                    <small class="text-danger">
+                                                                        ⚠️ Soal yang dihapus tidak dapat dikembalikan.
+                                                                    </small>
+                                                                </div>
+                                                            `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',

@@ -65,6 +65,7 @@ Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function 
     // manajemen topik
     Route::get('/datatopik', [guruController::class, 'tampilanTopik'])->name('guru.topik.tampilan');
     Route::post('/simpan-topik', [guruController::class, 'simpanTopik'])->name('guru.topik.simpan');
+    Route::get('/guru/topik/{id}', [guruController::class, 'detail'])->name('guru.topik.detail');
     Route::put('/ubah-topik/{id}', [guruController::class, 'ubahTopik'])->name('guru.topik.ubah');
     Route::delete('/hapus-topik/{id}', [guruController::class, 'hapusTopik'])->name('guru.topik.hapus');
 

@@ -111,7 +111,7 @@
 
                 <div class="d-flex gap-2">
                     <a href="{{ route('guru.datanilai.export') }}" class="btn btn-success btn-sm">
-                        <i class="fas fa-file-excel"></i> Export XLSX
+                        <i class="fas fa-file-excel"></i> Export Nilai Semua Kelas
                     </a>
 
                     <a href="{{ url()->current() }}" class="btn btn-outline-secondary btn-sm">
@@ -150,7 +150,7 @@
                                         <br>
                                         <a href="{{ route('guru.datanilai.exportClass', $class['class_id']) }}"
                                             class="btn btn-success btn-sm">
-                                            <i class="fas fa-file-excel"></i> Export Kelas
+                                            <i class="fas fa-file-excel"></i> Export Nilai {{ $class['class_name'] }}
                                         </a>
                                     </div>
                                 </div>

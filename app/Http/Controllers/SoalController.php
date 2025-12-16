@@ -228,30 +228,26 @@ PROMPT;
     ]);
 
   }
-
   public function importQuestionJson(Request $request)
   {
     // Pastikan mode upload dipilih
     $mode = $request->upload_mode;
+    $json = null;
 
     if ($mode === "paste") {
 
-      // Validasi untuk mode paste
       $request->validate([
         'json_text' => 'required'
       ]);
 
-      // Ambil JSON dari textarea
       $json = json_decode($request->json_text, true);
 
     } elseif ($mode === "file") {
 
-      // Validasi untuk mode upload file
       $request->validate([
         'file' => 'required|file|mimes:json,txt'
       ]);
 
-      // Ambil JSON dari file
       $json = json_decode(file_get_contents($request->file('file')), true);
 
     } else {
@@ -260,16 +256,29 @@ PROMPT;
 
     // Validasi JSON
     if (!is_array($json)) {
-      return back()->with('error', 'Format file JSON tidak valid.');
+      return back()->with('error', 'Format JSON tidak valid.');
     }
 
-    // ====== SIMPAN DATA KE DATABASE ======
+    // ===== SIMPAN DATA KE DATABASE =====
+    $importedCount = 0;
+
     foreach ($json as $item) {
+
+      // Validasi minimal per item
+      if (
+        !isset($item['id_topic']) ||
+        !isset($item['type']) ||
+        !isset($item['difficulty']) ||
+        !isset($item['pertanyaan'])
+      ) {
+        continue; // lewati item yang rusak
+      }
+
       DB::table('question')->insert([
-        'id_topic' => $item['id_topic'] ?? null,   // ← TAMBAHAN PENTING
-        'type' => $item['type'] ?? null,
-        'difficulty' => strtolower($item['difficulty'] ?? 'mudah'),
-        'question' => json_encode($item['pertanyaan'] ?? []),
+        'id_topic' => $item['id_topic'],
+        'type' => $item['type'],
+        'difficulty' => strtolower($item['difficulty']),
+        'question' => json_encode($item['pertanyaan']),
         'MC_option' => isset($item['MC_option']) ? json_encode($item['MC_option']) : null,
         'SA_answer' => isset($item['SA_option']) ? json_encode($item['SA_option']) : null,
         'MC_answer' => $item['MC_Answer'] ?? null,
@@ -277,10 +286,21 @@ PROMPT;
         'created_at' => now(),
         'updated_at' => now(),
       ]);
+
+      $importedCount++;
     }
 
-    return back()->with('success', '✅ Soal berhasil diimpor ke database!');
+    // Jika tidak ada yang berhasil diimport
+    if ($importedCount === 0) {
+      return back()->with('error', 'Tidak ada soal yang berhasil diimpor. Periksa struktur JSON.');
+    }
+
+    return back()->with([
+      'success' => 'Soal berhasil diimpor ke database',
+      'imported_count' => $importedCount
+    ]);
   }
+
 
 
 

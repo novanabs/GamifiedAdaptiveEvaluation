@@ -433,30 +433,34 @@
         });
     </script>
     <script>
-        $(document).ready(function () {
+        $(document).on('click', '.btn-edit-topic', function () {
 
-            $('#topicsTable').on('click', '.btn-edit-topic', function () {
+            const topicId = $(this).data('id');
 
-                const row = $(this).closest('tr');
+            // loading (optional)
+            $('#modalTopicTitle').val('Memuat...');
+            $('#modalTopicDesc').val('');
 
-                const topicId = row.data('topic-id');
-                const topicTitle = row.data('topic-title');
-                const topicDesc = row.data('topic-desc');
+            $.get("{{ route('guru.topik.detail', ':id') }}".replace(':id', topicId),
+                function (data) {
 
-                $('#modalTopicId').val(topicId);
-                $('#modalTopicTitle').val(topicTitle);
-                $('#modalTopicDesc').val(topicDesc ?? '');
+                    $('#modalTopicId').val(data.id);
+                    $('#modalTopicTitle').val(data.title);
+                    $('#modalTopicDesc').val(data.description ?? '');
 
-                $('#editTopicForm').attr(
-                    'action',
-                    "{{ route('guru.topik.ubah', ':id') }}".replace(':id', topicId)
-                );
+                    $('#editTopicForm').attr(
+                        'action',
+                        "{{ route('guru.topik.ubah', ':id') }}".replace(':id', data.id)
+                    );
 
-                const modal = new bootstrap.Modal(document.getElementById('editTopicModal'));
-                modal.show();
-            });
-
+                    new bootstrap.Modal(
+                        document.getElementById('editTopicModal')
+                    ).show();
+                }
+            );
         });
+
+
     </script>
 
     <script>
@@ -474,16 +478,16 @@
                     Swal.fire({
                         title: 'Hapus Topik?',
                         html: `
-                                <div class="text-start">
-                                    <p>
-                                        Topik <strong>${topicTitle}</strong> akan dihapus.
-                                    </p>
-                                    <small class="text-danger">
-                                        ⚠️ Topik yang dihapus tidak dapat dikembalikan
-                                        dan dapat memengaruhi aktivitas & soal terkait.
-                                    </small>
-                                </div>
-                            `,
+                                        <div class="text-start">
+                                            <p>
+                                                Topik <strong>${topicTitle}</strong> akan dihapus.
+                                            </p>
+                                            <small class="text-danger">
+                                                ⚠️ Topik yang dihapus tidak dapat dikembalikan
+                                                dan dapat memengaruhi aktivitas & soal terkait.
+                                            </small>
+                                        </div>
+                                    `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',

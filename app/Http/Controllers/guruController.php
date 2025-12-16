@@ -467,6 +467,23 @@ class guruController extends Controller
 
         return back()->with('success', 'Topik berhasil ditambahkan!');
     }
+    public function detail($id)
+    {
+        $idGuru = Auth::id();
+
+        $topic = Topic::where('id', $id)
+            ->whereHas('subject', function ($q) use ($idGuru) {
+                $q->whereIn('id_class', function ($sub) use ($idGuru) {
+                    $sub->select('id_class')
+                        ->from('teacher_classes')
+                        ->where('id_teacher', $idGuru);
+                });
+            })
+            ->firstOrFail();
+
+        return response()->json($topic);
+    }
+
 
     public function ubahTopik(Request $request, $id)
     {

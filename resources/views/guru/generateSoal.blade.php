@@ -38,8 +38,7 @@
                             <option value="">-- Pilih Jenjang --</option>
 
                             @foreach($jenjangList as $j)
-                                <option value="{{ $j }}" {{ (old('jenjang') ?? ($selectedJenjang ?? null)) == $j ? 'selected' : '' }}>
-                                    {{ strtoupper($j) }}
+                                <option value="{{ $j }}" {{ (old('jenjang') ?? ($selectedJenjang ?? null)) == $j ? 'selected' : '' }}>{{ strtoupper($j) }}
                                 </option>
                             @endforeach
                         </select>
@@ -64,11 +63,13 @@
         @isset($prompt)
             <div class="mt-4">
                 <h5 class="fw-bold mb-2 text-primary">Prompt AI yang Dihasilkan:</h5>
-                <textarea class="form-control bg-light p-3" rows="12">{{ $prompt }}</textarea>
+                <textarea id="promptTextarea" class="form-control bg-light p-3" rows="12">{{ $prompt }}</textarea>
+
                 <div class="text-end mt-2">
-                    <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText(`{{ trim($prompt) }}`)">
-                        Salin Prompt
+                    <button type="button" class="btn btn-outline-primary" id="btnCopyPrompt">
+                        <i class="bi bi-clipboard-check me-1"></i> Salin Prompt
                     </button>
+
                 </div>
             </div>
         @endisset
@@ -104,7 +105,7 @@
 
                         <h6 class="fw-bold mb-2">Tempel JSON di bawah ini:</h6>
 
-                        <form action="{{ route('importQuestionJson') }}" method="POST">
+                        <form action="{{ route('importQuestionJson') }}" method="POST" id="formPasteJson">
                             @csrf
 
                             <textarea name="json_text" class="form-control" rows="10"
@@ -128,7 +129,8 @@
 
                         <h6 class="fw-bold mb-2">Upload File JSON</h6>
 
-                        <form action="{{ route('importQuestionJson') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('importQuestionJson') }}" method="POST" enctype="multipart/form-data"
+                            id="formPasteJson">
                             @csrf
 
                             <div class="input-group">
@@ -147,12 +149,6 @@
 
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success mt-3">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger mt-3">{{ session('error') }}</div>
-        @endif
 
         <div class="text-end mt-4">
             <a href="{{ route('tampilanSoal') }}" class="btn btn-secondary px-4">
@@ -246,5 +242,85 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const btnCopy = document.getElementById('btnCopyPrompt');
+            const textarea = document.getElementById('promptTextarea');
+
+            if (!btnCopy || !textarea) return;
+
+            btnCopy.addEventListener('click', function () {
+
+                const promptText = textarea.value;
+
+                navigator.clipboard.writeText(promptText)
+                    .then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Prompt AI berhasil disalin ke clipboard.',
+                            timer: 1800,
+                            showConfirmButton: false
+                        });
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal menyalin',
+                            text: 'Browser tidak mengizinkan akses clipboard.',
+                        });
+                    });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ===== SUBMIT HANDLER (PASTE & UPLOAD JSON) =====
+            ['formPasteJson', 'formUploadJson'].forEach(function (formId) {
+                const form = document.getElementById(formId);
+                if (!form) return;
+
+                form.addEventListener('submit', function () {
+                    Swal.fire({
+                        title: 'Memproses JSON',
+                        text: 'Mohon tunggu, soal sedang disimpan ke database.',
+                        allowOutsideClick: false,
+                        didOpen: function () {
+                            Swal.showLoading();
+                        }
+                    });
+                });
+            });
+
+            // ===== SWEET ALERT DARI SESSION =====
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    html: `
+                        <p>{{ session('success') }}</p>
+                        <p><strong>Jumlah soal berhasil disimpan sebanyak: {{ session('imported_count') }} soal</strong></p>
+                    `,
+                    confirmButtonText: 'OK'
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: "{{ session('error') }}",
+                    confirmButtonText: 'Periksa JSON'
+                });
+            @endif
+
+    });
+    </script>
+
+
 
 @endsection

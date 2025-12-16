@@ -72,18 +72,19 @@
                                                 Edit Kelas
                                             </a>
                                         </li>
-                                        <li><a class="dropdown-item" href="#">Lihat Detail</a></li>
                                         <li>
                                             <hr class="dropdown-divider">
                                         </li>
                                         <li>
                                             <form action="{{ route('kelas.hapus', $data->kelas->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus kelas ini? Semua data terkait mungkin akan hilang.');"
-                                                class="d-inline">
+                                                class="d-inline form-hapus-kelas">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="dropdown-item text-danger" type="submit">Hapus Kelas</button>
+                                                <button type="button" class="dropdown-item text-danger btn-hapus-kelas">
+                                                    Hapus Kelas
+                                                </button>
                                             </form>
+
                                         </li>
                                     </ul>
                                 </div>
@@ -598,14 +599,14 @@
                                     const item = document.createElement('div');
                                     item.className = 'list-group-item d-flex justify-content-between align-items-start';
                                     item.innerHTML = `
-                                                            <div>
-                                                                <div class="fw-semibold">${escapeHtml(p.title)}</div>
-                                                                <div class="small text-muted">Sumber activity: ${escapeHtml(p.activity_title ?? '-')} — Kelas: ${escapeHtml(p.class_name ?? '-')}</div>
-                                                            </div>
-                                                            <div class="text-end">
-                                                                                                                    <button class="btn btn-sm btn-primary btn-claim-package" data-pkg-id="${p.id}" data-class-id="${classId}">Klaim</button>
-                                                                </div>
-                                                            </div>`;
+                                                                            <div>
+                                                                                <div class="fw-semibold">${escapeHtml(p.title)}</div>
+                                                                                <div class="small text-muted">Sumber activity: ${escapeHtml(p.activity_title ?? '-')} — Kelas: ${escapeHtml(p.class_name ?? '-')}</div>
+                                                                            </div>
+                                                                            <div class="text-end">
+                                                                                                                                    <button class="btn btn-sm btn-primary btn-claim-package" data-pkg-id="${p.id}" data-class-id="${classId}">Klaim</button>
+                                                                                </div>
+                                                                            </div>`;
                                     frag.appendChild(item);
                                 });
                                 listEl.innerHTML = '';
@@ -627,9 +628,9 @@
                         Swal.fire({
                             title: 'Klaim paket ke kelas ini?',
                             html: `<div class="form-check text-start">
-                                                        <input class="form-check-input" type="checkbox" id="duplicateCheck">
-                                                        <label class="form-check-label" for="duplicateCheck">Duplicate soal jika belum ada (create new questions)</label>
-                                                   </div>`,
+                                                                        <input class="form-check-input" type="checkbox" id="duplicateCheck">
+                                                                        <label class="form-check-label" for="duplicateCheck">Duplicate soal jika belum ada (create new questions)</label>
+                                                                   </div>`,
                             showCancelButton: true,
                             confirmButtonText: 'Klaim',
                             preConfirm: async () => {
@@ -692,5 +693,32 @@
                 });
             })();
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+
+                document.querySelectorAll('.btn-hapus-kelas').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const form = this.closest('form');
+
+                        Swal.fire({
+                            title: 'Hapus kelas?',
+                            text: 'Kelas dan seluruh data terkait akan dihapus.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Ya, hapus',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                });
+
+            });
+        </script>
+
     @endpush
 @endsection

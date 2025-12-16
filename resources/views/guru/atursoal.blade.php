@@ -262,69 +262,67 @@
                         soal-soal yang akan digunakan pada aktivitas
                         <strong>{{ $aktivitas->title }}</strong>.
                     </p>
-
                     <hr>
 
-                    <!-- SOAL TERPILIH -->
-                    <h6 class="fw-bold text-primary">
-                        <i class="bi bi-clipboard-check me-1"></i>
-                        Soal Terpilih
+                    <!-- TIPE SOAL -->
+                    <h6 class="fw-bold text-dark">
+                        <i class="bi bi-ui-checks me-1"></i>
+                        Jenis / Tipe Soal
                     </h6>
+
                     <ul>
-                        <li>Menampilkan semua soal yang saat ini terhubung dengan aktivitas.</li>
-                        <li>Soal ditampilkan dengan informasi:
-                            <ul>
-                                <li>Tingkat kesulitan</li>
-                                <li>Tipe soal</li>
-                                <li>Cuplikan pertanyaan</li>
-                            </ul>
-                        </li>
                         <li>
-                            Klik tombol
-                            <i class="bi bi-x-circle text-danger"></i>
-                            untuk menghapus soal dari aktivitas.
-                        </li>
-                    </ul>
-
-                    <hr>
-
-                    <!-- LIHAT SOAL -->
-                    <h6 class="fw-bold text-success">
-                        <i class="bi bi-list-ul me-1"></i>
-                        Lihat Soal
-                    </h6>
-                    <ul>
-                        <li>Membuka modal daftar seluruh soal yang tersedia.</li>
-                        <li>Guru dapat:
+                            <strong>Multiple Choice (Pilihan Ganda)</strong>
                             <ul>
-                                <li>Menambahkan soal secara manual</li>
-                                <li>Mengambil soal otomatis</li>
-                                <li>Memilih semua soal sekaligus</li>
+                                <li>Soal dengan beberapa pilihan jawaban (A, B, C, D, E).</li>
+                                <li>Siswa memilih <strong>satu jawaban yang paling benar</strong>.</li>
+                                <li>Penilaian dilakukan otomatis berdasarkan jawaban yang ditentukan guru.</li>
                             </ul>
+
+                            <div class="bg-light rounded p-3 mt-2 mb-3">
+                                <div class="fw-semibold mb-1">Contoh Soal Pilihan Ganda</div>
+                                <p class="mb-1">
+                                    Fungsi utama aplikasi spreadsheet adalah...
+                                </p>
+                                <ul class="mb-0">
+                                    <li>A. Mengedit video</li>
+                                    <li>B. Mengolah data dalam bentuk tabel</li>
+                                    <li>C. Menggambar ilustrasi</li>
+                                    <li>D. Membuat animasi</li>
+                                </ul>
+                                <div class="text-muted small mt-1">
+                                    Jawaban benar: B
+                                </div>
+                            </div>
                         </li>
+
                         <li>
-                            Perubahan di modal belum tersimpan sampai tombol
-                            <strong>Terapkan ke Aktivitas</strong> ditekan.
-                        </li>
-                    </ul>
-
-                    <hr>
-
-                    <!-- AMBIL SOAL OTOMATIS -->
-                    <h6 class="fw-bold text-warning">
-                        <i class="bi bi-cpu me-1"></i>
-                        Ambil Soal Otomatis
-                    </h6>
-                    <ul>
-                        <li>Guru memilih jumlah soal (5, 10, 15, dst).</li>
-                        <li>Jika aktivitas <strong>Adaptif</strong> aktif:
+                            <strong>Short Answer (Isian Singkat)</strong>
                             <ul>
-                                <li>Sistem akan menyesuaikan distribusi kesulitan</li>
-                                <li>Minimal soal mudah, sedang, dan sulit harus terpenuhi</li>
+                                <li>Soal berupa isian singkat tanpa pilihan jawaban.</li>
+                                <li>Siswa menuliskan jawaban sendiri dalam bentuk teks.</li>
+                                <li>Penilaian dilakukan berdasarkan <strong>kata kunci jawaban</strong>
+                                    yang sudah ditentukan oleh guru.</li>
+                                <li>Satu soal dapat memiliki beberapa kata kunci jawaban yang dianggap benar.</li>
                             </ul>
+
+                            <div class="bg-light rounded p-3 mt-2">
+                                <div class="fw-semibold mb-1">Contoh Soal Isian Singkat</div>
+                                <p class="mb-1">
+                                    Sebutkan fungsi untuk menghitung rata-rata pada spreadsheet.
+                                </p>
+                                <div class="text-muted small">
+                                    Kata kunci jawaban:
+                                    <ul class="mb-0">
+                                        <li>AVERAGE</li>
+                                        <li>Average</li>
+                                        <li>Rata-rata</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </li>
-                        <li>Hasil otomatis hanya berlaku di modal sampai diterapkan.</li>
                     </ul>
+
 
                     <!-- RINCIAN POIN -->
                     <div class="bg-light rounded p-3 mb-3">
@@ -352,6 +350,148 @@
                     </div>
 
                     <hr>
+                    <!-- LANGKAH 1 -->
+                    <h6 class="fw-bold text-primary">
+                        <i class="bi bi-1-circle me-1"></i>
+                        Langkah 1 – Menentukan Jumlah Soal
+                    </h6>
+                    <ul>
+                        <li>Langkah pertama yang <strong>wajib dilakukan</strong> adalah memilih
+                            <strong>jumlah soal</strong> (5, 10, 15, 20, dst).
+                        </li>
+                        <li>Jumlah soal ini menjadi acuan untuk:
+                            <ul>
+                                <li>Pengambilan soal otomatis</li>
+                                <li>Validasi aktivitas adaptif</li>
+                                <li>Penyimpanan konfigurasi soal</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <div class="bg-light rounded p-3 mb-3">
+                        <div class="fw-semibold mb-2">Ketentuan jika Aktivitas Adaptif</div>
+                        <p class="mb-2">
+                            Jika aktivitas berstatus <strong>Adaptif</strong> dan guru memilih
+                            jumlah soal <strong>n</strong>, maka sistem menetapkan kebutuhan
+                            minimal soal sebagai berikut:
+                        </p>
+                        <ul class="mb-2">
+                            <li>Soal <strong>sedang</strong> : <strong>n</strong></li>
+                            <li>Soal <strong>mudah</strong> : <strong>n − 2</strong></li>
+                            <li>Soal <strong>sulit</strong> : <strong>n − 2</strong></li>
+                        </ul>
+                        <p class="mb-0">
+                            Sehingga total minimal soal yang harus tersedia adalah:
+                            <br>
+                            <strong>n + (n − 2) + (n − 2) = 3n − 4</strong>
+                        </p>
+                    </div>
+
+                    <p class="text-muted small">
+                        Contoh: jika memilih n = 10, maka dibutuhkan minimal
+                        10 soal sedang, 8 soal mudah, dan 8 soal sulit (total 26 soal).
+                    </p>
+
+                    <hr>
+
+                    <!-- LANGKAH 2 -->
+                    <h6 class="fw-bold text-success">
+                        <i class="bi bi-2-circle me-1"></i>
+                        Langkah 2 – Memilih Soal
+                    </h6>
+                    <ul>
+                        <li>Klik tombol <strong>Lihat Soal</strong> untuk membuka daftar soal.</li>
+                        <li>Guru dapat memilih soal dengan cara:
+                            <ul>
+                                <li><strong>Manual</strong>: klik tombol tambah (+) pada soal</li>
+                                <li><strong>Otomatis</strong>: klik tombol <strong>Ambil Soal Otomatis</strong></li>
+                                <li><strong>Ambil Semua</strong>: memilih seluruh soal di daftar</li>
+                            </ul>
+                        </li>
+                        <li>Perubahan di dalam modal belum tersimpan sampai diterapkan.</li>
+                    </ul>
+
+                    <hr>
+
+                    <!-- LANGKAH 3 -->
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-3-circle me-1"></i>
+                        Langkah 3 – Ambil Soal Otomatis
+                    </h6>
+                    <ul>
+                        <li>Pastikan jumlah soal sudah dipilih.</li>
+                        <li>Klik tombol <strong>Ambil Soal Otomatis</strong>.</li>
+                        <li>Jika aktivitas <strong>Non-Adaptif</strong>:
+                            <ul>
+                                <li>Soal diambil secara acak tanpa aturan distribusi khusus.</li>
+                            </ul>
+                        </li>
+                        <li>Jika aktivitas <strong>Adaptif</strong>:
+                            <ul>
+                                <li>Sistem akan menyesuaikan jumlah soal mudah, sedang, dan sulit.</li>
+                                <li>Distribusi minimal harus terpenuhi sebelum bisa disimpan.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <!-- LANGKAH 4 -->
+                    <h6 class="fw-bold text-info">
+                        <i class="bi bi-4-circle me-1"></i>
+                        Langkah 4 – Terapkan ke Aktivitas
+                    </h6>
+                    <ul>
+                        <li>Klik tombol <strong>Terapkan ke Aktivitas</strong> di modal.</li>
+                        <li>Soal yang dipilih akan muncul di bagian <strong>Soal Terpilih</strong>.</li>
+                        <li>Guru masih dapat menghapus atau menyesuaikan soal.</li>
+                    </ul>
+
+                    <hr>
+
+                    <!-- LANGKAH 5 -->
+                    <h6 class="fw-bold text-secondary">
+                        <i class="bi bi-5-circle me-1"></i>
+                        Langkah 5 – Simpan Pilihan
+                    </h6>
+                    <ul>
+                        <li>Klik tombol <strong>Simpan Pilihan</strong> untuk menyimpan ke database.</li>
+                        <li>Pada aktivitas <strong>Adaptif</strong>, sistem akan memvalidasi:
+                            <ul>
+                                <li>Total jumlah soal</li>
+                                <li>Distribusi soal mudah, sedang, dan sulit</li>
+                            </ul>
+                        </li>
+                        <li>Jika validasi tidak terpenuhi, penyimpanan akan dibatalkan dan
+                            sistem akan menampilkan penjelasan kekurangannya.</li>
+                    </ul>
+                    <hr>
+
+                    <!-- SOAL TERPILIH -->
+                    <h6 class="fw-bold text-primary">
+                        <i class="bi bi-clipboard-check me-1"></i>
+                        Soal Terpilih
+                    </h6>
+
+                    <ul>
+                        <li>Menampilkan semua soal yang saat ini terhubung dengan aktivitas.</li>
+                        <li>Soal ditampilkan dengan informasi:
+                            <ul>
+                                <li>Tingkat kesulitan</li>
+                                <li>Tipe soal</li>
+                                <li>Cuplikan pertanyaan</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Klik tombol
+                            <i class="bi bi-x-circle text-danger"></i>
+                            untuk menghapus soal dari aktivitas.
+                        </li>
+                    </ul>
+
+                    <hr>
+
+
 
                     <!-- HAPUS SEMUA -->
                     <h6 class="fw-bold text-danger">
@@ -445,9 +585,9 @@
 
             if (!ids || ids.length === 0) {
                 area.innerHTML = `<div id="noSelectedPlaceholder" class="text-center text-muted py-4">
-                                                                                                                    <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
-                                                                                                                    <div class="mt-2">Belum ada soal.</div>
-                                                                                                              </div>`;
+                                                                                                                                <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
+                                                                                                                                <div class="mt-2">Belum ada soal.</div>
+                                                                                                                          </div>`;
                 document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = 0);
                 updateCounter();
                 return;
@@ -460,14 +600,14 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between align-items-start" id="selectedItem-${id}">
-                                                                                                        <div>
-                                                                                                            <small class="text-muted">${smallText}</small>
-                                                                                                            <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
-                                                                                                        </div>
-                                                                                                        <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
-                                                                                                            <i class="bi bi-x-circle"></i>
-                                                                                                        </button>
-                                                                                                    </div>`;
+                                                                                                                    <div>
+                                                                                                                        <small class="text-muted">${smallText}</small>
+                                                                                                                        <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
+                                                                                                                    </div>
+                                                                                                                    <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
+                                                                                                                        <i class="bi bi-x-circle"></i>
+                                                                                                                    </button>
+                                                                                                                </div>`;
             });
             area.innerHTML = html;
             document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = ids.length);
@@ -521,16 +661,16 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-white" id="modalSelectedItem-${id}">
-                                                                                                        <div class="d-flex justify-content-between align-items-start">
-                                                                                                            <div>
-                                                                                                                <small class="text-muted">${smallText}</small>
-                                                                                                                <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
-                                                                                                            </div>
-                                                                                                            <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
-                                                                                                                <i class="bi bi-x-circle"></i>
-                                                                                                            </button>
-                                                                                                        </div>
-                                                                                                    </div>`;
+                                                                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                                                                        <div>
+                                                                                                                            <small class="text-muted">${smallText}</small>
+                                                                                                                            <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                                        </div>
+                                                                                                                        <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
+                                                                                                                            <i class="bi bi-x-circle"></i>
+                                                                                                                        </button>
+                                                                                                                    </div>
+                                                                                                                </div>`;
             });
             wrap.innerHTML = html;
 
