@@ -18,82 +18,70 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <style>
-        /* ---------- Layout adjustments: sticky sidebar + sticky topbar ---------- */
-
-        /* make the sidebar fixed and full-height */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            height: 100vh !important;
+            height: 100vh;
+            width: 250px;
             overflow-y: auto;
             z-index: 1030;
-            width: 250px;
-            /* width used by content shift */
+            transition: all 0.3s ease;
         }
 
-        /* content wrapper must be shifted to the right of sidebar */
+        /* ===== CONTENT ===== */
         #content-wrapper {
-            padding-left: 220px;
-            /* GANTI dari margin */
-            margin-left: 0;
-            /* PASTIKAN nol */
-            transition: padding-left .2s ease;
+            margin-left: 220px;
             min-height: 100vh;
+            transition: all 0.3s ease;
         }
 
-
-        /* topbar sticky */
+        /* ===== TOPBAR ===== */
         .topbar {
             position: sticky;
             top: 0;
             z-index: 1020;
         }
 
-
-        /* smaller screens: collapse sidebar by default */
-        @media (max-width: 991.98px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform .22s ease;
-            }
-
-            /* content fills full width on small screens */
-            #content-wrapper {
-                margin-left: 0;
-            }
-
-            /* when sidebar open on small screens */
-            body.sidebar-open .sidebar {
-                transform: translateX(0);
-            }
-        }
-
-        /* When body has collapsed class, hide sidebar (desktop collapse) */
+        /* ===== DESKTOP COLLAPSE (KECIL, BUKAN HILANG) ===== */
         body.sidebar-collapsed .sidebar {
-            transform: translateX(-250px);
+            width: 80px;
         }
 
         body.sidebar-collapsed #content-wrapper {
-            margin-left: 0;
+            margin-left: 80px;
         }
 
-        /* small visual tweaks */
+        /* sembunyikan teks menu */
+        body.sidebar-collapsed .sidebar .nav-link span,
+        body.sidebar-collapsed .sidebar .sidebar-brand-text {
+            display: none;
+        }
+
+        body.sidebar-collapsed .sidebar .nav-link {
+            text-align: center;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            #content-wrapper {
+                margin-left: 0;
+            }
+        }
+
+        /* ===== EXTRA ===== */
         body {
             background-color: #f8f9fa;
-        }
-
-        .profile-container {
-            background-color: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-top: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .active {
@@ -102,11 +90,11 @@
             background-color: #07439f !important;
         }
 
-        /* ensure sidebar items scroll nicely */
         .sidebar .nav-item {
             width: 100%;
         }
     </style>
+
     @stack('head')
 </head>
 

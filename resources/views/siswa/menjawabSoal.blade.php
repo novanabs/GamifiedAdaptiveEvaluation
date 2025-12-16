@@ -233,6 +233,16 @@
                     {{ str_pad($durasi, 2, '0', STR_PAD_LEFT) }}:00
                 </div>
             </div>
+            <!-- PROGRESS BAR -->
+            <div class="mb-3">
+                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                        style="width: 0%">
+                        0%
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Panel Soal -->
             <div class="question-panel">
@@ -404,6 +414,8 @@
                         document.getElementById("nextBtn").classList.replace("btn-danger", "btn-success");
                     }
                 });
+            updateProgress();
+
         }
 
         function checkAnswer() {
@@ -590,6 +602,17 @@
                         .then(() => location.href = "{{ route('siswa.aktivitas') }}");
                 });
         }
+        function updateProgress() {
+            if (totalQuestions === 0) return;
+
+            const percent = Math.round(((currentIndex + 1) / totalQuestions) * 100);
+
+            const bar = document.getElementById("progressBar");
+            bar.style.width = percent + "%";
+            bar.innerText = percent + "%";
+            bar.setAttribute("aria-valuenow", percent);
+        }
+
 
     </script>
 
