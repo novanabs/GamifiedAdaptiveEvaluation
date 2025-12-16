@@ -214,7 +214,7 @@
         }
 
         /* jika nav-pills aktif mengubah warna tab (tombol) itu hanya tombol, bukan pane.
-                                   namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
+                                               namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
         .nav-pills .nav-link.active {
             background: #0d6efd;
             /* tetap tombol biru — tidak akan mempengaruhi content */
@@ -355,13 +355,16 @@
 
                             @if($kelasList->count() > 1)
                                 <select id="kelasSelector" class="form-select form-select-sm" style="width:200px;">
-                                    @foreach($leaderboardsPerClass as $cl)
-                                        <option value="{{ $cl->class_id }}">{{ $cl->class_name }}</option>
+                                    @foreach($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}">{{ $kelas->name }}</option>
                                     @endforeach
                                 </select>
                             @else
-                                <small class="text-muted">Kelas: {{ $kelasList->first()->name ?? '-' }}</small>
+                                <small class="text-muted">
+                                    Kelas: {{ $kelasList->first()->name ?? '-' }}
+                                </small>
                             @endif
+
                         </div>
                         <div id="leaderboardArea" style="max-height:350px; overflow-y:auto; padding-right:6px;">
                         </div>
@@ -402,40 +405,74 @@
 
                     @else
                         {{-- Jika ada data, tampilkan tabel --}}
-                        <table id="nilaiTable" class="table table-bordered table-striped align-middle">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Kelas</th>
-                                    <th>Mata Pelajaran</th>
-                                    <th>Topik</th>
-                                    <th>Nama Aktivitas</th>
-                                    <th>Nilai Akhir</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach($nilaiList as $index => $n)
+                        {{-- DESKTOP: DataTable --}}
+                        <div class="d-none d-md-block">
+                            <table id="nilaiTable" class="table table-bordered table-striped align-middle">
+                                <thead>
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>
-                                            @php
-                                                $dt = $n->result_created_at ? \Carbon\Carbon::parse($n->result_created_at) : null;
-                                            @endphp
-                                            {{ $dt ? $dt->format('d M Y H:i') : '-' }}
-                                        </td>
-                                        <td>{{ $n->kelas ?? '-' }}</td>
-                                        <td>{{ $n->mapel ?? '-' }}</td>
-                                        <td>{{ $n->topik ?? $n->aktivitas ?? '-' }}</td>
-                                        <td>{{ $n->aktivitas ?? '-' }}</td>
-                                        <td>
-                                            {{ is_null($n->nilai_akhir) || $n->nilai_akhir === '-' ? 'Belum Mengerjakan' : $n->nilai_akhir }}
-                                        </td>
+                                        <th>No</th>
+                                        <th>Tanggal</th>
+                                        <th>Kelas</th>
+                                        <th>Mata Pelajaran</th>
+                                        <th>Topik</th>
+                                        <th>Nama Aktivitas</th>
+                                        <th>Nilai Akhir</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($nilaiList as $index => $n)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($n->result_created_at)->format('d M Y H:i') }}</td>
+                                            <td>{{ $n->kelas ?? '-' }}</td>
+                                            <td>{{ $n->mapel ?? '-' }}</td>
+                                            <td>{{ $n->topik ?? $n->aktivitas ?? '-' }}</td>
+                                            <td>{{ $n->aktivitas ?? '-' }}</td>
+                                            <td>
+                                                {{ is_null($n->nilai_akhir) || $n->nilai_akhir === '-' ? 'Belum Mengerjakan' : $n->nilai_akhir }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        {{-- MOBILE: Card List --}}
+                        <div class="d-block d-md-none">
+
+                            @forelse($nilaiList as $n)
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-body">
+
+                                        <div class="fw-bold mb-1">
+                                            {{ $n->aktivitas ?? '-' }}
+                                        </div>
+
+                                        <div class="small text-muted mb-2">
+                                            {{ \Carbon\Carbon::parse($n->result_created_at)->format('d M Y H:i') }}
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div><strong>Kelas:</strong> {{ $n->kelas ?? '-' }}</div>
+                                            <div><strong>Mapel:</strong> {{ $n->mapel ?? '-' }}</div>
+                                            <div><strong>Topik:</strong> {{ $n->topik ?? '-' }}</div>
+                                        </div>
+
+                                        <div>
+                                            <span class="badge {{ is_numeric($n->nilai_akhir) ? 'bg-success' : 'bg-secondary' }}">
+                                                {{ is_numeric($n->nilai_akhir) ? 'Nilai: ' . $n->nilai_akhir : 'Belum Mengerjakan' }}
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center text-muted py-4">
+                                    Belum ada data nilai.
+                                </div>
+                            @endforelse
+
+                        </div>
+
                     @endif
                 </div>
 
@@ -588,10 +625,8 @@
 
                 if (!block || !block.students || block.students.length === 0) {
                     area.innerHTML = `
-                                                                                                                                                                                            <div class="text-center text-muted py-3">
-                                                                                                                                                                                                Belum ada peringkat untuk kelas ini.
-                                                                                                                                                                                            </div>
-                                                                                                                                                                                        `;
+                                                                                                                                                                                                                    <div class="text-center text-muted py-3">
+                                                                                                                                                                                           `;
                     return;
                 }
 
@@ -602,21 +637,21 @@
                     const rank = idx + 1;
 
                     html += `
-                                                                                                                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
-                                                                                                                                                                                                style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                                                                                                                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
+                                                                                                                                                                                                                        style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
 
-                                                                                                                                                                                                <div class="d-flex align-items-center gap-3">
-                                                                                                                                                                                                    <div class="fw-bold text-primary" style="width:28px">${rank}</div>
+                                                                                                                                                                                                                        <div class="d-flex align-items-center gap-3">
+                                                                                                                                                                                                                            <div class="fw-bold text-primary" style="width:28px">${rank}</div>
 
-                                                                                                                                                                                                    <div class="fw-semibold">${row.name}</div>
-                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                            <div class="fw-semibold">${row.name}</div>
+                                                                                                                                                                                                                        </div>
 
-                                                                                                                                                                                                <div class="text-end">
-                                                                                                                                                                                                    <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
-                                                                                                                                                                                                    <small class="text-muted">poin</small>
-                                                                                                                                                                                                </div>
-                                                                                                                                                                                            </li>
-                                                                                                                                                                                        `;
+                                                                                                                                                                                                                        <div class="text-end">
+                                                                                                                                                                                                                            <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
+                                                                                                                                                                                                                            <small class="text-muted">poin</small>
+                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                    </li>
+                                                                                                                                                                                                                `;
                 });
 
                 html += '</ul>';
@@ -799,15 +834,15 @@
                     var safeDesc = $('<div/>').text(badge.description || '').html();
 
                     return `
-                                                                                                <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
-                                                                                                    <div class="card h-100 border-0 bg-transparent p-0">
-                                                                                                        <div class="d-flex flex-column align-items-center text-center p-2">
-                                                                                                            <img src="${icon}" alt="${safeName}" width="64" height="64"
-                                                                                                                style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
-                                                                                                            <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                </div>`;
+                                                                                                                        <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
+                                                                                                                            <div class="card h-100 border-0 bg-transparent p-0">
+                                                                                                                                <div class="d-flex flex-column align-items-center text-center p-2">
+                                                                                                                                    <img src="${icon}" alt="${safeName}" width="64" height="64"
+                                                                                                                                        style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
+                                                                                                                                    <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        </div>`;
                 }
 
                 // ----- helper: cari / buat container badge profil -----

@@ -502,42 +502,90 @@
                             <!-- ADAPTIF -->
                             <section class="mb-4">
                                 <h6 class="fw-bold text-success mb-2">
-                                    <i class="bi bi-shuffle me-2"></i>Mode Adaptif
+                                    <i class="bi bi-shuffle me-2"></i>Mode Adaptif (Soal Menyesuaikan Siswa)
                                 </h6>
 
-                                <ul class="ps-3 mb-2">
-                                    <li>
-                                        Jika <strong>diaktifkan</strong>, sistem akan
-                                        <strong>menyesuaikan tingkat kesulitan soal</strong>
-                                        berdasarkan performa siswa.
-                                    </li>
-                                    <li>Siswa <strong>selalu memulai</strong> dari soal tingkat
-                                        <strong>sedang</strong>.
-                                    </li>
-                                    <li>
-                                        Jawaban benar berturut-turut → soal menjadi
-                                        <strong>lebih sulit</strong>.
-                                    </li>
-                                    <li>
-                                        Jawaban salah berturut-turut → soal menjadi
-                                        <strong>lebih mudah</strong>.
-                                    </li>
+                                <p>
+                                    Pada <strong>Mode Adaptif</strong>, setiap siswa akan mendapatkan
+                                    <strong>alur soal yang berbeda</strong> sesuai dengan kemampuan masing-masing.
+                                    Artinya, <strong>soal bisa berbeda antar siswa</strong> walaupun jumlah soalnya sama.
+                                </p>
+
+                                <ul class="ps-3 mb-3">
+                                    <li>Semua siswa <strong>memulai dari soal tingkat sedang</strong>.</li>
+                                    <li>Sistem akan <strong>mengamati pola jawaban siswa</strong>.</li>
+                                    <li>Tingkat kesulitan soal akan <strong>berubah otomatis</strong>.</li>
                                 </ul>
 
-                                <div class="bg-light rounded p-3">
-                                    <p class="fw-semibold mb-1">Contoh (5 soal):</p>
-                                    <ul class="ps-3 text-muted mb-0">
-                                        <li>Soal sedang: <strong>5 soal</strong> (dasar utama)</li>
-                                        <li>Soal sulit: <strong>3 soal</strong> (5 − 2)</li>
-                                        <li>Soal mudah: <strong>3 soal</strong> (5 − 2)</li>
+                                <div class="bg-light rounded p-3 mb-3">
+                                    <p class="fw-semibold mb-2">Cara Kerja Singkat:</p>
+                                    <ul class="ps-3 mb-0">
+                                        <li>Siswa mengerjakan <strong>2 soal sedang</strong> sebagai awal.</li>
+                                        <li>
+                                            <strong>2 jawaban benar berturut-turut</strong> → soal berikutnya menjadi
+                                            <strong>sulit</strong>.
+                                        </li>
+                                        <li>
+                                            <strong>2 jawaban salah berturut-turut</strong> → soal berikutnya menjadi
+                                            <strong>mudah</strong>.
+                                        </li>
+                                        <li>
+                                            Jawaban <strong>benar dan salah bergantian</strong> →
+                                            tetap mendapat <strong>soal sedang</strong>.
+                                        </li>
                                     </ul>
                                 </div>
 
-                                <p class="text-muted mt-2 mb-0">
-                                    Jika mode adaptif <strong>tidak diaktifkan</strong>,
-                                    semua siswa mengerjakan <strong>soal yang sama secara statis</strong>.
+                                <div class="bg-light rounded p-3 mb-3">
+                                    <p class="fw-semibold mb-2">Contoh Jika Jumlah Soal = 5</p>
+                                    <p class="mb-2">
+                                        Guru ingin siswa mengerjakan <strong>5 soal adaptif</strong>.
+                                        Maka sistem <strong>tidak hanya menyiapkan 5 soal</strong>,
+                                        tetapi <strong>11 soal</strong> dengan komposisi berikut:
+                                    </p>
+
+                                    <ul class="ps-3 mb-2">
+                                        <li>Soal <strong>tingkat sedang</strong>: <strong>5 soal</strong></li>
+                                        <li>Soal <strong>tingkat mudah</strong>: <strong>3 soal</strong></li>
+                                        <li>Soal <strong>tingkat sulit</strong>: <strong>3 soal</strong></li>
+                                    </ul>
+
+                                    <p class="mb-0 text-muted">
+                                        Rumus komposisi soal adaptif:
+                                        <br>
+                                        <strong>Sedang = n</strong>
+                                        <br>
+                                        <strong>Mudah = n − 2</strong>
+                                        <br>
+                                        <strong>Sulit = n − 2</strong>
+                                    </p>
+                                </div>
+
+                                <div class="bg-light rounded p-3 mb-3">
+                                    <p class="fw-semibold mb-2">Contoh Alur Siswa (5 Soal):</p>
+                                    <ul class="ps-3 mb-0 text-muted">
+                                        <li>
+                                            Soal 1–2: <strong>Sedang</strong> → benar semua →
+                                            soal berikutnya <strong>Sulit</strong>
+                                        </li>
+                                        <li>
+                                            Soal 3–4: <strong>Sulit</strong> → salah semua →
+                                            soal berikutnya <strong>Mudah</strong>
+                                        </li>
+                                        <li>
+                                            Soal 5: <strong>Mudah</strong>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <p class="text-muted mb-0">
+                                    Jika <strong>Mode Adaptif tidak diaktifkan</strong>,
+                                    semua siswa akan mengerjakan <strong>soal yang sama</strong>
+                                    tanpa penyesuaian tingkat kesulitan.
                                 </p>
                             </section>
+
+
 
                             <hr>
 

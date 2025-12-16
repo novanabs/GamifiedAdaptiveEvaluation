@@ -435,9 +435,9 @@
 
             if (!ids || ids.length === 0) {
                 area.innerHTML = `<div id="noSelectedPlaceholder" class="text-center text-muted py-4">
-                                                                                                            <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
-                                                                                                            <div class="mt-2">Belum ada soal.</div>
-                                                                                                      </div>`;
+                                                                                                                <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
+                                                                                                                <div class="mt-2">Belum ada soal.</div>
+                                                                                                          </div>`;
                 document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = 0);
                 updateCounter();
                 return;
@@ -450,14 +450,14 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between align-items-start" id="selectedItem-${id}">
-                                                                                                <div>
-                                                                                                    <small class="text-muted">${smallText}</small>
-                                                                                                    <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
-                                                                                                </div>
-                                                                                                <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
-                                                                                                    <i class="bi bi-x-circle"></i>
-                                                                                                </button>
-                                                                                            </div>`;
+                                                                                                    <div>
+                                                                                                        <small class="text-muted">${smallText}</small>
+                                                                                                        <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
+                                                                                                    </div>
+                                                                                                    <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
+                                                                                                        <i class="bi bi-x-circle"></i>
+                                                                                                    </button>
+                                                                                                </div>`;
             });
             area.innerHTML = html;
             document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = ids.length);
@@ -511,16 +511,16 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-white" id="modalSelectedItem-${id}">
-                                                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                                                    <div>
-                                                                                                        <small class="text-muted">${smallText}</small>
-                                                                                                        <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                                                        <div>
+                                                                                                            <small class="text-muted">${smallText}</small>
+                                                                                                            <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                        </div>
+                                                                                                        <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
+                                                                                                            <i class="bi bi-x-circle"></i>
+                                                                                                        </button>
                                                                                                     </div>
-                                                                                                    <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
-                                                                                                        <i class="bi bi-x-circle"></i>
-                                                                                                    </button>
-                                                                                                </div>
-                                                                                            </div>`;
+                                                                                                </div>`;
             });
             wrap.innerHTML = html;
 
@@ -690,35 +690,61 @@
         const btnApply = document.getElementById('btnApplyToActivity');
         if (btnApply) {
             btnApply.addEventListener('click', function () {
+
+                // ✅ VALIDASI JUMLAH SOAL
+                const jumlahSoalEl = document.querySelector('input[name="modalJumlahRadio"]:checked');
+                if (!jumlahSoalEl) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Jumlah soal belum dipilih',
+                        text: 'Silakan pilih jumlah soal terlebih dahulu.',
+                        confirmButtonText: 'OK'
+                    });
+                    return; // ⛔ hentikan proses
+                }
+
+                const jumlahSoal = parseInt(jumlahSoalEl.value);
+
+                // (opsional) validasi tambahan
+                if (!modalSelected || modalSelected.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Soal belum dipilih',
+                        text: 'Silakan pilih soal terlebih dahulu.',
+                    });
+                    return;
+                }
+
                 fetch("{{ url('/guru/simpan-atur-soal/' . $aktivitas->id) }}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         "X-CSRF-TOKEN": CSRF
                     },
-                    body: JSON.stringify({ id_question: modalSelected })
+                    body: JSON.stringify({
+                        id_question: modalSelected,
+                        jumlah_soal: jumlahSoal
+                    })
                 })
                     .then(r => r.json())
                     .then(res => {
                         if (res.success) {
-                            // gunakan DOM modal table utk membangun questionsMap bila server tidak mengembalikan detail
+
                             let questionsMap = {};
                             document.querySelectorAll('#modalQuestionList tr').forEach(tr => {
                                 const id = parseInt(tr.dataset.qid);
                                 const tds = tr.querySelectorAll('td');
-                                const tipe = tds[2] ? tds[2].innerText.trim() : '';
-                                const diff = tds[3] ? tds[3].innerText.trim() : '';
-                                const txt = tds[4] ? tds[4].innerText.trim() : '';
-                                questionsMap[id] = { id, type: tipe, difficulty: diff, text: txt };
+                                questionsMap[id] = {
+                                    id,
+                                    type: tds[2]?.innerText.trim() || '',
+                                    difficulty: tds[3]?.innerText.trim() || '',
+                                    text: tds[4]?.innerText.trim() || ''
+                                };
                             });
 
-                            // update page selected area with modalSelected
                             renderSelectedArea(modalSelected, questionsMap);
-
-                            // sync global lastPicked
                             window.lastPicked = modalSelected.slice();
 
-                            // close modal (if open)
                             const modal = document.getElementById('soalModal');
                             if (modal) {
                                 const inst = bootstrap.Modal.getInstance(modal);
@@ -736,6 +762,7 @@
                     });
             });
         }
+
 
         // HAPUS dari halaman (fungsi lama, tetap memanggil server)
         function hapusDariTerpilih(id) {

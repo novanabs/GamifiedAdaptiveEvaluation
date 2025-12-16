@@ -152,6 +152,7 @@ class BadgeController extends Controller
                 ->join('activities as a', 'ar.id_activity', '=', 'a.id')
                 ->join('topics as t', 'a.id_topic', '=', 't.id')
                 ->join('subject as s', 't.id_subject', '=', 's.id')
+                ->join('classes as c', 's.id_class', '=', 'c.id') // ✅ JOIN kelas
                 ->where('ar.id_user', $userId)
                 ->whereNotNull('ar.waktu_mengerjakan')
                 ->whereNotNull('a.durasi_pengerjaan')
@@ -161,9 +162,11 @@ class BadgeController extends Controller
                     'ar.nilai_akhir',
                     'a.durasi_pengerjaan',
                     'a.title as activity_title',
-                    's.id as class_id'
+                    'c.id as class_id',
+                    'c.name as class_name' 
                 )
                 ->get();
+
         } catch (\Exception $e) {
             \Log::error('checkBadgeEligibilityForFastest - DB error', ['user_id' => $userId, 'error' => $e->getMessage()]);
             return ['eligible' => false, 'reason' => 'Terjadi kesalahan server saat memeriksa syarat.', 'matches' => []];
@@ -227,7 +230,7 @@ class BadgeController extends Controller
                     if (!isset($matchesPerClass[$cid]) || $diff > $matchesPerClass[$cid]['diff_detik']) {
                         $matchesPerClass[$cid] = [
                             'class_id' => $cid,
-                            'class_name' => DB::table('classes')->where('id', $cid)->value('name') ?? ("ID {$cid}"),
+                            'class_name' => $r->class_name,
                             'note' => 'Fastest (under 40% of duration) and met KKM',
                             'activity_id' => $r->activity_id,
                             'activity_title' => $r->activity_title,
