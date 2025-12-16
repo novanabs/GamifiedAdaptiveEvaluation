@@ -214,7 +214,7 @@
         }
 
         /* jika nav-pills aktif mengubah warna tab (tombol) itu hanya tombol, bukan pane.
-                               namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
+                                   namun kalau tombol membungkus pane (struktur salah), pisahkan struktur HTML. */
         .nav-pills .nav-link.active {
             background: #0d6efd;
             /* tetap tombol biru — tidak akan mempengaruhi content */
@@ -410,6 +410,7 @@
                                     <th>Kelas</th>
                                     <th>Mata Pelajaran</th>
                                     <th>Topik</th>
+                                    <th>Nama Aktivitas</th>
                                     <th>Nilai Akhir</th>
                                 </tr>
                             </thead>
@@ -427,6 +428,7 @@
                                         <td>{{ $n->kelas ?? '-' }}</td>
                                         <td>{{ $n->mapel ?? '-' }}</td>
                                         <td>{{ $n->topik ?? $n->aktivitas ?? '-' }}</td>
+                                        <td>{{ $n->aktivitas ?? '-' }}</td>
                                         <td>
                                             {{ is_null($n->nilai_akhir) || $n->nilai_akhir === '-' ? 'Belum Mengerjakan' : $n->nilai_akhir }}
                                         </td>
@@ -586,10 +588,10 @@
 
                 if (!block || !block.students || block.students.length === 0) {
                     area.innerHTML = `
-                                                                                                                                                                                    <div class="text-center text-muted py-3">
-                                                                                                                                                                                        Belum ada peringkat untuk kelas ini.
-                                                                                                                                                                                    </div>
-                                                                                                                                                                                `;
+                                                                                                                                                                                            <div class="text-center text-muted py-3">
+                                                                                                                                                                                                Belum ada peringkat untuk kelas ini.
+                                                                                                                                                                                            </div>
+                                                                                                                                                                                        `;
                     return;
                 }
 
@@ -600,21 +602,21 @@
                     const rank = idx + 1;
 
                     html += `
-                                                                                                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
-                                                                                                                                                                                        style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
+                                                                                                                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center ${isMe ? 'bg-light' : ''}"
+                                                                                                                                                                                                style="${isMe ? 'border-left:4px solid #0d6efd;' : ''}">
 
-                                                                                                                                                                                        <div class="d-flex align-items-center gap-3">
-                                                                                                                                                                                            <div class="fw-bold text-primary" style="width:28px">${rank}</div>
+                                                                                                                                                                                                <div class="d-flex align-items-center gap-3">
+                                                                                                                                                                                                    <div class="fw-bold text-primary" style="width:28px">${rank}</div>
 
-                                                                                                                                                                                            <div class="fw-semibold">${row.name}</div>
-                                                                                                                                                                                        </div>
+                                                                                                                                                                                                    <div class="fw-semibold">${row.name}</div>
+                                                                                                                                                                                                </div>
 
-                                                                                                                                                                                        <div class="text-end">
-                                                                                                                                                                                            <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
-                                                                                                                                                                                            <small class="text-muted">poin</small>
-                                                                                                                                                                                        </div>
-                                                                                                                                                                                    </li>
-                                                                                                                                                                                `;
+                                                                                                                                                                                                <div class="text-end">
+                                                                                                                                                                                                    <div class="fw-bold">${Number(row.total_score).toLocaleString()}</div>
+                                                                                                                                                                                                    <small class="text-muted">poin</small>
+                                                                                                                                                                                                </div>
+                                                                                                                                                                                            </li>
+                                                                                                                                                                                        `;
                 });
 
                 html += '</ul>';
@@ -797,15 +799,15 @@
                     var safeDesc = $('<div/>').text(badge.description || '').html();
 
                     return `
-                                                                                        <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
-                                                                                            <div class="card h-100 border-0 bg-transparent p-0">
-                                                                                                <div class="d-flex flex-column align-items-center text-center p-2">
-                                                                                                    <img src="${icon}" alt="${safeName}" width="64" height="64"
-                                                                                                        style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
-                                                                                                    <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>`;
+                                                                                                <div class="col-12 col-sm-6 col-md-4" id="profile-badge-${badge.id}">
+                                                                                                    <div class="card h-100 border-0 bg-transparent p-0">
+                                                                                                        <div class="d-flex flex-column align-items-center text-center p-2">
+                                                                                                            <img src="${icon}" alt="${safeName}" width="64" height="64"
+                                                                                                                style="object-fit:contain; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.08);">
+                                                                                                            <div class="mt-2 fw-semibold" style="font-size:0.92rem;">${safeName}</div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>`;
                 }
 
                 // ----- helper: cari / buat container badge profil -----

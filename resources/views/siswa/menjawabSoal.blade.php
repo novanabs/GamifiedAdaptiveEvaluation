@@ -277,6 +277,9 @@
         let currentQuestionID = null;
         let timeLeft = 30 * 60;
         let timerInterval;
+        let totalBenar = 0;
+        let totalSalah = 0;
+
 
         function startTimer() {
             timerInterval = setInterval(() => {
@@ -301,7 +304,7 @@
                 .then(r => r.json())
                 .then(data => {
 
-               
+
                     if (!data.totalQuestions || data.totalQuestions <= 0) {
                         Swal.fire({
                             icon: 'warning',
@@ -445,8 +448,14 @@
                 .then(r => r.json())
                 .then(res => {
 
-                    showAnswerFeedback(res); // 👈 tampilkan alert
+                    // HITUNG BENAR / SALAH
+                    if (res.correct === true) {
+                        totalBenar++;
+                    } else {
+                        totalSalah++;
+                    }
 
+                    showAnswerFeedback(res); // alert benar/salah
                     updateComboUI(res.correct ? res.streak_correct : 0);
 
                     setTimeout(() => {
@@ -458,6 +467,7 @@
                         }
                     }, 1200);
                 });
+
 
 
         }
@@ -551,7 +561,8 @@
                     const html = `
             <div style="text-align:left">
                 <p><strong>Waktu mengerjakan:</strong> ${m} m ${s} s</p>
-                <p><strong>Jumlah benar:</strong> ${totalBenar} / ${fmt(jumlahSoal)}</p>
+                <p><strong>Total Benar:</strong> ${totalBenar}</p>
+                <p><strong>Total Salah:</strong> ${totalSalah}</p>
                 <p><strong>Nilai dasar:</strong> ${fmt(real)}</p>
                 <p><strong>Bonus poin:</strong> ${fmt(bonus)}</p>
                 <p><strong>Total poin:</strong> ${fmt(base)}</p>
