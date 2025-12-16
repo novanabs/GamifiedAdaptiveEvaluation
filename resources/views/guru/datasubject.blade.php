@@ -45,62 +45,111 @@
         </div>
 
         {{-- Tabel DataTables --}}
-        <div class="card">
-            <div class="card-body">
-                <table id="subjectsTable" class="table table-striped table-bordered nowrap" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th style="width:12px !important">No</th>
-                            <th style="width:140px !important">Kelas</th>
-                            <th style="width:80px !important">Semester</th>
-                            <th style="width:150px !important">Mata Pelajaran</th>
-                            <th style="width:120px !important">Dibuat Oleh</th>
-                            <th style="width:180px !important">Aksi</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach($data as $item)
-                            @foreach($item->subjects as $subject)
-                                <tr data-subject-id="{{ $subject->id }}" data-subject-name="{{ e($subject->name) }}"
-                                    data-subject-class="{{ $item->kelas->id }}">
-                                    <td class="align-middle text-center"></td>
-                                    <td class="align-middle">{{ $item->kelas->name }}</td>
-                                    <td class="align-middle">
-                                        {{ $item->kelas->semester_human ?? ($item->kelas->semester === 'odd' ? 'Ganjil' : 'Genap') }}
-                                    </td> <!-- new -->
-                                    <td class="align-middle">
-                                        <span class="subject-name-{{ $subject->id }}">{{ $subject->name }}</span>
-                                    </td>
-                                    <td class="align-middle">{{ $subject->creator_name ?? '—' }}</td>
-                                    <td class="align-middle">
-                                        <div class="d-flex gap-2">
-                                            {{-- Tombol Edit -> buka modal --}}
-                                            <button type="button" class="btn btn-success btn-sm btn-edit-subject"
-                                                data-id="{{ $subject->id }}" data-name="{{ $subject->name }}"
-                                                data-class="{{ $item->kelas->id }}">
-                                                Edit
-                                            </button>
-
-                                            {{-- Form hapus --}}
-                                            <form action="{{ route('guru.subject.hapus', $subject->id) }}" method="POST"
-                                                class="d-inline form-delete-subject">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="btn btn-danger btn-sm btn-delete-subject">
-                                                    Hapus
+        {{-- ================= DESKTOP / TABLET ================= --}}
+        <div class="d-none d-md-block">
+            <div class="card">
+                <div class="card-body">
+                    <table id="subjectsTable" class="table table-striped table-bordered nowrap w-100">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kelas</th>
+                                <th>Semester</th>
+                                <th>Mata Pelajaran</th>
+                                <th>Dibuat Oleh</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data as $item)
+                                @foreach($item->subjects as $subject)
+                                    <tr>
+                                        <td></td>
+                                        <td>{{ $item->kelas->name }}</td>
+                                        <td>{{ $item->kelas->semester_human }}</td>
+                                        <td class="fw-semibold">
+                                            <span class="subject-name-{{ $subject->id }}">{{ $subject->name }}</span>
+                                        </td>
+                                        <td>{{ $subject->creator_name ?? '—' }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-success btn-sm btn-edit-subject" data-id="{{ $subject->id }}"
+                                                    data-name="{{ $subject->name }}" data-class="{{ $item->kelas->id }}">
+                                                    Edit
                                                 </button>
-                                            </form>
 
-                                        </div>
-                                    </td>
-                                </tr>
+                                                <form action="{{ route('guru.subject.hapus', $subject->id) }}" method="POST"
+                                                    class="form-delete-subject">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-danger btn-sm btn-delete-subject">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @endforeach
-                        @endforeach
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        {{-- ================= MOBILE CARD VIEW ================= --}}
+        <div class="d-block d-md-none mt-3">
+
+            @foreach($data as $item)
+                @foreach($item->subjects as $subject)
+
+                    <div class="card mb-3 shadow-sm border-0 rounded-4">
+                        <div class="card-body">
+
+                            <h6 class="fw-bold mb-1">
+                                <i class="bi bi-book-fill text-primary me-1"></i>
+                                {{ $subject->name }}
+                            </h6>
+
+                            <div class="small text-muted mb-2">
+                                <div>
+                                    <i class="bi bi-building me-1"></i>
+                                    {{ $item->kelas->name }}
+                                </div>
+                                <div>
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    Semester {{ $item->kelas->semester_human }}
+                                </div>
+                                <div>
+                                    <i class="bi bi-person-badge me-1"></i>
+                                    {{ $subject->creator_name ?? '—' }}
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-3">
+                                <button class="btn btn-success btn-sm btn-edit-subject" data-id="{{ $subject->id }}"
+                                    data-name="{{ $subject->name }}" data-class="{{ $item->kelas->id }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                </button>
+
+                                <form action="{{ route('guru.subject.hapus', $subject->id) }}" method="POST"
+                                    class="form-delete-subject">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-subject">
+                                        <i class="bi bi-trash me-1"></i> Hapus
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+
+                @endforeach
+            @endforeach
+
+        </div>
+
     </div>
 
     {{-- Modal Edit Subject --}}
@@ -353,15 +402,15 @@
                     Swal.fire({
                         title: 'Yakin ingin menghapus?',
                         html: `
-                            <div class="text-start">
-                                <p>
-                                    Mata pelajaran <strong>${subjectName}</strong> akan dihapus.
-                                </p>
-                                <small class="text-danger">
-                                    Data terkait (topik & soal) bisa ikut terdampak.
-                                </small>
-                            </div>
-                        `,
+                                <div class="text-start">
+                                    <p>
+                                        Mata pelajaran <strong>${subjectName}</strong> akan dihapus.
+                                    </p>
+                                    <small class="text-danger">
+                                        Data terkait (topik & soal) bisa ikut terdampak.
+                                    </small>
+                                </div>
+                            `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',

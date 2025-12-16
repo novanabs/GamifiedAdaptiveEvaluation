@@ -59,43 +59,80 @@
             </div>
         @endif
 
-        <!-- Tabel siswa (tampil jika ada data) -->
         @if($siswa->isNotEmpty())
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <table id="tabelSiswa" class="table table-bordered table-striped align-middle">
-                        <thead class="table-primary text-center">
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Siswa</th>
-                                <th>Email</th>
-                                <th>Kelas</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($siswa as $index => $s)
+
+            {{-- ===== DESKTOP & TABLET (TABLE) ===== --}}
+            <div class="d-none d-md-block">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <table id="tabelSiswa" class="table table-bordered table-striped align-middle">
+                            <thead class="table-primary text-center">
                                 <tr>
-                                    <td class="text-center">{{ $index + 1 }}</td>
-                                    <td>{{ $s->name }}</td>
-                                    <td>{{ $s->email }}</td>
-                                    <td>{{ $s->kelas ?? '-' }}</td>
-                                    <td class="text-center">
-                                        <button class="btn btn-warning btn-sm shadow-sm" data-bs-toggle="modal"
-                                            data-bs-target="#editModal" data-id="{{ $s->id }}" data-name="{{ $s->name }}"
-                                            data-email="{{ $s->email }}">
-                                            <i class="bi bi-pencil-square"></i> Edit
-                                        </button>
-                                    </td>
+                                    <th>No</th>
+                                    <th>Nama Siswa</th>
+                                    <th>Email</th>
+                                    <th>Kelas</th>
+                                    <th>Aksi</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach($siswa as $index => $s)
+                                    <tr>
+                                        <td class="text-center">{{ $index + 1 }}</td>
+                                        <td>{{ $s->name }}</td>
+                                        <td>{{ $s->email }}</td>
+                                        <td>{{ $s->kelas ?? '-' }}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#editModal" data-id="{{ $s->id }}" data-name="{{ $s->name }}"
+                                                data-email="{{ $s->email }}">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            {{-- ===== MOBILE (CARD VIEW) ===== --}}
+            <div class="d-block d-md-none">
+                @foreach($siswa as $s)
+                    <div class="card mb-3 shadow-sm border-0">
+                        <div class="card-body">
+
+                            <h6 class="fw-bold mb-1">
+                                <i class="bi bi-person-fill me-1 text-primary"></i>
+                                {{ $s->name }}
+                            </h6>
+
+                            <p class="mb-1 text-muted small">
+                                <i class="bi bi-envelope me-1"></i>
+                                {{ $s->email }}
+                            </p>
+
+                            <span class="badge bg-info mb-2">
+                                {{ $s->kelas ?? 'Tanpa Kelas' }}
+                            </span>
+
+                            <div class="d-grid mt-3">
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"
+                                    data-id="{{ $s->id }}" data-name="{{ $s->name }}" data-email="{{ $s->email }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit Siswa
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
         @else
             <div class="alert alert-warning">Belum ada siswa yang terdaftar.</div>
         @endif
+
     </div>
 
     <!-- Modal Edit Siswa -->

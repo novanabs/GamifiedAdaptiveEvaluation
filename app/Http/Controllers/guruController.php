@@ -137,14 +137,21 @@ class guruController extends Controller
             $fileName = 'Data_Siswa_' . str_replace(' ', '_', $kelas->name) . '.xlsx';
 
         } else {
+            $guruId = auth()->id();
+
             // Jika token TIDAK ADA => export semua siswa dari semua kelas
-            $siswa = DB::table('student_classes')
+            $siswa = DB::table('teacher_classes')
+                ->join('student_classes', 'teacher_classes.id_class', '=', 'student_classes.id_class')
                 ->join('users', 'student_classes.id_student', '=', 'users.id')
                 ->join('classes', 'student_classes.id_class', '=', 'classes.id')
-                ->select('users.name', 'users.email', 'classes.name as kelas')
+                ->where('teacher_classes.id_teacher', $guruId)
+                ->select(
+                    'users.name',
+                    'users.email',
+                    'classes.name as kelas'
+                )
                 ->orderBy('classes.name')
                 ->get();
-
             $fileName = 'Data_Semua_Siswa.xlsx';
         }
 
@@ -930,7 +937,7 @@ class guruController extends Controller
             ->orderBy('classes.grade')
             ->get();
 
-        return view('guru.editsoal', compact('data', 'topics','kelasGuru'));
+        return view('guru.editsoal', compact('data', 'topics', 'kelasGuru'));
     }
 
     /**

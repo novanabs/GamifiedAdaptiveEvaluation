@@ -59,20 +59,20 @@
         </div>
 
         {{-- Tabel DataTables gabungan topik --}}
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="table-responsive">
-                    {{-- Hapus kelas nowrap supaya responsive bekerja benar --}}
-                    <table id="topicsTable" class="table table-striped table-bordered align-middle" style="width:100%">
+        {{-- ================= DESKTOP / TABLET ================= --}}
+        <div class="d-none d-md-block">
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <table id="topicsTable" class="table table-striped table-bordered align-middle w-100">
                         <thead class="table-secondary">
                             <tr>
-                                <th style="width:60px">No</th>
+                                <th>No</th>
                                 <th>Mata Pelajaran</th>
                                 <th>Kelas</th>
-                                <th style="width:100px">Semester</th>
+                                <th>Semester</th>
                                 <th>Judul Topik</th>
                                 <th>Deskripsi</th>
-                                <th style="width:120px">Aksi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,56 +80,98 @@
                                 @foreach($subject->topics as $topic)
                                     <tr data-topic-id="{{ $topic->id }}" data-topic-title="{{ e($topic->title) }}"
                                         data-topic-desc="{{ e($topic->description) }}">
-                                        <td class="text-center align-middle"></td>
-                                        <td class="align-middle">{{ $subject->name }}</td>
-                                        <td class="align-middle">{{ $subject->classes ? $subject->classes->name : '-' }}</td>
-
-                                        {{-- kolom semester --}}
-                                        <td class="align-middle">
-                                            @if($subject->classes && isset($subject->classes->semester))
-                                                @php $sem = $subject->classes->semester; @endphp
-                                                @if($sem === 'odd')
-                                                    Ganjil
-                                                @elseif($sem === 'even')
-                                                    Genap
-                                                @else
-                                                    <span>-</span>
-                                                @endif
-                                            @else
-                                                <span>-</span>
-                                            @endif
+                                        <td></td>
+                                        <td>{{ $subject->name }}</td>
+                                        <td>{{ $subject->classes->name ?? '-' }}</td>
+                                        <td class="text-center">
+                                            {{ $subject->classes->semester === 'odd' ? 'Ganjil' : 'Genap' }}
                                         </td>
-
-                                        <td class="align-middle topic-title-cell">{{ $topic->title }}</td>
-                                        <td class="align-middle topic-desc-cell">{{ $topic->description }}</td>
-                                        <td class="align-middle text-center">
-                                            <div class="d-flex gap-2 justify-content-center align-items-center">
-                                                {{-- Edit -> buka modal --}}
-                                                <button type="button" class="btn btn-success btn-sm btn-edit-topic"
-                                                    data-id="{{ $topic->id }}">
+                                        <td class="topic-title-cell fw-semibold">
+                                            {{ $topic->title }}
+                                        </td>
+                                        <td class="topic-desc-cell">
+                                            {{ $topic->description }}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <button class="btn btn-success btn-sm btn-edit-topic" data-id="{{ $topic->id }}">
                                                     Edit
                                                 </button>
 
                                                 <form action="{{ route('guru.topik.hapus', $topic->id) }}" method="POST"
-                                                    class="d-inline form-delete-topic">
+                                                    class="form-delete-topic">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-danger btn-sm btn-delete-topic">
                                                         Hapus
                                                     </button>
                                                 </form>
-
                                             </div>
                                         </td>
                                     </tr>
                                 @endforeach
                             @endforeach
                         </tbody>
-
                     </table>
                 </div>
             </div>
         </div>
+
+        {{-- ================= MOBILE CARD VIEW ================= --}}
+        <div class="d-block d-md-none">
+
+            @foreach($data as $subject)
+                @foreach($subject->topics as $topic)
+
+                    <div class="card mb-3 shadow-sm border-0 rounded-4">
+                        <div class="card-body">
+
+                            <h6 class="fw-bold mb-1">
+                                <i class="bi bi-bookmark-fill text-primary me-1"></i>
+                                {{ $topic->title }}
+                            </h6>
+
+                            <div class="small text-muted mb-2">
+                                <div>
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ $subject->name }}
+                                </div>
+                                <div>
+                                    <i class="bi bi-building me-1"></i>
+                                    {{ $subject->classes->name ?? '-' }}
+                                    • {{ $subject->classes->semester === 'odd' ? 'Ganjil' : 'Genap' }}
+                                </div>
+                            </div>
+
+                            @if($topic->description)
+                                <p class="small text-secondary mb-3">
+                                    {{ Str::limit($topic->description, 120) }}
+                                </p>
+                            @endif
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success btn-sm btn-edit-topic" data-id="{{ $topic->id }}"
+                                    data-topic-title="{{ e($topic->title) }}" data-topic-desc="{{ e($topic->description) }}">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit Topik
+                                </button>
+
+                                <form action="{{ route('guru.topik.hapus', $topic->id) }}" method="POST" class="form-delete-topic">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-topic">
+                                        <i class="bi bi-trash me-1"></i> Hapus
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+
+                @endforeach
+            @endforeach
+
+        </div>
+
 
     </div>
 
@@ -432,16 +474,16 @@
                     Swal.fire({
                         title: 'Hapus Topik?',
                         html: `
-                            <div class="text-start">
-                                <p>
-                                    Topik <strong>${topicTitle}</strong> akan dihapus.
-                                </p>
-                                <small class="text-danger">
-                                    ⚠️ Topik yang dihapus tidak dapat dikembalikan
-                                    dan dapat memengaruhi aktivitas & soal terkait.
-                                </small>
-                            </div>
-                        `,
+                                <div class="text-start">
+                                    <p>
+                                        Topik <strong>${topicTitle}</strong> akan dihapus.
+                                    </p>
+                                    <small class="text-danger">
+                                        ⚠️ Topik yang dihapus tidak dapat dikembalikan
+                                        dan dapat memengaruhi aktivitas & soal terkait.
+                                    </small>
+                                </div>
+                            `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',

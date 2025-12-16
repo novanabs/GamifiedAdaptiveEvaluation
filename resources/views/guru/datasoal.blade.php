@@ -43,11 +43,11 @@
     </style>
 
     <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center gap-2">
-                <h3 class="fw-bold mb-0 text-black">
-                    Daftar Soal
-                </h3>
+        <div class="mb-4">
+
+            <!-- BARIS JUDUL -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <h3 class="fw-bold mb-0 text-black">Daftar Soal</h3>
 
                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:32px;height:32px"
                     data-bs-toggle="modal" data-bs-target="#modalInfoSoal" title="Informasi Daftar Soal">
@@ -55,15 +55,21 @@
                 </button>
             </div>
 
-            <div>
-                <a href="{{ route('tambahSoal') }}" class="btn btn-primary me-2 shadow-sm">
-                    <i class="bi bi-plus-circle"></i> Tambah Soal Manual
+            <!-- BARIS TOMBOL -->
+            <div class="d-flex flex-column flex-md-row gap-2 align-items-md-start">
+                <a href="{{ route('tambahSoal') }}" class="btn btn-primary shadow-sm px-md-3">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    Tambah Soal Manual
                 </a>
-                <a href="{{ route('generateSoal') }}" class="btn btn-success shadow-sm">
-                    <i class="bi bi-lightbulb"></i> Buat soal lebih cepat
+
+                <a href="{{ route('generateSoal') }}" class="btn btn-success shadow-sm px-md-3">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    Buat soal lebih cepat
                 </a>
             </div>
+
         </div>
+
 
         {{-- panel filter --}}
         <div class="mb-3">
@@ -80,7 +86,7 @@
             <span id="totalSoal" class="ms-3 fw-semibold">Total: {{ $data->count() ?? count($data) }} soal</span>
         </div>
 
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 d-none d-md-block">
             <div class="card-body">
                 <table id="soalTable" class="table table-striped table-hover align-middle">
                     <thead class="table-primary">
@@ -119,9 +125,9 @@
                                 <td>
                                     <span
                                         class="badge
-                                                                                                                                        @if($item->difficulty == 'mudah') bg-success
-                                                                                                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
-                                                                                                                                        @else bg-danger @endif">
+                                                                                                                                                                        @if($item->difficulty == 'mudah') bg-success
+                                                                                                                                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                                                                                                                                        @else bg-danger @endif">
                                         {{ ucfirst($item->difficulty) }}
                                     </span>
                                 </td>
@@ -159,6 +165,62 @@
                 </table>
             </div>
         </div>
+        <!-- mobile -->
+        <div class="d-block d-md-none mt-3">
+            @foreach($data as $item)
+                @php
+                    $topicObj = $topics->firstWhere('id', $item->id_topic);
+                    $topicTitle = $topicObj ? $topicObj->title : '-';
+                @endphp
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-secondary">{{ $item->type }}</span>
+                            <span class="badge
+                                                        @if($item->difficulty == 'mudah') bg-success
+                                                        @elseif($item->difficulty == 'sedang') bg-warning text-dark
+                                                        @else bg-danger @endif">
+                                {{ ucfirst($item->difficulty) }}
+                            </span>
+                        </div>
+
+                        <p class="fw-semibold mb-2">
+                            {{ Str::limit(strip_tags($item->question->text ?? '-'), 120) }}
+                        </p>
+
+                        <small class="text-muted d-block mb-3">
+                            Topik: {{ $topicTitle }}
+                        </small>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm view-soal" data-bs-toggle="modal"
+                                data-bs-target="#modalLihatSoal" data-q="{{ base64_encode(json_encode($item->question)) }}"
+                                data-opt="{{ base64_encode(json_encode($item->MC_option)) }}"
+                                data-mcanswer="{{ $item->MC_answer }}"
+                                data-sa="{{ base64_encode(json_encode($item->SA_answer)) }}" data-type="{{ $item->type }}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+
+                            <a href="{{ route('editSoal', $item->id) }}" class="btn btn-outline-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <form action="{{ route('hapusSoal', $item->id) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-delete-soal">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
 
         {{-- MODAL DETAIL --}}
         <div class="modal fade" id="modalLihatSoal" tabindex="-1">
@@ -433,7 +495,10 @@
 
             // update numbering & total saat table di-redraw (draw event)
             dt.on('draw.dt', function () {
-
+                // numbering sudah di-handle oleh render kolom, tapi tetap aman
+                dt.column(0, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = i + 1;
+                });
 
                 // update total setiap kali draw (filter berubah / paging / search)
                 updateTotalLabel();
@@ -457,11 +522,11 @@
                         var label = Object.keys(o)[0];
                         var d = o[label];
                         pilihan.append(`
-                                                                        <div class="border p-2 mb-2 rounded">
-                                                                            <strong>${label.toUpperCase()}.</strong> ${d.teks}
-                                                                            ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
-                                                                        </div>
-                                                                    `);
+                                                                                        <div class="border p-2 mb-2 rounded">
+                                                                                            <strong>${label.toUpperCase()}.</strong> ${d.teks}
+                                                                                            ${d.url ? `<br><img src="${d.url}" class="img-thumbnail mt-2" style="max-height:100px">` : ""}
+                                                                                        </div>
+                                                                                    `);
                     });
                 } else {
                     pilihan.html("<em>Tidak ada pilihan jawaban.</em>");
@@ -571,18 +636,18 @@
                     Swal.fire({
                         title: 'Hapus Soal?',
                         html: `
-                            <div class="text-start">
-                                <p class="mb-2">
-                                    Anda akan menghapus:
-                                </p>
-                                <blockquote class="small border-start ps-2 text-muted">
-                                    ${soalText}
-                                </blockquote>
-                                <small class="text-danger">
-                                    ⚠️ Soal yang dihapus tidak dapat dikembalikan.
-                                </small>
-                            </div>
-                        `,
+                                            <div class="text-start">
+                                                <p class="mb-2">
+                                                    Anda akan menghapus:
+                                                </p>
+                                                <blockquote class="small border-start ps-2 text-muted">
+                                                    ${soalText}
+                                                </blockquote>
+                                                <small class="text-danger">
+                                                    ⚠️ Soal yang dihapus tidak dapat dikembalikan.
+                                                </small>
+                                            </div>
+                                        `,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',

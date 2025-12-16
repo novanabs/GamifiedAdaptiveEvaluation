@@ -45,7 +45,7 @@ Route::middleware(['auth', RoleMiddleware::class . ':teacher'])->group(function 
     //manajemen siswa
     Route::get('/datasiswa', [guruController::class, 'dataSiswa'])->name('dataSiswa');
     Route::get('/dataSiswa/export', [guruController::class, 'exportSiswa'])->name('dataSiswa.export');
-    Route::post('/dataSiswa/update', [GuruController::class, 'updateSiswa'])->name('dataSiswa.update');
+    Route::post('/dataSiswa/update', [guruController::class, 'updateSiswa'])->name('dataSiswa.update');
 
     //manajemen kelas
     Route::get('/datakelas', [guruController::class, 'kelasGuru'])->name('kelasGuru');
