@@ -307,65 +307,9 @@
             @endforeach
 
         </div>
-        {{-- Pushing modals supaya tidak berada di dalam DOM table (DataTables safe) --}}
 
         {{-- Modal Edit --}}
-        <div class="modal fade" id="modalEdit{{ $r->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form action="{{ route('guru.aktivitas.ubah', $r->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Aktivitas — {{ $r->title }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Judul</label>
-                                <input type="text" name="title" class="form-control" value="{{ $r->title }}" required>
-                            </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Deadline</label>
-                                <input type="datetime-local" name="deadline" class="form-control"
-                                    value="{{ $r->deadline ? date('Y-m-d\TH:i', strtotime($r->deadline)) : '' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Durasi (menit)</label>
-                                <input type="number" name="durasi_pengerjaan" class="form-control"
-                                    value="{{ $r->durasi_pengerjaan ?? '' }}" min="1" placeholder="30">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">KKM</label>
-                                <input type="number" name="kkm" class="form-control" value="{{ $r->kkm }}" min="0" max="100"
-                                    required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Topik</label>
-                                <select name="id_topic" class="form-select" required>
-                                    @foreach(\App\Models\Topic::with('subject')->where('created_by', Auth::id())->get() as $topicOpt)
-                                        <option value="{{ $topicOpt->id }}" {{ $topicOpt->id === $r->topic_id ? 'selected' : '' }}> {{ $topicOpt->title }} ({{ $topicOpt->subject->name ?? 'Tanpa Subject' }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="form-check mb-1">
-                                <input type="hidden" name="addaptive" value="no">
-                                <input class="form-check-input" type="checkbox" name="addaptive" value="yes" {{ $r->addaptive === 'yes' ? 'checked' : '' }}>
-                                <label class="form-check-label">adaptif</label>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
         {{-- ================= GLOBAL MODALS ================= --}}
         @foreach($rows as $r)
 
@@ -376,21 +320,52 @@
                         <form action="{{ route('guru.aktivitas.ubah', $r->id) }}" method="POST">
                             @csrf
                             @method('PUT')
-
                             <div class="modal-header">
                                 <h5 class="modal-title">Edit Aktivitas — {{ $r->title }}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-
                             <div class="modal-body">
-                                {{-- isi form edit kamu --}}
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Judul</label>
+                                    <input type="text" name="title" class="form-control" value="{{ $r->title }}" required>
+                                </div>
 
+                                <div class="mb-3">
+                                    <label class="form-label">Deadline</label>
+                                    <input type="datetime-local" name="deadline" class="form-control"
+                                        value="{{ $r->deadline ? date('Y-m-d\TH:i', strtotime($r->deadline)) : '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Durasi (menit)</label>
+                                    <input type="number" name="durasi_pengerjaan" class="form-control"
+                                        value="{{ $r->durasi_pengerjaan ?? '' }}" min="1" placeholder="30">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">KKM</label>
+                                    <input type="number" name="kkm" class="form-control" value="{{ $r->kkm }}" min="0" max="100"
+                                        required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Topik</label>
+                                    <select name="id_topic" class="form-select" required>
+                                        @foreach(\App\Models\Topic::with('subject')->where('created_by', Auth::id())->get() as $topicOpt)
+                                            <option value="{{ $topicOpt->id }}" {{ $topicOpt->id === $r->topic_id ? 'selected' : '' }}> {{ $topicOpt->title }} ({{ $topicOpt->subject->name ?? 'Tanpa Subject' }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="form-check mb-1">
+                                    <input type="hidden" name="addaptive" value="no">
+                                    <input class="form-check-input" type="checkbox" name="addaptive" value="yes" {{ $r->addaptive === 'yes' ? 'checked' : '' }}>
+                                    <label class="form-check-label">adaptif</label>
+                                </div>
+                            </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                             </div>
-
                         </form>
                     </div>
                 </div>
