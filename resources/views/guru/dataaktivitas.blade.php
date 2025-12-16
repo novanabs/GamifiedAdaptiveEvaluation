@@ -338,125 +338,197 @@
                 {{-- MODAL INFO AKTIVITAS --}}
                 <div class="modal fade" id="modalInfoAktivitas" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content shadow rounded-4">
+                        <div class="modal-content shadow rounded-4 border-0">
 
+                            <!-- HEADER -->
                             <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-info-circle me-2"></i>Informasi Data Evaluasi
+                                <h5 class="modal-title d-flex align-items-center gap-2">
+                                    <i class="bi bi-info-circle"></i>
+                                    Informasi Data Evaluasi
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
 
+                            <!-- BODY -->
                             <div class="modal-body">
 
-                                <p>
+                                <!-- DESKRIPSI -->
+                                <p class="text-muted mb-4">
                                     Halaman <strong>Data Evaluasi Berdasarkan Topik</strong> digunakan untuk
-                                    membuat, mengelola, dan mendistribusikan aktivitas evaluasi (kuis/tes)
-                                    kepada siswa berdasarkan topik pembelajaran.
+                                    membuat, mengelola, dan mendistribusikan aktivitas evaluasi
+                                    (<em>kuis / tes</em>) kepada siswa berdasarkan topik pembelajaran.
                                 </p>
 
                                 <hr>
 
-                                <h6 class="fw-bold text-primary">
-                                    <i class="bi bi-plus-circle me-1"></i> Tambah Aktivitas
-                                </h6>
-                                <ul>
-                                    <li>Digunakan untuk membuat evaluasi baru.</li>
-                                    <li>Guru wajib mengisi:
-                                        <ul>
+                                <!-- TAMBAH AKTIVITAS -->
+                                <section class="mb-4">
+                                    <h6 class="fw-bold text-primary mb-2">
+                                        <i class="bi bi-plus-circle me-2"></i>Tambah Aktivitas
+                                    </h6>
+                                    <ul class="ps-3 mb-0">
+                                        <li>Membuat evaluasi baru.</li>
+                                        <li>Guru wajib mengisi:</li>
+                                        <ul class="ps-3 text-muted">
                                             <li>Judul aktivitas</li>
                                             <li>Topik</li>
-                                            <li>Deadline (opsional)</li>
+                                            <li>Deadline <span class="text-muted">(opsional)</span></li>
                                             <li>Durasi pengerjaan</li>
                                         </ul>
-                                    </li>
-                                </ul>
+                                    </ul>
+                                </section>
 
                                 <hr>
 
-                                <h6 class="fw-bold text-success">
-                                    <i class="bi bi-shuffle me-1"></i> Adaptif
-                                </h6>
-                                <ul>
-                                    <li>
-                                        Jika <b>diaktifkan</b>, sistem akan <b>menyesuaikan tingkat kesulitan soal</b>
-                                        berdasarkan performa siswa.
-                                    </li>
-                                    <li>
-                                        Siswa selalu <b>memulai dari soal tingkat sedang</b>.
-                                    </li>
-                                    <li>
-                                        Jika siswa menjawab <b>benar berturut-turut</b>, soal berikutnya akan <b>lebih
-                                            sulit</b>.
-                                    </li>
-                                    <li>
-                                        Jika siswa menjawab <b>salah berturut-turut</b>, soal berikutnya akan <b>lebih
-                                            mudah</b>.
-                                    </li>
-                                    <li>
-                                        <b>Contoh (5 soal):</b>
-                                        <ul class="mt-1">
-                                            <li>Soal Sedang: <b>5 soal</b> (dasar utama)</li>
-                                            <li>Soal Sulit: <b>3 soal</b> (5 − 2)</li>
-                                            <li>Soal Mudah: <b>3 soal</b> (5 − 2)</li>
+                                <!-- ADAPTIF -->
+                                <section class="mb-4">
+                                    <h6 class="fw-bold text-success mb-2">
+                                        <i class="bi bi-shuffle me-2"></i>Mode Adaptif
+                                    </h6>
+
+                                    <ul class="ps-3 mb-2">
+                                        <li>
+                                            Jika <strong>diaktifkan</strong>, sistem akan
+                                            <strong>menyesuaikan tingkat kesulitan soal</strong>
+                                            berdasarkan performa siswa.
+                                        </li>
+                                        <li>Siswa <strong>selalu memulai</strong> dari soal tingkat <strong>sedang</strong>.
+                                        </li>
+                                        <li>
+                                            Jawaban benar berturut-turut → soal menjadi
+                                            <strong>lebih sulit</strong>.
+                                        </li>
+                                        <li>
+                                            Jawaban salah berturut-turut → soal menjadi
+                                            <strong>lebih mudah</strong>.
+                                        </li>
+                                    </ul>
+
+                                    <div class="bg-light rounded p-3">
+                                        <p class="fw-semibold mb-1">Contoh (5 soal):</p>
+                                        <ul class="ps-3 text-muted mb-0">
+                                            <li>Soal sedang: <strong>5 soal</strong> (dasar utama)</li>
+                                            <li>Soal sulit: <strong>3 soal</strong> (5 − 2)</li>
+                                            <li>Soal mudah: <strong>3 soal</strong> (5 − 2)</li>
                                         </ul>
-                                    </li>
-                                    <li>
-                                        Jika <b>tidak diaktifkan</b>, semua siswa mengerjakan <b>soal yang sama secara
-                                            statis</b>.
-                                    </li>
-                                </ul>
+                                    </div>
+
+                                    <p class="text-muted mt-2 mb-0">
+                                        Jika mode adaptif <strong>tidak diaktifkan</strong>,
+                                        semua siswa mengerjakan <strong>soal yang sama secara statis</strong>.
+                                    </p>
+                                </section>
+
+                                <hr>
+
+                                <!-- PENILAIAN -->
+                                <!-- PENILAIAN -->
+                                <section class="mb-4">
+                                    <h6 class="fw-bold text-primary mb-2">
+                                        <i class="bi bi-bar-chart me-2"></i>Penilaian (Nilai Akhir)
+                                    </h6>
+
+                                    <p class="text-muted mb-2">
+                                        Nilai akhir dihitung berdasarkan perbandingan
+                                        <strong>total poin yang diperoleh</strong>
+                                        dengan <strong>poin maksimum (<em>best case</em>)</strong>.
+                                    </p>
+
+                                    <!-- RINCIAN POIN -->
+                                    <div class="mb-3">
+                                        <p class="fw-semibold mb-1">Rincian poin berdasarkan tingkat soal:</p>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item px-0">
+                                                Soal mudah: <strong>10 poin</strong>
+                                            </li>
+                                            <li class="list-group-item px-0">
+                                                Soal sedang: <strong>20 poin</strong>
+                                            </li>
+                                            <li class="list-group-item px-0">
+                                                Soal sulit: <strong>30 poin</strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- CONTOH PERHITUNGAN -->
+                                    <div class="bg-light rounded p-3">
+                                        <p class="fw-semibold mb-1">Contoh perhitungan:</p>
+                                        <ul class="ps-3 text-muted mb-2">
+                                            <li>Jumlah soal dikerjakan: <strong>5 soal</strong></li>
+                                            <li>2 soal sedang × 20 poin = 40 poin</li>
+                                            <li>3 soal sulit × 30 poin = 90 poin</li>
+                                            <li><strong>Total poin maksimum = 130 poin</strong></li>
+                                        </ul>
+
+                                        <p class="fw-semibold mb-1">Rumus nilai akhir:</p>
+                                        <p class="text-muted mb-0">
+                                            (Total poin diperoleh ÷ Total poin maksimum) × 100
+                                            <br>
+                                            <strong>(130 ÷ 130) × 100 = 100</strong>
+                                        </p>
+                                    </div>
+                                </section>
 
 
                                 <hr>
 
-                                <h6 class="fw-bold text-warning">
-                                    <i class="bi bi-gear me-1"></i> Aksi Aktivitas
-                                </h6>
-                                <ul>
-                                    <li>
-                                        <i class="bi bi-pencil text-primary"></i>
-                                        <strong>Edit</strong> – Mengubah data aktivitas.
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-archive text-success"></i>
-                                        <strong>Buat Paket Soal</strong> – Mengemas seluruh soal dalam topik menjadi paket.
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-gear text-warning"></i>
-                                        <strong>Atur Soal</strong> – Menentukan soal mana saja yang digunakan.
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-eye text-info"></i>
-                                        <strong>Lihat Soal</strong> – Melihat daftar soal dalam aktivitas.
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-trash text-danger"></i>
-                                        <strong>Hapus</strong> – Menghapus aktivitas secara permanen.
-                                    </li>
-                                </ul>
+                                <!-- AKSI -->
+                                <section class="mb-4">
+                                    <h6 class="fw-bold text-warning mb-2">
+                                        <i class="bi bi-gear me-2"></i>Aksi Aktivitas
+                                    </h6>
+
+                                    <ul class="ps-3 mb-0">
+                                        <li>
+                                            <i class="bi bi-pencil text-primary me-1"></i>
+                                            <strong>Edit</strong> – Mengubah data aktivitas
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-archive text-success me-1"></i>
+                                            <strong>Buat Paket Soal</strong> – Mengemas soal berdasarkan topik
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-sliders text-warning me-1"></i>
+                                            <strong>Atur Soal</strong> – Menentukan soal yang digunakan
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-eye text-info me-1"></i>
+                                            <strong>Lihat Soal</strong> – Melihat daftar soal
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-trash text-danger me-1"></i>
+                                            <strong>Hapus</strong> – Menghapus aktivitas permanen
+                                        </li>
+                                    </ul>
+                                </section>
 
                                 <hr>
 
-                                <h6 class="fw-bold text-secondary">
-                                    <i class="bi bi-calendar-event me-1"></i> Informasi Tambahan
-                                </h6>
-                                <ul>
-                                    <li>Kolom <strong>Semester</strong> menunjukkan periode pembelajaran.</li>
-                                    <li>Kolom <strong>Kelas</strong> menunjukkan target siswa.</li>
-                                    <li>Kolom <strong>Mapel</strong> menunjukkan mata pelajaran terkait.</li>
-                                </ul>
+                                <!-- INFO TAMBAHAN -->
+                                <section>
+                                    <h6 class="fw-bold text-secondary mb-2">
+                                        <i class="bi bi-calendar-event me-2"></i>Informasi Tambahan
+                                    </h6>
+                                    <ul class="ps-3 mb-0">
+                                        <li><strong>Semester</strong> → periode pembelajaran</li>
+                                        <li><strong>Kelas</strong> → target siswa</li>
+                                        <li><strong>Mapel</strong> → mata pelajaran terkait</li>
+                                    </ul>
+                                </section>
 
                             </div>
 
+                            <!-- FOOTER -->
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                     Tutup
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
+
                 @stack('modals')
 @endsection
             @push('styles')

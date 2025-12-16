@@ -247,7 +247,7 @@
 
                 <div class="modal-body">
 
-                    <p>
+                    <p class="text-muted">
                         Halaman <strong>Atur Soal</strong> digunakan untuk menentukan
                         soal-soal yang akan digunakan pada aktivitas
                         <strong>{{ $aktivitas->title }}</strong>.
@@ -255,6 +255,7 @@
 
                     <hr>
 
+                    <!-- SOAL TERPILIH -->
                     <h6 class="fw-bold text-primary">
                         <i class="bi bi-clipboard-check me-1"></i>
                         Soal Terpilih
@@ -277,6 +278,7 @@
 
                     <hr>
 
+                    <!-- LIHAT SOAL -->
                     <h6 class="fw-bold text-success">
                         <i class="bi bi-list-ul me-1"></i>
                         Lihat Soal
@@ -298,13 +300,14 @@
 
                     <hr>
 
+                    <!-- AMBIL SOAL OTOMATIS -->
                     <h6 class="fw-bold text-warning">
                         <i class="bi bi-cpu me-1"></i>
                         Ambil Soal Otomatis
                     </h6>
                     <ul>
                         <li>Guru memilih jumlah soal (5, 10, 15, dst).</li>
-                        <li>Jika aktivitas <strong>Adaptive</strong> aktif:
+                        <li>Jika aktivitas <strong>Adaptif</strong> aktif:
                             <ul>
                                 <li>Sistem akan menyesuaikan distribusi kesulitan</li>
                                 <li>Minimal soal mudah, sedang, dan sulit harus terpenuhi</li>
@@ -313,8 +316,34 @@
                         <li>Hasil otomatis hanya berlaku di modal sampai diterapkan.</li>
                     </ul>
 
+                    <!-- RINCIAN POIN -->
+                    <div class="bg-light rounded p-3 mb-3">
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-gem me-2"></i>
+                            Poin Berdasarkan Tingkat Kesulitan
+                        </h6>
+
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item px-0">
+                                Soal mudah: <strong>10 poin</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                Soal sedang: <strong>20 poin</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                Soal sulit: <strong>30 poin</strong>
+                            </li>
+                        </ul>
+
+                        <p class="text-muted small mt-2 mb-0">
+                            Semakin tinggi tingkat kesulitan soal yang dipilih,
+                            semakin besar potensi poin yang dapat diperoleh siswa.
+                        </p>
+                    </div>
+
                     <hr>
 
+                    <!-- HAPUS SEMUA -->
                     <h6 class="fw-bold text-danger">
                         <i class="bi bi-trash me-1"></i>
                         Hapus Semua Pilihan
@@ -326,13 +355,14 @@
 
                     <hr>
 
+                    <!-- SIMPAN -->
                     <h6 class="fw-bold text-secondary">
                         <i class="bi bi-save me-1"></i>
                         Simpan Pilihan
                     </h6>
                     <ul>
                         <li>Menyimpan konfigurasi soal ke database.</li>
-                        <li>Pada aktivitas <strong>Adaptive</strong>, sistem akan memvalidasi:
+                        <li>Pada aktivitas <strong>Adaptif</strong>, sistem akan memvalidasi:
                             <ul>
                                 <li>Total soal</li>
                                 <li>Distribusi kesulitan</li>
@@ -352,6 +382,7 @@
             </div>
         </div>
     </div>
+
 
 
 
@@ -404,9 +435,9 @@
 
             if (!ids || ids.length === 0) {
                 area.innerHTML = `<div id="noSelectedPlaceholder" class="text-center text-muted py-4">
-                                                                                                        <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
-                                                                                                        <div class="mt-2">Belum ada soal.</div>
-                                                                                                  </div>`;
+                                                                                                            <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
+                                                                                                            <div class="mt-2">Belum ada soal.</div>
+                                                                                                      </div>`;
                 document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = 0);
                 updateCounter();
                 return;
@@ -419,14 +450,14 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between align-items-start" id="selectedItem-${id}">
-                                                                                            <div>
-                                                                                                <small class="text-muted">${smallText}</small>
-                                                                                                <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
-                                                                                            </div>
-                                                                                            <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
-                                                                                                <i class="bi bi-x-circle"></i>
-                                                                                            </button>
-                                                                                        </div>`;
+                                                                                                <div>
+                                                                                                    <small class="text-muted">${smallText}</small>
+                                                                                                    <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
+                                                                                                </div>
+                                                                                                <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
+                                                                                                    <i class="bi bi-x-circle"></i>
+                                                                                                </button>
+                                                                                            </div>`;
             });
             area.innerHTML = html;
             document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = ids.length);
@@ -480,16 +511,16 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-white" id="modalSelectedItem-${id}">
-                                                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                                                <div>
-                                                                                                    <small class="text-muted">${smallText}</small>
-                                                                                                    <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                                                    <div>
+                                                                                                        <small class="text-muted">${smallText}</small>
+                                                                                                        <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                    </div>
+                                                                                                    <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
+                                                                                                        <i class="bi bi-x-circle"></i>
+                                                                                                    </button>
                                                                                                 </div>
-                                                                                                <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
-                                                                                                    <i class="bi bi-x-circle"></i>
-                                                                                                </button>
-                                                                                            </div>
-                                                                                        </div>`;
+                                                                                            </div>`;
             });
             wrap.innerHTML = html;
 

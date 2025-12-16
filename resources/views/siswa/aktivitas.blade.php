@@ -401,53 +401,71 @@
     <div class="modal fade" id="modalInfoAktivitas" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
+
+                <!-- HEADER -->
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
                         Informasi Aktivitas
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
+                <!-- BODY -->
                 <div class="modal-body">
 
                     <!-- APA ITU AKTIVITAS -->
                     <section class="mb-4">
-                        <h6 class="fw-bold text-primary">Apa itu Evaluasi?</h6>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-book me-2"></i>
+                            Apa itu Evaluasi?
+                        </h6>
                         <p class="text-muted mb-0">
                             Evaluasi merupakan tugas atau kuis pembelajaran yang diberikan oleh guru
                             untuk mengukur pemahaman siswa terhadap suatu topik tertentu.
-                            Evaluasi dapat berupa soal pilihan ganda maupun isian singkat.
+                            Evaluasi dapat berupa soal <strong>pilihan ganda</strong> maupun
+                            <strong>isian singkat</strong>.
                         </p>
                     </section>
 
+                    <hr>
+
                     <!-- SISTEM ADAPTIF -->
                     <section class="mb-4">
-                        <h6 class="fw-bold text-primary">Sistem Soal Adaptif</h6>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-sliders me-2"></i>
+                            Sistem Soal Adaptif
+                        </h6>
                         <p class="text-muted mb-2">
                             Pada aktivitas <strong>adaptif</strong>, tingkat kesulitan soal akan
                             menyesuaikan dengan performa siswa selama pengerjaan.
                         </p>
-                        <ul class="text-muted mb-0">
-                            <li>Jika menjawab benar secara berturut-turut, tingkat soal akan meningkat.</li>
-                            <li>Jika menjawab salah secara berturut-turut, tingkat soal akan menurun.</li>
-                            <li>Penyesuaian dilakukan berdasarkan pola benar dan salah.</li>
+                        <ul class="text-muted ps-3 mb-0">
+                            <li>Jawaban benar berturut-turut → soal menjadi lebih sulit</li>
+                            <li>Jawaban salah berturut-turut → soal menjadi lebih mudah</li>
+                            <li>Penyesuaian dilakukan berdasarkan pola benar dan salah</li>
                         </ul>
                     </section>
 
+                    <hr>
+
                     <!-- PEROLEHAN POIN -->
                     <section class="mb-4">
-                        <h6 class="fw-bold text-primary">Perolehan Poin</h6>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-gem me-2"></i>
+                            Perolehan Poin
+                        </h6>
                         <p class="text-muted mb-2">
                             Setiap jawaban benar akan menghasilkan <strong>poin dasar</strong>
                             sesuai dengan tingkat kesulitan soal.
-                            Seluruh poin akan <strong>dicatat dan diperingkatkan</strong>
-                            pada sistem <strong>Leaderboard</strong>.
+                            Seluruh poin akan <strong>dicatat</strong> dan
+                            <strong>diperingkatkan</strong> pada sistem <strong>Leaderboard</strong>.
                         </p>
 
-                        <ul class="text-muted mb-2">
-                            <li>Soal mudah: <strong>10 poin</strong></li>
-                            <li>Soal sedang: <strong>20 poin</strong></li>
-                            <li>Soal sulit: <strong>30 poin</strong></li>
+                        <ul class="list-group list-group-flush mb-2">
+                            <li class="list-group-item px-0">Soal mudah: <strong>10 poin</strong></li>
+                            <li class="list-group-item px-0">Soal sedang: <strong>20 poin</strong></li>
+                            <li class="list-group-item px-0">Soal sulit: <strong>30 poin</strong></li>
                         </ul>
 
                         <p class="text-muted mb-0">
@@ -455,58 +473,82 @@
                         </p>
                     </section>
 
+                    <hr>
+
                     <!-- BONUS POIN -->
                     <section class="mb-4">
-                        <h6 class="fw-bold text-primary">Bonus Poin (Streak)</h6>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-fire me-2"></i>
+                            Bonus Poin (Streak)
+                        </h6>
                         <p class="text-muted mb-2">
                             Pada aktivitas adaptif, siswa dapat memperoleh <strong>bonus poin</strong>
                             berdasarkan jumlah jawaban benar berturut-turut.
                         </p>
 
-                        <ul class="text-muted mb-0">
-                            <li>2 jawaban benar berturut-turut: <strong>+5 poin</strong></li>
-                            <li>3 jawaban benar berturut-turut: <strong>+10 poin</strong></li>
-                            <li>4 jawaban benar atau lebih: <strong>+15 poin</strong></li>
+                        <ul class="list-group list-group-flush mb-2">
+                            <li class="list-group-item px-0">
+                                2 jawaban benar berturut-turut: <strong>+5 poin</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                3 jawaban benar berturut-turut: <strong>+10 poin</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                4 jawaban benar atau lebih: <strong>+15 poin</strong>
+                            </li>
                         </ul>
 
-                        <p class="text-muted mt-2 mb-0">
+                        <p class="text-muted mb-0">
                             Jika jawaban salah, maka bonus tidak diberikan dan perhitungan streak direset.
                         </p>
                     </section>
 
+                    <hr>
+
                     <!-- PENILAIAN -->
-                    <section class="mb-2">
-                        <h6 class="fw-bold text-primary">Penilaian (Nilai Akhir)</h6>
+                    <section>
+                        <h6 class="fw-bold text-primary mb-2">
+                            <i class="bi bi-bar-chart me-2"></i>
+                            Penilaian (Nilai Akhir)
+                        </h6>
+
                         <p class="text-muted mb-2">
-                            Nilai akhir dihitung berdasarkan perbandingan poin yang diperoleh
-                            dengan <strong>poin maksimum (best case)</strong>.
+                            Nilai akhir dihitung berdasarkan perbandingan
+                            <strong>total poin yang diperoleh</strong>
+                            dengan <strong>poin maksimum atau <i>best case</i></strong>.
                         </p>
 
-                        <p class="text-muted mb-1">
-                            Contoh best case:
-                        </p>
+                        <div class="bg-light rounded p-3">
+                            <p class="fw-semibold mb-1">Contoh perhitungan:</p>
+                            <ul class="ps-3 text-muted mb-2">
+                                <li>menjawab sebanyak 5 buah soal yaitu,</li>
+                                <li>2 soal sedang × 20 poin = 40 poin</li>
+                                <li>3 soal sulit × 30 poin = 90 poin</li>
+                                <li><strong>Total poin maksimum = 130 poin</strong></li>
+                            </ul>
 
-                        <ul class="text-muted mb-2">
-                            <li>2 soal sedang × 20 poin = 40 poin</li>
-                            <li>3 soal sulit × 30 poin = 90 poin</li>
-                            <li><strong>Total poin maksimum = 130 poin</strong></li>
-                        </ul>
-
-                        <p class="text-muted mb-0">
-                            Rumus nilai akhir:
-                            <br>
-                            <strong>(Total poin diperoleh ÷ Total poin maksimum) × 100</strong>
-                        </p>
+                            <p class="fw-semibold mb-1">Rumus nilai akhir:</p>
+                            <p class="text-muted mb-0">
+                                (Total poin diperoleh ÷ Total poin maksimum) × 100
+                                <br>
+                                <strong>(130 ÷ 130) × 100 = 100</strong>
+                            </p>
+                        </div>
                     </section>
 
                 </div>
 
+                <!-- FOOTER -->
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
                 </div>
+
             </div>
         </div>
     </div>
+
 
 
 @endsection
