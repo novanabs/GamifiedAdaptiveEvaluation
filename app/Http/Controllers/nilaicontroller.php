@@ -344,16 +344,7 @@ class nilaicontroller extends Controller
                     }
                 }
             }
-
-            // fallback: query activities via joins (jika struktur tabel berbeda)
-            if ($activities->isEmpty()) {
-                // coba cari melalui topics table
-                $topicIds = DB::table('topics')->where('id_class', $classId)->pluck('id')->toArray();
-                if (!empty($topicIds)) {
-                    $activities = Activity::whereIn('id_topic', $topicIds)->get();
-                }
-            }
-
+          
             // unique activities by id (hindari duplikat)
             $activities = $activities->unique('id')->values();
 
@@ -534,14 +525,6 @@ class nilaicontroller extends Controller
             }
         }
 
-        // fallback bila belum ada relasi Subject->topics->activities
-        if ($activities->isEmpty()) {
-            // coba ambil topic berdasarkan field id_class pada topics (jika tersedia)
-            $topicIds = DB::table('topics')->where('id_class', $classId)->pluck('id')->toArray();
-            if (!empty($topicIds)) {
-                $activities = \App\Models\Activity::whereIn('id_topic', $topicIds)->get();
-            }
-        }
 
         $activities = $activities->unique('id')->values();
         $activityIds = $activities->pluck('id')->toArray();

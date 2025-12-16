@@ -45,22 +45,21 @@
             transition: margin-left .3s ease;
         }
 
-        /* ===== DESKTOP COLLAPSE ===== */
-        body.sidebar-collapsed .sidebar {
-            width: 80px;
+        .sidebar.toggled {
+            width: 80px !important;
         }
 
-        body.sidebar-collapsed #content-wrapper {
-            margin-left: 80px;
-        }
-
-        body.sidebar-collapsed .sidebar span,
-        body.sidebar-collapsed .sidebar .sidebar-brand-text {
+        .sidebar.toggled .nav-item .nav-link span,
+        .sidebar.toggled .sidebar-brand-text {
             display: none;
         }
 
-        body.sidebar-collapsed .nav-link {
+        .sidebar.toggled .nav-item .nav-link {
             text-align: center;
+        }
+
+        .sidebar.toggled~#content-wrapper {
+            margin-left: 80px;
         }
 
         /* ===== MOBILE SIDEBAR FIX ===== */
@@ -93,10 +92,81 @@
             display: block;
         }
 
-        .nav-link.active {
-            font-weight: bold;
-            background: #07439f !important;
+        /* ===== SIDEBAR ACTIVE STATE ===== */
+        .sidebar .nav-item .nav-link {
+            border-radius: 0;
+            margin: 0;
+            transition: all .2s ease;
+        }
+
+        .sidebar .nav-item .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
             color: #fff !important;
+            position: relative;
+        }
+
+        /* garis indikator kiri */
+        .sidebar .nav-item .nav-link.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #ffffff;
+        }
+
+        .sidebar .nav-item {
+            height: 56px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        /* 3. Sidebar kecil = icon benar-benar center */
+        .sidebar.toggled .nav-link {
+            justify-content: center;
+            padding: 0 !important;
+        }
+
+        /* 4. Samakan ukuran & lebar icon */
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .sidebar .nav-link.active::before {
+            left: 0;
+            top: 0;
+            height: 100%;
+        }
+
+        /* Kecilkan area brand */
+        .sidebar .sidebar-brand {
+            min-height: 56px;
+            padding: 0.75rem 0;
+        }
+
+        .sidebar-divider {
+            margin: 0.75rem 0 !important;
+            opacity: 0.3;
+        }
+
+        /* Menu mulai rapi dari atas */
+        .sidebar .navbar-nav {
+            padding-top: 8px;
         }
     </style>
 
@@ -169,7 +239,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link @yield('dataTopic')" href="{{  url('/datatopik') }}">
-                        <i class="fas fa-fw fa-book"></i>
+                        <i class="fas fa-fw fa-tags"></i>
                         <span>Data Topik</span>
                     </a>
                 </li>
@@ -256,33 +326,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const body = document.body;
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.querySelector('.sidebar');
             const toggleDesktop = document.getElementById('sidebarToggle');
             const toggleMobile = document.getElementById('sidebarToggleTop');
             const overlay = document.getElementById('sidebarOverlay');
 
-            toggleDesktop?.addEventListener('click', e => {
+            // DESKTOP TOGGLE
+            toggleDesktop?.addEventListener('click', function (e) {
                 e.preventDefault();
-                body.classList.toggle('sidebar-collapsed');
+                sidebar.classList.toggle('toggled');
             });
 
-            toggleMobile?.addEventListener('click', e => {
+            // MOBILE TOGGLE
+            toggleMobile?.addEventListener('click', function (e) {
                 e.preventDefault();
-                body.classList.toggle('sidebar-open');
+                document.body.classList.toggle('sidebar-open');
             });
 
-            overlay?.addEventListener('click', () => {
-                body.classList.remove('sidebar-open');
+            // OVERLAY CLICK (mobile)
+            overlay?.addEventListener('click', function () {
+                document.body.classList.remove('sidebar-open');
             });
 
-            window.addEventListener('resize', () => {
+            // RESET SAAT RESIZE
+            window.addEventListener('resize', function () {
                 if (window.innerWidth >= 992) {
-                    body.classList.remove('sidebar-open');
+                    document.body.classList.remove('sidebar-open');
                 }
             });
         });
     </script>
+
     <!-- jQuery (WAJIB SEBELUM DATATABLES) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 

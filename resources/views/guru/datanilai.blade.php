@@ -142,11 +142,10 @@
 
                                     <div class="text-end">
                                         <span class="badge bg-primary mb-2">
-                                            {{
-                        collect($class['subjects'])->sum(function ($s) {
-                            return collect($s['topics'])->sum(fn($t) => count($t['activities']));
-                        })
-                                                    }} aktivitas
+                                            {{  collect($class['subjects'])->sum(function ($s) {
+                        return collect($s['topics'])->sum(fn($t) => count($t['activities']));
+                    })
+                                                                }} aktivitas
                                         </span>
                                         <br>
                                         <a href="{{ route('guru.datanilai.exportClass', $class['class_id']) }}"
@@ -190,7 +189,7 @@
 
                                                             <div class="d-flex align-items-center gap-2">
                                                                 <span class="badge {{ $badgeClass }}">
-                                                                    {{ $cnt }} siswa
+                                                                    {{ $cnt }} Nilai
                                                                 </span>
 
                                                                 <a href="{{ route('detail.nilai', $act['id']) }}"
@@ -311,5 +310,16 @@
             </div>
         </div>
     </div>
+    @if (session('swal'))
+        <script>
+            Swal.fire({
+                icon: "{{ session('swal.icon') }}",
+                title: "{{ session('swal.title') }}",
+                text: "{{ session('swal.text') }}",
+                confirmButtonColor: '#4e73df'
+            });
+        </script>
+    @endif
+
 
 @endsection
