@@ -5,8 +5,18 @@
     <div class="container mt-4">
 
         <div class="d-flex align-items-center gap-2 mb-3">
-            <h3 class="fw-bold mb-0">
+            <h3 class="fw-bold mb-0 d-flex align-items-center gap-2 flex-wrap">
                 Atur Soal untuk: {{ $aktivitas->title }}
+
+                @if($aktivitas->addaptive === 'yes')
+                    <span class="badge bg-success">
+                        <i class="bi bi-cpu me-1"></i> Adaptif
+                    </span>
+                @else
+                    <span class="badge bg-secondary">
+                        <i class="bi bi-slash-circle me-1"></i> Non-Adaptif
+                    </span>
+                @endif
             </h3>
 
             <button type="button"
@@ -435,9 +445,9 @@
 
             if (!ids || ids.length === 0) {
                 area.innerHTML = `<div id="noSelectedPlaceholder" class="text-center text-muted py-4">
-                                                                                                                <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
-                                                                                                                <div class="mt-2">Belum ada soal.</div>
-                                                                                                          </div>`;
+                                                                                                                    <i class="bi bi-clipboard-x" style="font-size:2rem"></i>
+                                                                                                                    <div class="mt-2">Belum ada soal.</div>
+                                                                                                              </div>`;
                 document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = 0);
                 updateCounter();
                 return;
@@ -450,14 +460,14 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-light d-flex justify-content-between align-items-start" id="selectedItem-${id}">
-                                                                                                    <div>
-                                                                                                        <small class="text-muted">${smallText}</small>
-                                                                                                        <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
-                                                                                                    </div>
-                                                                                                    <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
-                                                                                                        <i class="bi bi-x-circle"></i>
-                                                                                                    </button>
-                                                                                                </div>`;
+                                                                                                        <div>
+                                                                                                            <small class="text-muted">${smallText}</small>
+                                                                                                            <div class="mt-1" id="selectedText-${id}">${bodyText}</div>
+                                                                                                        </div>
+                                                                                                        <button class="btn btn-sm btn-danger" onclick="hapusDariTerpilih(${id})">
+                                                                                                            <i class="bi bi-x-circle"></i>
+                                                                                                        </button>
+                                                                                                    </div>`;
             });
             area.innerHTML = html;
             document.getElementById('currentTotal') && (document.getElementById('currentTotal').innerText = ids.length);
@@ -511,16 +521,16 @@
                 const smallText = q ? (q.difficulty + ' — ' + q.type) : '';
                 const bodyText = q ? escapeHtml(q.text) : `Memuat soal #${id}...`;
                 html += `<div class="p-2 border rounded mb-2 bg-white" id="modalSelectedItem-${id}">
-                                                                                                    <div class="d-flex justify-content-between align-items-start">
-                                                                                                        <div>
-                                                                                                            <small class="text-muted">${smallText}</small>
-                                                                                                            <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                        <div class="d-flex justify-content-between align-items-start">
+                                                                                                            <div>
+                                                                                                                <small class="text-muted">${smallText}</small>
+                                                                                                                <div class="mt-1" id="modalSelectedText-${id}">${bodyText}</div>
+                                                                                                            </div>
+                                                                                                            <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
+                                                                                                                <i class="bi bi-x-circle"></i>
+                                                                                                            </button>
                                                                                                         </div>
-                                                                                                        <button class="btn btn-sm btn-outline-danger" onclick="modalToggleSelect(${id})">
-                                                                                                            <i class="bi bi-x-circle"></i>
-                                                                                                        </button>
-                                                                                                    </div>
-                                                                                                </div>`;
+                                                                                                    </div>`;
             });
             wrap.innerHTML = html;
 
