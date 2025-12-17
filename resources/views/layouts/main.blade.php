@@ -280,7 +280,6 @@
                                 <i class="fas fa-user fa-lg"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end shadow">
-                                <a class="dropdown-item" href="#">Profile</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#logoutModal">
                                     Logout

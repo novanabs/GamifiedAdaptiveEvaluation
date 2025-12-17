@@ -159,28 +159,42 @@ class aktivitasController extends Controller
 
     public function start($id)
     {
-        // bersihkan session lama untuk activity ini
+        // 1️⃣ reset session lama
         session()->forget("activity.$id");
 
         $activity = Activity::findOrFail($id);
 
-        // total soal yang tersimpan di DB (jumlah baris di pivot activity_question)
+        // 2️⃣ hitung total soal real di DB
         $totalDB = $activity->questions()->count();
 
-        // apakah mode adaptive?
-        $adaptive = ($activity->addaptive === 'yes');
-
-        // ambil jumlah soal dari kolom activities.jumlah_soal jika tersedia,
-        // jika null maka fallback ke totalDB
-        $jumlahSoal = $activity->jumlah_soal ?? $totalDB;
-
-        // pastikan jumlahSoal tidak melebihi total soal yang tersedia
-        // (opsional — tapi umumnya aman untuk membatasi)
-        if ($jumlahSoal > $totalDB) {
-            $jumlahSoal = $totalDB;
+        // 🛑 STOP TOTAL kalau tidak ada soal
+        if ($totalDB === 0) {
+            return response()->json([
+                'totalQuestions' => 0,
+                'message' => 'Soal belum tersedia'
+            ], 422);
         }
 
-        // inisialisasi session untuk aktivitas ini
+        // 3️⃣ mode adaptive?
+        $adaptive = ($activity->addaptive === 'yes');
+
+        // 4️⃣ tentukan jumlah soal yang akan dipakai
+        $jumlahSoal = $activity->jumlah_soal !== null
+            ? (int) $activity->jumlah_soal
+            : $totalDB;
+
+        // proteksi tambahan
+        if ($jumlahSoal <= 0) {
+            return response()->json([
+                'totalQuestions' => 0,
+                'message' => 'Jumlah soal tidak valid'
+            ], 422);
+        }
+
+        // batasi agar tidak melebihi soal tersedia
+        $jumlahSoal = min($jumlahSoal, $totalDB);
+
+        // 5️⃣ inisialisasi session (BARU dibuat setelah valid)
         session([
             "activity.$id.current" => 0,
             "activity.$id.streak_correct" => 0,
@@ -193,19 +207,28 @@ class aktivitasController extends Controller
             "activity.$id.total_real_point" => 0
         ]);
 
-        // simpan start_time ke session + DB
+        // 6️⃣ simpan waktu mulai
         $startTime = Carbon::now();
         session(["activity.$id.start_time" => $startTime->toDateTimeString()]);
 
+        // 7️⃣ simpan / update result
         $userId = auth()->id();
         ActivityResult::updateOrCreate(
             ['id_activity' => $id, 'id_user' => $userId],
-            ['start_time' => $startTime, 'waktu_mengerjakan' => null, 'end_time' => null, 'total_benar' => null]
+            [
+                'start_time' => $startTime,
+                'waktu_mengerjakan' => null,
+                'end_time' => null,
+                'total_benar' => null
+            ]
         );
 
-        // baca durasi dari activity (dalam menit), kirim ke front-end
-        $durasiMenit = $activity->durasi_pengerjaan ? (int) $activity->durasi_pengerjaan : null;
+        // 8️⃣ durasi
+        $durasiMenit = $activity->durasi_pengerjaan
+            ? (int) $activity->durasi_pengerjaan
+            : null;
 
+        // 9️⃣ response sukses
         return response()->json([
             'mode' => $adaptive ? 'adaptive' : 'normal',
             'level' => session("activity.$id.difficulty"),
@@ -214,6 +237,7 @@ class aktivitasController extends Controller
             'durasi_pengerjaan' => $durasiMenit
         ]);
     }
+
 
 
     public function getQuestion(Request $req, $id)
