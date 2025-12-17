@@ -167,7 +167,6 @@ class aktivitasController extends Controller
         // 2️⃣ hitung total soal real di DB
         $totalDB = $activity->questions()->count();
 
-        // 🛑 STOP TOTAL kalau tidak ada soal
         if ($totalDB === 0) {
             return response()->json([
                 'totalQuestions' => 0,

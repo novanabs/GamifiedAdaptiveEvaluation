@@ -308,45 +308,44 @@
                 }
             }, 1000);
         }
-
         function mulai() {
             fetch(`/activity/{{ $id_activity }}/start`)
-                .then(r => r.json())
-                .then(data => {
+                .then(async r => {
+                    const data = await r.json();
 
-
-                    if (!data.totalQuestions || data.totalQuestions <= 0) {
+                    // ❌ kalau status bukan 2xx
+                    if (!r.ok) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Aktivitas Tidak Bisa Dimulai',
-                            html: `
-                        <p class="mb-1">Soal untuk aktivitas ini <b>belum tersedia</b>.</p>
-                        <p class="text-muted small mb-0">Silakan hubungi guru atau tunggu sampai soal ditambahkan.</p>
-                    `,
+                            text: data.message ?? 'Aktivitas belum siap',
                             confirmButtonText: 'Mengerti',
                             confirmButtonColor: '#dc3545'
                         });
-                        return;
+                        throw new Error(data.message);
                     }
 
-                    // ✅ LANJUT NORMAL JIKA ADA SOAL
+                    return data;
+                })
+                .then(data => {
+                    // ✅ sukses
                     totalQuestions = data.totalQuestions;
                     answers = Array(totalQuestions).fill(null);
 
                     document.getElementById("info-test").hidden = true;
                     document.getElementById("soal-test").hidden = false;
 
-                    const durasiMenit = (data.durasi_pengerjaan && Number.isInteger(data.durasi_pengerjaan))
+                    const durasiMenit = Number.isInteger(data.durasi_pengerjaan)
                         ? data.durasi_pengerjaan
                         : 30;
+
                     timeLeft = durasiMenit * 60;
 
                     loadQuestion();
                     startTimer();
                 })
                 .catch(err => {
-                    console.error(err);
-                    Swal.fire("Error", "Gagal memulai aktivitas. Coba lagi.", "error");
+                    console.warn('Start dibatalkan:', err.message);
                 });
         }
 
